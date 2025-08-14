@@ -57,18 +57,32 @@ def analyze_problem():
 @app.route('/dashboard')
 def dashboard():
     """Dashboard showing case statistics and recent cases"""
+    search_query = request.args.get('search', '').strip()
+    system_filter = request.args.get('system', '')
+    
     try:
         stats = case_service.get_statistics()
-        recent_cases = case_service.get_recent_cases(limit=10)
+        
+        # Get cases based on search/filter or show recent cases
+        if search_query or system_filter:
+            cases = case_service.search_cases(search_query, system_filter)
+        else:
+            cases = case_service.get_recent_cases(limit=50)  # Show more recent cases
+            
+        systems = case_service.get_unique_systems()
         
         return render_template('dashboard.html', 
                              stats=stats, 
-                             recent_cases=recent_cases)
+                             cases=cases,
+                             recent_cases=cases,  # For backward compatibility
+                             search_query=search_query,
+                             system_filter=system_filter,
+                             systems=systems)
         
     except Exception as e:
         logging.error(f"Error loading dashboard: {str(e)}")
         flash(f'Error loading dashboard: {str(e)}', 'error')
-        return render_template('dashboard.html', stats={}, recent_cases=[])
+        return render_template('dashboard.html', stats={}, cases=[], recent_cases=[], systems=[])
 
 @app.route('/cases')
 def list_cases():
