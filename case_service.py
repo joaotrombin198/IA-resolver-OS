@@ -18,6 +18,8 @@ class CaseService:
     def get_all_cases(self) -> List[Case]:
         """Get all cases from PostgreSQL database"""
         try:
+            # Test database connection first
+            db.session.execute(db.text("SELECT 1"))
             return Case.query.all()
         except Exception as e:
             logging.error(f"Error getting cases from database: {str(e)}")
@@ -40,6 +42,9 @@ class CaseService:
     def add_case(self, problem_description: str, solution: str, system_type: str = "Unknown") -> Case:
         """Add a new case to the PostgreSQL database"""
         try:
+            # Test database connection first
+            db.session.execute(db.text("SELECT 1"))
+            
             # Create new case
             case = Case()
             case.problem_description = problem_description
@@ -57,7 +62,10 @@ class CaseService:
             return case
             
         except Exception as e:
-            db.session.rollback()
+            try:
+                db.session.rollback()
+            except:
+                pass
             logging.error(f"Error adding case to database: {str(e)}")
             # Fallback to in-memory storage
             next_id = current_app.config.get('NEXT_CASE_ID', 1)
@@ -70,6 +78,7 @@ class CaseService:
             cases = current_app.config.get('CASES_STORAGE', [])
             cases.append(case)
             current_app.config['CASES_STORAGE'] = cases
+            logging.info(f"Added case #{case.id} to in-memory storage (fallback)")
             return case
     
     def update_case(self, case_id: int, problem_description: str, solution: str, system_type: str) -> bool:

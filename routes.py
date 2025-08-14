@@ -670,11 +670,11 @@ def import_cases():
             return redirect(url_for('add_case_form'))
         
         file = request.files['file']
-        format_type = request.form.get('format_type', 'auto')
+        format_type = request.form.get('format_type', 'structured')
         
         if file.filename == '':
             flash('Nenhum arquivo selecionado.', 'error')
-            return redirect(url_for('add_case_form'))
+            return redirect(url_for('upload_cases_form'))
         
         # Save file temporarily
         filename = secure_filename(file.filename or "upload.txt")
@@ -683,41 +683,63 @@ def import_cases():
         
         file.save(temp_path)
         
-        try:
-            # Process file using FileProcessor
-            cases = file_processor.process_file(temp_path, format_type)
-            
-            cases_added = 0
-            for case_data in cases:
+        # Process file using FileProcessor
+        logging.info(f"Processing file: {temp_path} with format: {format_type}")
+        cases = file_processor.process_file(temp_path, format_type)
+        logging.info(f"Processed {len(cases)} cases from file")
+        
+        cases_added = 0
+        cases_failed = 0
+        
+        for i, case_data in enumerate(cases):
+            try:
                 case = case_service.add_case(
                     problem_description=case_data['problem_description'],
                     solution=case_data['solution'],
                     system_type=case_data['system_type']
                 )
                 cases_added += 1
-            
-            # Clean up temporary file
+                if cases_added % 10 == 0:  # Log progress every 10 cases
+                    logging.info(f"Added {cases_added} cases so far...")
+            except Exception as e:
+                cases_failed += 1
+                logging.error(f"Failed to add case {i+1}: {str(e)}")
+                # Continue with other cases
+                continue
+        
+        # Clean up temporary file
+        if temp_path and os.path.exists(temp_path):
             os.unlink(temp_path)
-            
-            if cases_added > 0:
-                # Retrain ML models with new cases
+        
+        if cases_added > 0:
+            # Retrain ML models with new cases
+            try:
                 all_cases = case_service.get_all_cases()
                 if len(all_cases) >= 5:
                     ml_service.train_models(all_cases)
-                
-                flash(f'{cases_added} casos importados e processados com sucesso!', 'success')
-            else:
-                flash('Nenhum caso válido encontrado no arquivo.', 'warning')
+                    logging.info("ML models retrained successfully")
+            except Exception as e:
+                logging.warning(f"Failed to retrain ML models: {str(e)}")
             
-            return redirect(url_for('dashboard'))
-            
-        except Exception as e:
-            # Clean up temporary file on error
-            if os.path.exists(temp_path):
-                os.unlink(temp_path)
-            raise e
+            success_msg = f'{cases_added} casos importados com sucesso!'
+            if cases_failed > 0:
+                success_msg += f' ({cases_failed} casos falharam)'
+            flash(success_msg, 'success')
+        else:
+            flash('Nenhum caso válido encontrado no arquivo.', 'warning')
+        
+        return redirect(url_for('dashboard'))
             
     except Exception as e:
+        # Clean up temporary file on error
+        if 'temp_path' in locals() and temp_path and os.path.exists(temp_path):
+            try:
+                os.unlink(temp_path)
+            except:
+                pass
+        
         logging.error(f"Error importing cases: {str(e)}")
+        import traceback
+        traceback.print_exc()
         flash(f'Erro ao importar casos: {str(e)}', 'error')
-        return redirect(url_for('add_case_form'))
+        return redirect(url_for('upload_cases_form'))
