@@ -23,7 +23,7 @@ The application follows a traditional Flask MVC architecture with service layer 
 
 - **Frontend**: Server-side rendered HTML templates with Bootstrap for responsive UI
 - **Backend**: Flask web framework with modular service-based architecture
-- **Storage**: In-memory storage for development/prototyping (designed to be database-agnostic)
+- **Storage**: PostgreSQL database with full persistence and multi-user synchronization
 - **AI Processing**: OpenAI API integration for intelligent problem analysis
 
 ### Key Architectural Components
