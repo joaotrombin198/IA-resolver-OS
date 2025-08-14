@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Caso - Assistente OS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Edit Case Form -->
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="edit" class="me-2"></i>
+                <h5 class="mb-0">Editar Caso #{{ case.id }}</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('edit_case', case_id=case.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label for="problem_description" class="form-label">
+                            Descrição do Problema <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" 
+                                id="problem_description" 
+                                name="problem_description" 
+                                rows="6" 
+                                placeholder="Descreva o problema técnico detalhadamente. Inclua nomes de sistemas (Tasy, SGU, SGU Card, Autorizador), mensagens de erro e passos para reproduzir..."
+                                required>{{ case.problem_description }}</textarea>
+                        <div class="form-text">
+                            <i data-feather="info" class="me-1"></i>
+                            Seja específico sobre sistemas envolvidos, mensagens de erro e contexto do problema.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="solution" class="form-label">
+                            Solução <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" 
+                                id="solution" 
+                                name="solution" 
+                                rows="6" 
+                                placeholder="Descreva a solução completa que resolveu o problema. Inclua passos detalhados, configurações alteradas e se foi necessário abrir chamado para Nexdow..."
+                                required>{{ case.solution }}</textarea>
+                        <div class="form-text">
+                            <i data-feather="lightbulb" class="me-1"></i>
+                            Inclua todos os passos necessários para implementar a solução.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="system_type" class="form-label">
+                            Tipo de Sistema <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="system_type" name="system_type" required>
+                            <option value="">Selecione o sistema</option>
+                            <option value="Tasy" {% if case.system_type == 'Tasy' %}selected{% endif %}>Tasy</option>
+                            <option value="SGU" {% if case.system_type == 'SGU' %}selected{% endif %}>SGU</option>
+                            <option value="SGU Card" {% if case.system_type == 'SGU Card' %}selected{% endif %}>SGU Card</option>
+                            <option value="Autorizador" {% if case.system_type == 'Autorizador' %}selected{% endif %}>Autorizador</option>
+                            <option value="Healthcare" {% if case.system_type == 'Healthcare' %}selected{% endif %}>Healthcare</option>
+                            <option value="Administrative" {% if case.system_type == 'Administrative' %}selected{% endif %}>Administrativo</option>
+                            <option value="Network" {% if case.system_type == 'Network' %}selected{% endif %}>Rede</option>
+                            <option value="Database" {% if case.system_type == 'Database' %}selected{% endif %}>Banco de Dados</option>
+                            <option value="Application Server" {% if case.system_type == 'Application Server' %}selected{% endif %}>Servidor de Aplicação</option>
+                        </select>
+                        <div class="form-text">
+                            <i data-feather="layers" class="me-1"></i>
+                            Selecione o sistema principal relacionado ao problema.
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i data-feather="save" class="me-2"></i>
+                            Salvar Alterações
+                        </button>
+                        <a href="{{ url_for('case_detail', case_id=case.id) }}" class="btn btn-secondary">
+                            <i data-feather="x" class="me-2"></i>
+                            Cancelar
+                        </a>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">
+                            <i data-feather="arrow-left" class="me-2"></i>
+                            Voltar ao Painel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Case Info Card -->
+        <div class="card mt-4">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="info" class="me-2"></i>
+                <h6 class="mb-0">Informações do Caso</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-sm">
+                    <div class="col-md-6">
+                        <strong>ID do Caso:</strong> #{{ case.id }}<br>
+                        <strong>Sistema Atual:</strong> <span class="badge bg-info">{{ case.system_type }}</span><br>
+                        <strong>Criado em:</strong> {{ case.created_at.strftime('%d/%m/%Y às %H:%M') }}
+                    </div>
+                    <div class="col-md-6">
+                        {% if case.effectiveness_score %}
+                        <strong>Avaliação:</strong> 
+                        <span class="text-warning">
+                            {% for i in range(case.effectiveness_score|int) %}★{% endfor %}
+                            {% for i in range(5 - case.effectiveness_score|int) %}☆{% endfor %}
+                        </span>
+                        ({{ "%.1f"|format(case.effectiveness_score) }}/5)<br>
+                        {% endif %}
+                        <strong>Feedback:</strong> {{ case.feedback_count or 0 }} avaliações
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="card mt-4">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="help-circle" class="me-2"></i>
+                <h6 class="mb-0">Dicas para Edição</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li><strong>Seja específico:</strong> Inclua nomes exatos de sistemas, versões e módulos</li>
+                    <li><strong>Passos claros:</strong> Descreva soluções de forma que outros técnicos possam seguir</li>
+                    <li><strong>Contexto completo:</strong> Inclua informações sobre quando o problema ocorre</li>
+                    <li><strong>Nexdow:</strong> Mencione se foi necessário abrir chamado para a Nexdow</li>
+                    <li><strong>Resultados:</strong> Confirme que a solução realmente resolve o problema</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-save functionality (save to localStorage every 30 seconds)
+let autoSaveInterval;
+
+function autoSave() {
+    const formData = {
+        problem_description: document.getElementById('problem_description').value,
+        solution: document.getElementById('solution').value,
+        system_type: document.getElementById('system_type').value
+    };
+    
+    localStorage.setItem('edit_case_{{ case.id }}_draft', JSON.stringify(formData));
+    
+    // Show subtle indication of auto-save
+    const saveBtn = document.querySelector('button[type="submit"]');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i data-feather="check" class="me-2"></i>Rascunho Salvo';
+    setTimeout(() => {
+        saveBtn.innerHTML = originalText;
+        feather.replace();
+    }, 1000);
+}
+
+// Load draft from localStorage on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const draft = localStorage.getItem('edit_case_{{ case.id }}_draft');
+    if (draft) {
+        try {
+            const formData = JSON.parse(draft);
+            // Only restore if fields are empty (user hasn't started editing)
+            const problemField = document.getElementById('problem_description');
+            const solutionField = document.getElementById('solution');
+            const systemField = document.getElementById('system_type');
+            
+            // Auto-save every 30 seconds while user is editing
+            autoSaveInterval = setInterval(autoSave, 30000);
+        } catch (e) {
+            console.log('Error loading draft:', e);
+        }
+    }
+});
+
+// Clear draft when form is submitted successfully
+document.querySelector('form').addEventListener('submit', function() {
+    localStorage.removeItem('edit_case_{{ case.id }}_draft');
+    clearInterval(autoSaveInterval);
+});
+
+// Warn user about unsaved changes when leaving page
+window.addEventListener('beforeunload', function(e) {
+    const form = document.querySelector('form');
+    const formData = new FormData(form);
+    let hasChanges = false;
+    
+    // Check if any field has been modified from original values
+    if (formData.get('problem_description') !== '{{ case.problem_description|e }}' ||
+        formData.get('solution') !== '{{ case.solution|e }}' ||
+        formData.get('system_type') !== '{{ case.system_type }}') {
+        hasChanges = true;
+    }
+    
+    if (hasChanges) {
+        e.preventDefault();
+        e.returnValue = 'Você tem alterações não salvas. Deseja realmente sair?';
+        return e.returnValue;
+    }
+});
+</script>
+{% endblock %}

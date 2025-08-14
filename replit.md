@@ -4,11 +4,15 @@
 
 OS Assistant is a machine learning-powered technical support system designed to help technicians diagnose and resolve work order issues across multiple systems. The application serves as a "digital mentor" that analyzes problem descriptions and suggests solutions based on historical cases and proprietary ML models.
 
-The system focuses on multi-system support (particularly hospital management systems like Tasy) and uses custom machine learning algorithms to continuously improve its recommendations through user feedback and case history. It operates independently of original systems and external AI APIs, learning from exported data, reports, or manually entered information using its own ML engine.
+The system focuses on multi-system support (particularly Brazilian hospital management systems like Tasy, SGU, SGU Card, and Autorizador) and uses custom machine learning algorithms to continuously improve its recommendations through user feedback and case history. It operates independently of original systems and external AI APIs, learning from exported data, reports, or manually entered information using its own ML engine. The system includes workflow for escalating complex cases to Nexdow when internal resolution is not possible.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Interface language: Portuguese (complete system translation implemented)
+Specific systems supported: Tasy, SGU, SGU Card, Autorizador (Brazilian hospital systems)
+Escalation workflow: Include Nexdow escalation options when internal resolution fails
+Case management: Full CRUD operations (Create, Read, Update, Delete) for case management
 
 ## System Architecture
 
@@ -43,6 +47,8 @@ The application follows a traditional Flask MVC architecture with service layer 
 - `Case`: Core entity storing problem descriptions, solutions, system types, and effectiveness feedback
 - `SolutionSuggestion`: Container for AI-generated recommendations with confidence scoring
 - In-memory storage with simple list-based persistence for rapid prototyping
+- Full CRUD operations implemented: Create, Read, Update, Delete cases
+- Real-time ML model retraining after case modifications
 
 **Machine Learning Integration**
 - Scikit-learn TF-IDF vectorization for case similarity matching
@@ -52,8 +58,9 @@ The application follows a traditional Flask MVC architecture with service layer 
 **Frontend Architecture**
 - Bootstrap-based responsive design with dark theme
 - Feather Icons for consistent iconography
-- Custom CSS for technical interface optimization
-- JavaScript for enhanced UX (form validation, auto-save, search functionality)
+- Complete Portuguese language interface
+- JavaScript for enhanced UX (form validation, auto-save, search functionality, deletion confirmation)
+- CRUD interface for case management with inline editing and deletion
 
 ### Design Patterns and Principles
 

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Diagnose Problem - OS Assistant{% endblock %}
+{% block title %}Diagnosticar Problema - Assistente OS{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -9,7 +9,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex align-items-center">
                 <i data-feather="edit-3" class="me-2"></i>
-                <h5 class="mb-0">Describe Your Technical Problem</h5>
+                <h5 class="mb-0">Descreva Seu Problema Técnico</h5>
             </div>
             <div class="card-body">
                 <form action="{{ url_for('analyze_problem') }}" method="POST">
@@ -25,12 +25,14 @@
 
 Exemplos:
 • Sistema Tasy não consegue conectar com banco de dados
-• Erro de permissão ao acessar módulo administrativo
-• Lentidão no sistema de rede hospitalar"
+• SGU Card não imprime carteirinhas
+• Autorizador não processa guias
+• Erro de permissão ao acessar módulo SGU
+• Problema que pode precisar de chamado Nexdow"
                                 required>{{ problem_description or '' }}</textarea>
                         <div class="form-text">
                             <i data-feather="info" class="me-1"></i>
-                            Seja o mais específico possível. Mencione nomes de sistemas (como Tasy), códigos de erro e passos que levaram ao problema.
+                            Seja o mais específico possível. Mencione nomes de sistemas (Tasy, SGU, SGU Card, Autorizador), códigos de erro e passos que levaram ao problema.
                         </div>
                     </div>
                     
@@ -60,7 +62,7 @@ Exemplos:
                 </div>
             </div>
             <div class="card-body">
-                <h6 class="text-muted mb-3">Suggested Solutions:</h6>
+                <h6 class="text-muted mb-3">Soluções Sugeridas:</h6>
                 <div class="row">
                     {% for solution in suggestion.suggested_solutions %}
                     <div class="col-12 mb-3">
@@ -80,27 +82,27 @@ Exemplos:
                 
                 <!-- Feedback Section -->
                 <div class="border-top pt-3 mt-3">
-                    <h6 class="text-muted mb-3">Was this helpful?</h6>
+                    <h6 class="text-muted mb-3">Isso foi útil?</h6>
                     <div class="d-flex gap-2">
                         <button class="btn btn-sm btn-outline-success" onclick="submitFeedback(5)">
                             <i data-feather="thumbs-up" class="me-1"></i>
-                            Very Helpful
+                            Muito Útil
                         </button>
                         <button class="btn btn-sm btn-outline-info" onclick="submitFeedback(4)">
                             <i data-feather="check" class="me-1"></i>
-                            Helpful
+                            Útil
                         </button>
                         <button class="btn btn-sm btn-outline-secondary" onclick="submitFeedback(3)">
                             <i data-feather="minus" class="me-1"></i>
-                            Somewhat
+                            Mais ou Menos
                         </button>
                         <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback(2)">
                             <i data-feather="x" class="me-1"></i>
-                            Not Much
+                            Pouco Útil
                         </button>
                         <button class="btn btn-sm btn-outline-danger" onclick="submitFeedback(1)">
                             <i data-feather="thumbs-down" class="me-1"></i>
-                            Not Helpful
+                            Não Útil
                         </button>
                     </div>
                 </div>
@@ -112,7 +114,7 @@ Exemplos:
         <div class="card mb-4">
             <div class="card-header d-flex align-items-center">
                 <i data-feather="layers" class="me-2"></i>
-                <h5 class="mb-0">Similar Cases Found</h5>
+                <h5 class="mb-0">Casos Similares Encontrados</h5>
             </div>
             <div class="card-body">
                 {% for case in suggestion.similar_cases %}
@@ -127,12 +129,12 @@ Exemplos:
                                 {% endif %}
                             </div>
                         </div>
-                        <p class="text-muted mb-2"><strong>Problem:</strong> {{ case.problem_description[:200] }}...</p>
-                        <p class="mb-0"><strong>Solution:</strong> {{ case.solution[:200] }}...</p>
+                        <p class="text-muted mb-2"><strong>Problema:</strong> {{ case.problem_description[:200] }}...</p>
+                        <p class="mb-0"><strong>Solução:</strong> {{ case.solution[:200] }}...</p>
                         <div class="mt-2">
                             <a href="{{ url_for('case_detail', case_id=case.id) }}" class="btn btn-sm btn-outline-primary">
                                 <i data-feather="external-link" class="me-1"></i>
-                                View Details
+                                Ver Detalhes
                             </a>
                         </div>
                     </div>
@@ -149,9 +151,9 @@ Exemplos:
                 <div class="card h-100">
                     <div class="card-body text-center">
                         <i data-feather="plus-circle" class="mb-2" style="width: 48px; height: 48px;"></i>
-                        <h6>Add New Case</h6>
-                        <p class="text-muted small">Contribute to the knowledge base by adding resolved cases</p>
-                        <a href="{{ url_for('add_case_form') }}" class="btn btn-outline-primary">Add Case</a>
+                        <h6>Adicionar Novo Caso</h6>
+                        <p class="text-muted small">Contribua para a base de conhecimento adicionando casos resolvidos</p>
+                        <a href="{{ url_for('add_case_form') }}" class="btn btn-outline-primary">Adicionar Caso</a>
                     </div>
                 </div>
             </div>
@@ -159,9 +161,9 @@ Exemplos:
                 <div class="card h-100">
                     <div class="card-body text-center">
                         <i data-feather="bar-chart-2" class="mb-2" style="width: 48px; height: 48px;"></i>
-                        <h6>View Dashboard</h6>
-                        <p class="text-muted small">Browse all cases and system statistics</p>
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">View Dashboard</a>
+                        <h6>Ver Painel</h6>
+                        <p class="text-muted small">Navegar todos os casos e estatísticas do sistema</p>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">Ver Painel</a>
                     </div>
                 </div>
             </div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}OS Assistant - AI Technical Support{% endblock %}</title>
+    <title>{% block title %}Assistente OS - Suporte Técnico Inteligente{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
@@ -20,7 +20,7 @@
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
                 <i data-feather="cpu" class="me-2"></i>
-                <span class="fw-bold">OS Assistant</span>
+                <span class="fw-bold">Assistente OS</span>
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -32,19 +32,19 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('index') }}">
                             <i data-feather="search" class="me-1"></i>
-                            Diagnose Problem
+                            Diagnosticar Problema
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('dashboard') }}">
                             <i data-feather="bar-chart-2" class="me-1"></i>
-                            Dashboard
+                            Painel
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('add_case_form') }}">
                             <i data-feather="plus-circle" class="me-1"></i>
-                            Add Case
+                            Adicionar Caso
                         </a>
                     </li>
                 </ul>
@@ -77,9 +77,9 @@
         <div class="container text-center text-muted">
             <p class="mb-0">
                 <i data-feather="shield" class="me-1"></i>
-                OS Assistant - AI-Powered Technical Support System
+                Assistente OS - Sistema de Suporte Técnico Inteligente
             </p>
-            <small>Helping technical teams resolve work orders efficiently</small>
+            <small>Ajudando equipes técnicas a resolver ordens de serviço eficientemente</small>
         </div>
     </footer>
 

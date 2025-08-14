@@ -174,25 +174,95 @@ def api_ml_info():
         logging.error(f"Error getting ML info: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/cases/<int:case_id>/edit')
+def edit_case_form(case_id):
+    """Show form to edit an existing case"""
+    try:
+        case = case_service.get_case_by_id(case_id)
+        if not case:
+            flash('Caso não encontrado.', 'error')
+            return redirect(url_for('dashboard'))
+        
+        return render_template('edit_case.html', case=case)
+        
+    except Exception as e:
+        logging.error(f"Error loading edit form for case {case_id}: {str(e)}")
+        flash(f'Erro ao carregar formulário de edição: {str(e)}', 'error')
+        return redirect(url_for('dashboard'))
+
+@app.route('/cases/<int:case_id>/edit', methods=['POST'])
+def edit_case(case_id):
+    """Update an existing case"""
+    try:
+        problem_description = request.form.get('problem_description', '').strip()
+        solution = request.form.get('solution', '').strip()
+        system_type = request.form.get('system_type', 'Unknown').strip()
+        
+        if not problem_description or not solution:
+            flash('Descrição do problema e solução são obrigatórios.', 'error')
+            return redirect(url_for('edit_case_form', case_id=case_id))
+        
+        success = case_service.update_case(case_id, problem_description, solution, system_type)
+        
+        if success:
+            # Retrain ML models with updated cases
+            all_cases = case_service.get_all_cases()
+            if len(all_cases) >= 5:
+                ml_service.train_models(all_cases)
+            
+            flash(f'Caso #{case_id} atualizado com sucesso!', 'success')
+            return redirect(url_for('case_detail', case_id=case_id))
+        else:
+            flash('Caso não encontrado.', 'error')
+            return redirect(url_for('dashboard'))
+        
+    except Exception as e:
+        logging.error(f"Error updating case {case_id}: {str(e)}")
+        flash(f'Erro ao atualizar caso: {str(e)}', 'error')
+        return redirect(url_for('edit_case_form', case_id=case_id))
+
+@app.route('/cases/<int:case_id>/delete', methods=['POST'])
+def delete_case(case_id):
+    """Delete a case"""
+    try:
+        success = case_service.delete_case(case_id)
+        
+        if success:
+            # Retrain ML models after deletion
+            all_cases = case_service.get_all_cases()
+            if len(all_cases) >= 5:
+                ml_service.train_models(all_cases)
+            
+            flash(f'Caso #{case_id} excluído com sucesso!', 'success')
+        else:
+            flash('Caso não encontrado.', 'error')
+        
+        return redirect(url_for('dashboard'))
+        
+    except Exception as e:
+        logging.error(f"Error deleting case {case_id}: {str(e)}")
+        flash(f'Erro ao excluir caso: {str(e)}', 'error')
+        return redirect(url_for('dashboard'))
+
 @app.route('/train-models', methods=['POST'])
 def train_models():
     """Manually trigger ML model training"""
     try:
         all_cases = case_service.get_all_cases()
         if len(all_cases) < 5:
-            flash('Need at least 5 cases to train ML models.', 'warning')
+            flash('Necessário pelo menos 5 casos para treinar os modelos ML.', 'warning')
         else:
             success = ml_service.train_models(all_cases)
             if success:
-                flash('ML models trained successfully!', 'success')
+                flash('Modelos ML treinados com sucesso!', 'success')
             else:
-                flash('Failed to train ML models. Check logs for details.', 'error')
+                flash('Falha ao treinar modelos ML. Verifique os logs para detalhes.', 'error')
         
         return redirect(url_for('dashboard'))
         
     except Exception as e:
         logging.error(f"Error training models: {str(e)}")
-        flash(f'Error training models: {str(e)}', 'error')
+        flash(f'Erro ao treinar modelos: {str(e)}', 'error')
         return redirect(url_for('dashboard'))
 
 @app.route('/populate-sample-data', methods=['POST'])
@@ -202,33 +272,33 @@ def populate_sample_data():
         sample_cases = [
             {
                 'problem': 'Sistema Tasy apresentando erro de conexão com banco de dados Oracle. Usuários não conseguem acessar módulo de prontuário eletrônico. Erro: ORA-12154 TNS could not resolve the connect identifier.',
-                'solution': '1. Verificar conectividade de rede com servidor Oracle\n2. Validar configurações do tnsnames.ora\n3. Testar conexão usando sqlplus\n4. Reiniciar listener do Oracle se necessário\n5. Verificar logs do Tasy para detalhes adicionais',
+                'solution': '1. Verificar conectividade de rede com servidor Oracle\n2. Validar configurações do tnsnames.ora\n3. Testar conexão usando sqlplus\n4. Reiniciar listener do Oracle se necessário\n5. Verificar logs do Tasy para detalhes adicionais\n6. Se problema persistir, abrir chamado para Nexdow',
                 'system': 'Tasy'
             },
             {
-                'problem': 'Lentidão extrema no sistema administrativo. Relatórios de RH demoram mais de 30 minutos para gerar. Sistema usando 95% da memória RAM do servidor.',
-                'solution': '1. Verificar processos consumindo alta memória\n2. Analisar queries SQL executadas nos relatórios\n3. Otimizar índices no banco de dados\n4. Adicionar mais RAM ao servidor se necessário\n5. Implementar cache para relatórios frequentes',
-                'system': 'Administrative'
+                'problem': 'SGU não consegue processar admissões. Erro "Timeout na comunicação com base de dados" aparece ao tentar registrar novos pacientes. Módulo de gestão hospitalar indisponível.',
+                'solution': '1. Verificar status dos serviços SGU no servidor\n2. Testar conectividade com banco de dados SGU\n3. Analisar logs de erro do SGU\n4. Verificar configurações de timeout\n5. Reiniciar serviços SGU se necessário\n6. Caso não resolva, escalar para Nexdow',
+                'system': 'SGU'
             },
             {
-                'problem': 'Falha na rede hospitalar. Switches principais não respondem. Erro intermitente de conectividade entre setores. VLAN 100 (setor emergência) completamente offline.',
-                'solution': '1. Verificar status físico dos switches principais\n2. Testar cabos de uplink entre switches\n3. Revisar configurações VLAN no switch core\n4. Verificar logs de spanning-tree\n5. Executar diagnóstico de hardware nos switches',
+                'problem': 'SGU Card não imprime carteirinhas de pacientes. Impressora conectada mas recebe dados corrompidos. Erro "Falha na geração de layout" no módulo de cartões.',
+                'solution': '1. Verificar driver da impressora de cartões\n2. Testar impressão manual de arquivo teste\n3. Validar template de layout no SGU Card\n4. Verificar dados do paciente no sistema\n5. Limpar cache do módulo Card\n6. Se necessário, abrir chamado Nexdow para revisão do layout',
+                'system': 'SGU Card'
+            },
+            {
+                'problem': 'Autorizador não processa guias de consulta. Fila com 500+ autorizações pendentes. Erro "Falha na comunicação com operadora" em todas as tentativas.',
+                'solution': '1. Verificar conectividade com APIs das operadoras\n2. Validar certificados digitais expirados\n3. Testar manualmente autorização de uma guia\n4. Verificar configurações de proxy/firewall\n5. Processar fila manualmente se urgente\n6. Contatar Nexdow para problemas de integração com operadoras',
+                'system': 'Autorizador'
+            },
+            {
+                'problem': 'Tasy módulo farmácia lento para dispensar medicamentos. Consulta de estoque demora mais de 2 minutos. Pacientes aguardando na fila da farmácia.',
+                'solution': '1. Analisar performance de queries no módulo farmácia\n2. Verificar índices das tabelas de estoque\n3. Executar reorganização de índices\n4. Limpar dados antigos da tabela de logs\n5. Considerar aumento de memória do servidor\n6. Se problema persistir, solicitar análise Nexdow',
+                'system': 'Tasy'
+            },
+            {
+                'problem': 'Rede hospitalar com perda de pacotes na VLAN dos equipamentos médicos. Monitores cardíacos perdendo conexão intermitentemente. Setor UTI afetado.',
+                'solution': '1. Verificar cabos de rede na UTI\n2. Analisar logs dos switches da VLAN médica\n3. Testar largura de banda disponível\n4. Verificar configurações QoS para tráfego médico\n5. Substituir cabos defeituosos se identificados\n6. Priorizar tráfego crítico nos switches',
                 'system': 'Network'
-            },
-            {
-                'problem': 'Banco de dados PostgreSQL com deadlocks frequentes. Backup noturno falha com erro "database is being accessed by other users". Performance muito baixa em consultas.',
-                'solution': '1. Identificar queries que causam deadlock\n2. Revisar transações de longa duração\n3. Configurar timeout apropriado para conexões\n4. Executar VACUUM e ANALYZE nas tabelas\n5. Agendar backup em horário de menor uso',
-                'system': 'Database'
-            },
-            {
-                'problem': 'Servidor de aplicação Apache Tomcat reiniciando automaticamente. Logs mostram OutOfMemoryError: Java heap space. Aplicações web ficam indisponíveis por períodos.',
-                'solution': '1. Aumentar heap size do Java (-Xmx parameter)\n2. Analisar vazamentos de memória na aplicação\n3. Configurar monitoramento JVM\n4. Otimizar garbage collection\n5. Implementar balanceamento de carga se necessário',
-                'system': 'Application Server'
-            },
-            {
-                'problem': 'Sistema EMR não sincroniza dados entre unidades. Erro de autenticação HL7. Mensagens ficam na fila sem processar.',
-                'solution': '1. Verificar configurações HL7 MLLP\n2. Validar certificados de autenticação\n3. Testar conectividade entre interfaces\n4. Limpar fila de mensagens pendentes\n5. Reconfigurar roteamento de mensagens',
-                'system': 'Healthcare'
             }
         ]
         

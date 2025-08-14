@@ -56,6 +56,55 @@ class CaseService:
             logging.error(f"Error adding case: {str(e)}")
             raise
     
+    def update_case(self, case_id: int, problem_description: str, solution: str, system_type: str) -> bool:
+        """Update an existing case"""
+        try:
+            cases = self.get_all_cases()
+            for case in cases:
+                if case.id == case_id:
+                    case.problem_description = problem_description
+                    case.solution = solution
+                    case.system_type = system_type
+                    
+                    # Update storage
+                    current_app.config['CASES_STORAGE'] = cases
+                    
+                    # Refit vectorizer when cases are updated
+                    self._fitted = False
+                    
+                    logging.info(f"Updated case #{case_id}")
+                    return True
+            
+            return False  # Case not found
+            
+        except Exception as e:
+            logging.error(f"Error updating case {case_id}: {str(e)}")
+            raise
+    
+    def delete_case(self, case_id: int) -> bool:
+        """Delete a case from the knowledge base"""
+        try:
+            cases = self.get_all_cases()
+            original_count = len(cases)
+            
+            # Filter out the case to delete
+            updated_cases = [case for case in cases if case.id != case_id]
+            
+            if len(updated_cases) < original_count:
+                current_app.config['CASES_STORAGE'] = updated_cases
+                
+                # Refit vectorizer when cases are deleted
+                self._fitted = False
+                
+                logging.info(f"Deleted case #{case_id}")
+                return True
+            
+            return False  # Case not found
+            
+        except Exception as e:
+            logging.error(f"Error deleting case {case_id}: {str(e)}")
+            raise
+    
     def find_similar_cases(self, problem_description: str, limit: int = 5) -> List[Case]:
         """Find cases similar to the given problem description"""
         try:

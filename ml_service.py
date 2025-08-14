@@ -31,6 +31,9 @@ class MLService:
         # Pre-defined system types and their keywords
         self.system_keywords = {
             'Tasy': ['tasy', 'hospitalar', 'hospital', 'prontuario', 'paciente', 'atendimento', 'medico'],
+            'SGU': ['sgu', 'sistema de gestao', 'gestao hospitalar', 'modulo sgu'],
+            'SGU Card': ['sgu card', 'cartao', 'card', 'credenciamento', 'carteirinha'],
+            'Autorizador': ['autorizador', 'autorizacao', 'autorizar', 'procedimento', 'guia'],
             'Healthcare': ['saude', 'health', 'emr', 'ehr', 'clinico', 'diagnostico', 'exame'],
             'Administrative': ['administrativo', 'admin', 'rh', 'financeiro', 'contabil', 'gestao'],
             'Network': ['rede', 'network', 'router', 'switch', 'firewall', 'ip', 'dns', 'dhcp'],
@@ -155,7 +158,32 @@ class MLService:
                 "Verificar configurações do módulo Tasy específico",
                 "Consultar logs do sistema Tasy",
                 "Verificar integridade da base de dados Tasy",
-                "Checar configurações de usuário no Tasy"
+                "Checar configurações de usuário no Tasy",
+                "Verificar se problema requer chamado para Nexdow"
+            ]
+        elif system_type == "SGU":
+            solutions = [
+                "Verificar status dos serviços SGU",
+                "Consultar logs de erro do SGU",
+                "Checar conectividade com base de dados SGU",
+                "Validar configurações de módulos SGU",
+                "Considerar abertura de chamado Nexdow se necessário"
+            ]
+        elif system_type == "SGU Card":
+            solutions = [
+                "Verificar serviços de credenciamento",
+                "Consultar logs do módulo Card",
+                "Checar sincronização de dados de carteirinha",
+                "Validar configurações de impressão de cartões",
+                "Abrir chamado Nexdow se problema persistir"
+            ]
+        elif system_type == "Autorizador":
+            solutions = [
+                "Verificar fila de autorizações pendentes",
+                "Consultar logs do sistema autorizador",
+                "Checar conectividade com operadoras",
+                "Validar regras de autorização",
+                "Escalar para Nexdow casos complexos"
             ]
         elif system_type == "Healthcare":
             solutions = [
@@ -177,6 +205,9 @@ class MLService:
                 "Checar espaço em tablespaces",
                 "Validar backup e recovery"
             ]
+        
+        # Add generic Nexdow escalation option
+        solutions.append("Se problema não for resolvido, abrir chamado para Nexdow")
         
         return solutions
     
