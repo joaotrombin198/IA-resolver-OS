@@ -16,10 +16,8 @@ class CaseService:
         self._fitted = False
     
     def get_all_cases(self) -> List[Case]:
-        """Get all cases from PostgreSQL database"""
+        """Get all cases from database with fallback"""
         try:
-            # Test database connection first
-            db.session.execute(db.text("SELECT 1"))
             return Case.query.all()
         except Exception as e:
             logging.error(f"Error getting cases from database: {str(e)}")
@@ -40,46 +38,53 @@ class CaseService:
             return None
     
     def add_case(self, problem_description: str, solution: str, system_type: str = "Unknown") -> Case:
-        """Add a new case to the PostgreSQL database"""
-        try:
-            # Test database connection first
-            db.session.execute(db.text("SELECT 1"))
-            
-            # Create new case
-            case = Case()
-            case.problem_description = problem_description
-            case.solution = solution
-            case.system_type = system_type
-            
-            # Add to database
-            db.session.add(case)
-            db.session.commit()
-            
-            # Refit vectorizer when new cases are added
-            self._fitted = False
-            
-            logging.info(f"Added new case #{case.id} to database")
-            return case
-            
-        except Exception as e:
+        """Add a new case to the database with robust error handling"""
+        max_retries = 3
+        retry_count = 0
+        
+        while retry_count < max_retries:
             try:
-                db.session.rollback()
-            except:
-                pass
-            logging.error(f"Error adding case to database: {str(e)}")
-            # Fallback to in-memory storage
-            next_id = current_app.config.get('NEXT_CASE_ID', 1)
-            current_app.config['NEXT_CASE_ID'] = next_id + 1
-            case = Case()
-            case.problem_description = problem_description
-            case.solution = solution
-            case.system_type = system_type
-            case.id = next_id
-            cases = current_app.config.get('CASES_STORAGE', [])
-            cases.append(case)
-            current_app.config['CASES_STORAGE'] = cases
-            logging.info(f"Added case #{case.id} to in-memory storage (fallback)")
-            return case
+                # Create new case
+                case = Case()
+                case.problem_description = problem_description
+                case.solution = solution
+                case.system_type = system_type
+                
+                # Add to database
+                db.session.add(case)
+                db.session.commit()
+                
+                # Refit vectorizer when new cases are added
+                self._fitted = False
+                
+                logging.info(f"Added new case #{case.id} to database")
+                return case
+                
+            except Exception as e:
+                retry_count += 1
+                try:
+                    db.session.rollback()
+                except:
+                    pass
+                    
+                if retry_count < max_retries:
+                    logging.warning(f"Database error on attempt {retry_count}, retrying: {str(e)}")
+                    continue
+                else:
+                    logging.error(f"Failed to add case to database after {max_retries} attempts: {str(e)}")
+                    # Fallback to in-memory storage
+                    next_id = current_app.config.get('NEXT_CASE_ID', 1)
+                    current_app.config['NEXT_CASE_ID'] = next_id + 1
+                    case = Case()
+                    case.problem_description = problem_description
+                    case.solution = solution
+                    case.system_type = system_type
+                    case.id = next_id
+                    cases = current_app.config.get('CASES_STORAGE', [])
+                    cases.append(case)
+                    current_app.config['CASES_STORAGE'] = cases
+                    logging.info(f"Added case #{case.id} to in-memory storage (fallback)")
+                    return case
     
     def update_case(self, case_id: int, problem_description: str, solution: str, system_type: str) -> bool:
         """Update an existing case in PostgreSQL"""

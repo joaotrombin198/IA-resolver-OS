@@ -18,21 +18,32 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-# Configure the database with better connection handling
+# Configure the database with robust fallback strategy
 database_url = os.environ.get("DATABASE_URL")
-if database_url:
+if database_url and "postgres" in database_url:
+    # PostgreSQL configuration with connection resilience
     app.config["SQLALCHEMY_DATABASE_URI"] = database_url
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
         "pool_recycle": 300,
         "pool_pre_ping": True,
-        "pool_timeout": 20,
-        "pool_size": 10,
-        "max_overflow": 20,
-        "echo": False  # Set to True for SQL debugging
+        "pool_timeout": 10,
+        "pool_size": 5,
+        "max_overflow": 10,
+        "echo": False,
+        "connect_args": {
+            "connect_timeout": 10,
+            "application_name": "os_assistant"
+        }
     }
 else:
-    # Fallback for development
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///fallback.db"
+    # SQLite fallback for local development and reliability
+    import os
+    db_path = os.path.join(os.getcwd(), "os_assistant.db")
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "echo": False,
+        "connect_args": {"timeout": 20}
+    }
     
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
