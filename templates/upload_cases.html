@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Upload de Casos - Assistente OS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Upload Cases Form -->
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="upload" class="me-2"></i>
+                <h5 class="mb-0">Upload de Casos Atendidos</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('upload_cases') }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="file" class="form-label">
+                            Arquivo com Casos <span class="text-danger">*</span>
+                        </label>
+                        <input class="form-control" type="file" id="file" name="file" 
+                               accept=".xlsx,.xls,.pdf,.csv" required>
+                        <div class="form-text">
+                            <i data-feather="info" class="me-1"></i>
+                            Formatos suportados: Excel (.xlsx, .xls), PDF (.pdf), CSV (.csv)
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="file_type" class="form-label">Tipo do Arquivo</label>
+                        <select class="form-select" id="file_type" name="file_type" required>
+                            <option value="">Selecione o tipo</option>
+                            <option value="excel">Excel/Planilha (.xlsx, .xls, .csv)</option>
+                            <option value="pdf">PDF (.pdf)</option>
+                        </select>
+                    </div>
+                    
+                    <div id="excel_options" style="display: none;">
+                        <h6 class="mb-3">Configurações para Excel/CSV</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="problem_column" class="form-label">Coluna do Problema</label>
+                                <input type="text" class="form-control" id="problem_column" name="problem_column" 
+                                       value="Problema" placeholder="Nome da coluna">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="solution_column" class="form-label">Coluna da Solução</label>
+                                <input type="text" class="form-control" id="solution_column" name="solution_column" 
+                                       value="Solução" placeholder="Nome da coluna">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="system_column" class="form-label">Coluna do Sistema</label>
+                                <input type="text" class="form-control" id="system_column" name="system_column" 
+                                       value="Sistema" placeholder="Nome da coluna">
+                            </div>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="has_header" name="has_header" checked>
+                            <label class="form-check-label" for="has_header">
+                                Primeira linha contém cabeçalhos
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="upload" class="me-2"></i>
+                            Processar Arquivo
+                        </button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i data-feather="arrow-left" class="me-2"></i>
+                            Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Instructions Card -->
+        <div class="card mt-4">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="help-circle" class="me-2"></i>
+                <h6 class="mb-0">Como Preparar os Arquivos</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i data-feather="file-text" class="me-2"></i>Excel/CSV</h6>
+                        <p class="mb-2">Estruture sua planilha com colunas:</p>
+                        <ul class="list-unstyled ps-3">
+                            <li>• <strong>Problema:</strong> Descrição do problema técnico</li>
+                            <li>• <strong>Solução:</strong> Como foi resolvido</li>
+                            <li>• <strong>Sistema:</strong> Tasy, SGU, SGU Card, etc.</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i data-feather="file" class="me-2"></i>PDF</h6>
+                        <p class="mb-2">O sistema tentará extrair:</p>
+                        <ul class="list-unstyled ps-3">
+                            <li>• Descrições de problemas</li>
+                            <li>• Soluções aplicadas</li>
+                            <li>• Referências a sistemas</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i data-feather="alert-circle" class="me-2"></i>
+                    <strong>Dica:</strong> Exporte os casos do seu sistema atual em Excel para melhor precisão na importação.
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Format Card -->
+        <div class="card mt-4">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="download" class="me-2"></i>
+                <h6 class="mb-0">Exemplo de Formato</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Problema</th>
+                                <th>Solução</th>
+                                <th>Sistema</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Tasy não consegue conectar com Oracle</td>
+                                <td>Verificar tnsnames.ora e reiniciar listener</td>
+                                <td>Tasy</td>
+                            </tr>
+                            <tr>
+                                <td>SGU Card não imprime carteirinhas</td>
+                                <td>Atualizar driver da impressora</td>
+                                <td>SGU Card</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('download_template') }}" class="btn btn-outline-primary btn-sm">
+                        <i data-feather="download" class="me-1"></i>
+                        Baixar Template Excel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('file_type').addEventListener('change', function() {
+    const excelOptions = document.getElementById('excel_options');
+    if (this.value === 'excel') {
+        excelOptions.style.display = 'block';
+    } else {
+        excelOptions.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Tutorial - Assistente OS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold mb-3">Tutorial - Assistente OS</h1>
+            <p class="lead text-muted">Aprenda a usar o sistema para diagnóstico e resolução de problemas técnicos</p>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i data-feather="play-circle" class="me-2"></i>Início Rápido</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>1. Adicione Casos</h5>
+                        <p>Comece cadastrando casos conhecidos ou importando dados do seu sistema atual.</p>
+                        <div class="d-flex gap-2 mb-3">
+                            <a href="{{ url_for('add_case_form') }}" class="btn btn-sm btn-primary">Adicionar Caso</a>
+                            <a href="{{ url_for('upload_cases_form') }}" class="btn btn-sm btn-outline-primary">Upload Casos</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>2. Treine o Sistema</h5>
+                        <p>Com 5+ casos, o sistema pode treinar modelos ML para sugestões inteligentes.</p>
+                        <form action="{{ url_for('train_models') }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-success">Treinar Modelos</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Features -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i data-feather="search" style="width: 48px; height: 48px;" class="text-primary mb-3"></i>
+                        <h5>Diagnóstico Inteligente</h5>
+                        <p class="text-muted">Descreva o problema e receba sugestões baseadas em casos similares</p>
+                        <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-sm">Testar Diagnóstico</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i data-feather="database" style="width: 48px; height: 48px;" class="text-success mb-3"></i>
+                        <h5>Base de Conhecimento</h5>
+                        <p class="text-muted">Gerencie casos de Tasy, SGU, SGU Card, Autorizador e outros sistemas</p>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-success btn-sm">Ver Dashboard</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i data-feather="upload" style="width: 48px; height: 48px;" class="text-warning mb-3"></i>
+                        <h5>Importação Fácil</h5>
+                        <p class="text-muted">Importe casos do seu sistema via Excel ou PDF</p>
+                        <a href="{{ url_for('upload_cases_form') }}" class="btn btn-outline-warning btn-sm">Upload Casos</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Guide -->
+        <div class="accordion" id="tutorialAccordion">
+            <!-- Getting Started -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#gettingStarted">
+                        <i data-feather="play-circle" class="me-2"></i>
+                        Como Começar
+                    </button>
+                </h2>
+                <div id="gettingStarted" class="accordion-collapse collapse show" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <ol>
+                            <li><strong>Carregue dados de exemplo:</strong> Clique em "Carregar Exemplos" no dashboard para ter casos iniciais</li>
+                            <li><strong>Explore o dashboard:</strong> Veja estatísticas e casos recentes</li>
+                            <li><strong>Teste o diagnóstico:</strong> Vá para "Assistente" e descreva um problema</li>
+                            <li><strong>Adicione seus casos:</strong> Use "Adicionar Caso" ou "Upload Casos" para importar dados</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Case Management -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#caseManagement">
+                        <i data-feather="file-text" class="me-2"></i>
+                        Gerenciamento de Casos
+                    </button>
+                </h2>
+                <div id="caseManagement" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <h6>Adicionando Casos Manualmente</h6>
+                        <ul>
+                            <li>Clique em "Adicionar Caso" no dashboard</li>
+                            <li>Descreva o problema detalhadamente</li>
+                            <li>Inclua a solução passo a passo</li>
+                            <li>Selecione o sistema (Tasy, SGU, etc.)</li>
+                        </ul>
+                        
+                        <h6>Importando Casos</h6>
+                        <ul>
+                            <li>Prepare arquivo Excel com colunas: Problema, Solução, Sistema</li>
+                            <li>Use "Upload Casos" no dashboard</li>
+                            <li>Configure as colunas conforme seu arquivo</li>
+                            <li>O sistema processa automaticamente</li>
+                        </ul>
+
+                        <h6>Editando e Excluindo</h6>
+                        <ul>
+                            <li>Use os botões <span class="badge bg-warning">✏️</span> para editar</li>
+                            <li>Use os botões <span class="badge bg-danger">🗑️</span> para excluir</li>
+                            <li>Confirmações evitam exclusões acidentais</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Features -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#aiFeatures">
+                        <i data-feather="cpu" class="me-2"></i>
+                        Recursos de IA
+                    </button>
+                </h2>
+                <div id="aiFeatures" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <h6>Treinamento de Modelos</h6>
+                        <ul>
+                            <li>Necessário mínimo 5 casos para treinar</li>
+                            <li>Treinamento automático após adições/edições</li>
+                            <li>Botão "Treinar Modelos" para treinamento manual</li>
+                        </ul>
+
+                        <h6>Detecção de Sistemas</h6>
+                        <ul>
+                            <li>IA identifica automaticamente Tasy, SGU, etc.</li>
+                            <li>Baseado em palavras-chave e padrões</li>
+                            <li>Melhora com mais dados de treinamento</li>
+                        </ul>
+
+                        <h6>Sugestões de Soluções</h6>
+                        <ul>
+                            <li>Busca casos similares usando TF-IDF</li>
+                            <li>Calcula similaridade semântica</li>
+                            <li>Inclui opção de escalação para Nexdow</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Systems -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#systemsManagement">
+                        <i data-feather="settings" class="me-2"></i>
+                        Gerenciar Sistemas
+                    </button>
+                </h2>
+                <div id="systemsManagement" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <h6>Sistemas Padrão</h6>
+                        <ul>
+                            <li><strong>Tasy:</strong> Sistema hospitalar Philips</li>
+                            <li><strong>SGU:</strong> Sistema de gestão hospitalar</li>
+                            <li><strong>SGU Card:</strong> Módulo de carteirinhas</li>
+                            <li><strong>Autorizador:</strong> Sistema de autorizações</li>
+                        </ul>
+
+                        <h6>Adicionando Sistemas Personalizados</h6>
+                        <ol>
+                            <li>Vá para "Gerenciar Sistemas"</li>
+                            <li>Preencha nome, categoria e descrição</li>
+                            <li>Sistema fica disponível para novos casos</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deployment -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#deployment">
+                        <i data-feather="server" class="me-2"></i>
+                        Compartilhamento e Implantação
+                    </button>
+                </h2>
+                <div id="deployment" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <h6>Para Equipe Local</h6>
+                        <ul>
+                            <li>Execute: <code>python main.py</code></li>
+                            <li>Acesse via <code>http://IP-DO-SERVIDOR:5000</code></li>
+                            <li>Configure firewall para porta 5000</li>
+                        </ul>
+
+                        <h6>Deploy na Nuvem (Replit)</h6>
+                        <ol>
+                            <li>Clique no botão "Deploy" no Replit</li>
+                            <li>Configure domínio personalizado se necessário</li>
+                            <li>Compartilhe URL gerada com a equipe</li>
+                        </ol>
+
+                        <h6>Executável Standalone</h6>
+                        <ul>
+                            <li>Use PyInstaller: <code>pyinstaller main.py</code></li>
+                            <li>Distribua pasta <code>dist/</code> completa</li>
+                            <li>Execute <code>main.exe</code> em Windows</li>
+                        </ul>
+
+                        <h6>Backup de Dados</h6>
+                        <ul>
+                            <li>Casos ficam em memória durante execução</li>
+                            <li>Para persistência, considere implementar banco de dados</li>
+                            <li>Exporte casos via dashboard regularmente</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Best Practices -->
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#bestPractices">
+                        <i data-feather="award" class="me-2"></i>
+                        Melhores Práticas
+                    </button>
+                </h2>
+                <div id="bestPractices" class="accordion-collapse collapse" data-bs-parent="#tutorialAccordion">
+                    <div class="accordion-body">
+                        <h6>Qualidade dos Casos</h6>
+                        <ul>
+                            <li>Seja específico na descrição dos problemas</li>
+                            <li>Inclua mensagens de erro exatas</li>
+                            <li>Documente passos da solução detalhadamente</li>
+                            <li>Mencione quando escalou para Nexdow</li>
+                        </ul>
+
+                        <h6>Organização</h6>
+                        <ul>
+                            <li>Use nomes consistentes para sistemas</li>
+                            <li>Categorize por tipo de problema quando possível</li>
+                            <li>Mantenha casos atualizados</li>
+                        </ul>
+
+                        <h6>Equipe</h6>
+                        <ul>
+                            <li>Treine equipe para usar formato padrão</li>
+                            <li>Encoraje feedback nas soluções</li>
+                            <li>Revisite casos antigos periodicamente</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support -->
+        <div class="card mt-4">
+            <div class="card-body text-center">
+                <h5>Precisa de Ajuda?</h5>
+                <p class="text-muted">O sistema está configurado para ambientes hospitalares brasileiros</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                        <i data-feather="home" class="me-1"></i>
+                        Voltar ao Dashboard
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                        <i data-feather="play" class="me-1"></i>
+                        Testar Assistente
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

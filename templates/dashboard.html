@@ -171,6 +171,20 @@
             <div class="card-body p-0">
                 {% if cases %}
                 <div class="table-responsive">
+                    <!-- Quick Actions Bar -->
+                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom bg-light">
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('upload_cases_form') }}" class="btn btn-sm btn-outline-primary">
+                                <i data-feather="upload" class="me-1"></i>
+                                Upload Casos
+                            </a>
+                            <a href="{{ url_for('manage_systems') }}" class="btn btn-sm btn-outline-secondary">
+                                <i data-feather="settings" class="me-1"></i>
+                                Gerenciar Sistemas
+                            </a>
+                        </div>
+                        <small class="text-muted">{{ cases|length }} caso(s) encontrado(s)</small>
+                    </div>
                     <table class="table table-hover mb-0">
                         <thead class="table-dark">
                             <tr>
@@ -244,12 +258,24 @@
                         Limpar Filtros
                     </a>
                     {% else %}
-                    <p class="text-muted mb-3">Comece a construir sua base de conhecimento adicionando o primeiro caso.</p>
+                    <p class="text-muted mb-3">Comece construindo sua base de conhecimento:</p>
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <a href="{{ url_for('add_case_form') }}" class="btn btn-primary">
+                            <i data-feather="plus" class="me-1"></i>
+                            Adicionar Caso
+                        </a>
+                        <a href="{{ url_for('upload_cases_form') }}" class="btn btn-outline-primary">
+                            <i data-feather="upload" class="me-1"></i>
+                            Upload Excel/PDF
+                        </a>
+                        <form action="{{ url_for('populate_sample_data') }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-outline-secondary">
+                                <i data-feather="download" class="me-1"></i>
+                                Casos Exemplo
+                            </button>
+                        </form>
+                    </div>
                     {% endif %}
-                    <a href="{{ url_for('add_case_form') }}" class="btn btn-primary">
-                        <i data-feather="plus" class="me-1"></i>
-                        Adicionar Primeiro Caso
-                    </a>
                 </div>
                 {% endif %}
             </div>

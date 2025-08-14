@@ -12,7 +12,12 @@ case_service = CaseService()
 @app.route('/')
 def index():
     """Main page with problem input form"""
-    return render_template('index.html')
+    try:
+        recent_cases = case_service.get_recent_cases(limit=6)
+        return render_template('index.html', recent_cases=recent_cases)
+    except Exception as e:
+        logging.error(f"Error loading recent cases: {str(e)}")
+        return render_template('index.html', recent_cases=[])
 
 @app.route('/analyze', methods=['POST'])
 def analyze_problem():
@@ -31,9 +36,13 @@ def analyze_problem():
         similar_cases = case_service.find_similar_cases(problem_description, limit=5)
         suggestion.similar_cases = similar_cases
         
+        # Get recent cases for reference
+        recent_cases = case_service.get_recent_cases(limit=6)
+        
         return render_template('index.html', 
                              suggestion=suggestion, 
-                             problem_description=problem_description)
+                             problem_description=problem_description,
+                             recent_cases=recent_cases)
         
     except Exception as e:
         logging.error(f"Error analyzing problem: {str(e)}")
@@ -322,3 +331,252 @@ def populate_sample_data():
         logging.error(f"Error adding sample data: {str(e)}")
         flash(f'Erro ao adicionar dados de exemplo: {str(e)}', 'error')
         return redirect(url_for('dashboard'))
+
+@app.route('/upload-cases')
+def upload_cases_form():
+    """Show form to upload cases from files"""
+    return render_template('upload_cases.html')
+
+@app.route('/upload-cases', methods=['POST'])
+def upload_cases():
+    """Process uploaded file with cases"""
+    try:
+        if 'file' not in request.files:
+            flash('Nenhum arquivo selecionado.', 'error')
+            return redirect(url_for('upload_cases_form'))
+        
+        file = request.files['file']
+        file_type = request.form.get('file_type')
+        
+        if file.filename == '':
+            flash('Nenhum arquivo selecionado.', 'error')
+            return redirect(url_for('upload_cases_form'))
+        
+        # Import required libraries
+        import pandas as pd
+        import PyPDF2
+        import io
+        from flask import current_app
+        
+        cases_added = 0
+        
+        if file_type == 'excel':
+            # Process Excel/CSV file
+            try:
+                if file.filename and file.filename.endswith('.csv'):
+                    df = pd.read_csv(io.BytesIO(file.read()), encoding='utf-8')
+                else:
+                    df = pd.read_excel(io.BytesIO(file.read()))
+                
+                problem_col = request.form.get('problem_column', 'Problema')
+                solution_col = request.form.get('solution_column', 'Solução')
+                system_col = request.form.get('system_column', 'Sistema')
+                
+                for _, row in df.iterrows():
+                    problem_val = row.get(problem_col)
+                    solution_val = row.get(solution_col)
+                    if (problem_val is not None and pd.notna(problem_val) and 
+                        solution_val is not None and pd.notna(solution_val)):
+                        case = case_service.add_case(
+                            problem_description=str(problem_val),
+                            solution=str(solution_val),
+                            system_type=str(row.get(system_col, 'Unknown'))
+                        )
+                        cases_added += 1
+                        
+            except Exception as e:
+                flash(f'Erro ao processar planilha: {str(e)}', 'error')
+                return redirect(url_for('upload_cases_form'))
+        
+        elif file_type == 'pdf':
+            # Process PDF file
+            try:
+                pdf_reader = PyPDF2.PdfReader(io.BytesIO(file.read()))
+                text = ""
+                for page in pdf_reader.pages:
+                    text += page.extract_text()
+                
+                # Simple text processing for PDF (basic implementation)
+                lines = text.split('\n')
+                current_problem = ""
+                current_solution = ""
+                
+                for line in lines:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    
+                    # Simple heuristics to identify problem/solution pairs
+                    if any(word in line.lower() for word in ['problema:', 'erro:', 'issue:', 'falha:']):
+                        if current_problem and current_solution:
+                            case = case_service.add_case(
+                                problem_description=current_problem,
+                                solution=current_solution,
+                                system_type='Unknown'
+                            )
+                            cases_added += 1
+                        current_problem = line
+                        current_solution = ""
+                    elif any(word in line.lower() for word in ['solução:', 'resolução:', 'fix:', 'correção:']):
+                        current_solution = line
+                    elif current_solution and line:
+                        current_solution += " " + line
+                
+                # Add last case
+                if current_problem and current_solution:
+                    case = case_service.add_case(
+                        problem_description=current_problem,
+                        solution=current_solution,
+                        system_type='Unknown'
+                    )
+                    cases_added += 1
+                    
+            except Exception as e:
+                flash(f'Erro ao processar PDF: {str(e)}', 'error')
+                return redirect(url_for('upload_cases_form'))
+        
+        if cases_added > 0:
+            # Retrain ML models with new cases
+            all_cases = case_service.get_all_cases()
+            if len(all_cases) >= 5:
+                ml_service.train_models(all_cases)
+            
+            flash(f'{cases_added} casos adicionados com sucesso!', 'success')
+        else:
+            flash('Nenhum caso válido encontrado no arquivo.', 'warning')
+        
+        return redirect(url_for('dashboard'))
+        
+    except Exception as e:
+        logging.error(f"Error uploading cases: {str(e)}")
+        flash(f'Erro ao processar arquivo: {str(e)}', 'error')
+        return redirect(url_for('upload_cases_form'))
+
+@app.route('/download-template')
+def download_template():
+    """Download Excel template for case upload"""
+    try:
+        import pandas as pd
+        import io
+        
+        # Create sample data
+        sample_data = {
+            'Problema': [
+                'Sistema Tasy apresentando lentidão extrema',
+                'SGU não consegue processar admissões',
+                'Autorizador rejeitando guias válidas'
+            ],
+            'Solução': [
+                'Reiniciar serviço do Tasy e limpar cache',
+                'Verificar conectividade com banco SGU',
+                'Atualizar certificados digitais'
+            ],
+            'Sistema': ['Tasy', 'SGU', 'Autorizador']
+        }
+        
+        df = pd.DataFrame(sample_data)
+        
+        # Create Excel file in memory
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl', mode='w') as writer:
+            df.to_excel(writer, sheet_name='Casos', index=False)
+        
+        output.seek(0)
+        
+        from flask import send_file
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name='template_casos.xlsx',
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        
+    except Exception as e:
+        logging.error(f"Error creating template: {str(e)}")
+        flash(f'Erro ao gerar template: {str(e)}', 'error')
+        return redirect(url_for('upload_cases_form'))
+
+@app.route('/systems')
+def manage_systems():
+    """Manage system types"""
+    try:
+        # Get system usage statistics
+        all_cases = case_service.get_all_cases()
+        system_stats = {}
+        
+        for case in all_cases:
+            system = case.system_type
+            if system not in system_stats:
+                system_stats[system] = {
+                    'name': system,
+                    'category': 'Healthcare' if system in ['Tasy', 'SGU', 'SGU Card', 'Autorizador'] else 'Other',
+                    'case_count': 0,
+                    'last_used': None
+                }
+            system_stats[system]['case_count'] += 1
+            if not system_stats[system]['last_used'] or case.created_at > system_stats[system]['last_used']:
+                system_stats[system]['last_used'] = case.created_at
+        
+        # Get custom systems from config
+        custom_systems = current_app.config.get('CUSTOM_SYSTEMS', [])
+        
+        # Merge with usage stats
+        all_systems = []
+        for system_name, stats in system_stats.items():
+            all_systems.append(stats)
+        
+        # Add custom systems that haven't been used
+        for custom in custom_systems:
+            if custom['name'] not in system_stats:
+                custom['case_count'] = 0
+                custom['last_used'] = None
+                all_systems.append(custom)
+        
+        return render_template('manage_systems.html', systems=all_systems)
+        
+    except Exception as e:
+        logging.error(f"Error loading systems: {str(e)}")
+        flash(f'Erro ao carregar sistemas: {str(e)}', 'error')
+        return render_template('manage_systems.html', systems=[])
+
+@app.route('/systems/add', methods=['POST'])
+def add_system():
+    """Add new system type"""
+    try:
+        system_name = request.form.get('system_name', '').strip()
+        system_category = request.form.get('system_category', 'Other')
+        system_description = request.form.get('system_description', '').strip()
+        
+        if not system_name:
+            flash('Nome do sistema é obrigatório.', 'error')
+            return redirect(url_for('manage_systems'))
+        
+        # Get current custom systems
+        custom_systems = current_app.config.get('CUSTOM_SYSTEMS', [])
+        
+        # Check if system already exists
+        if any(s['name'].lower() == system_name.lower() for s in custom_systems):
+            flash('Sistema já cadastrado.', 'error')
+            return redirect(url_for('manage_systems'))
+        
+        # Add new system
+        new_system = {
+            'name': system_name,
+            'category': system_category,
+            'description': system_description
+        }
+        custom_systems.append(new_system)
+        current_app.config['CUSTOM_SYSTEMS'] = custom_systems
+        
+        flash(f'Sistema "{system_name}" adicionado com sucesso!', 'success')
+        return redirect(url_for('manage_systems'))
+        
+    except Exception as e:
+        logging.error(f"Error adding system: {str(e)}")
+        flash(f'Erro ao adicionar sistema: {str(e)}', 'error')
+        return redirect(url_for('manage_systems'))
+
+@app.route('/tutorial')
+def tutorial():
+    """Show tutorial and documentation"""
+    return render_template('tutorial.html')

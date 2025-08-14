@@ -13,6 +13,8 @@ Interface language: Portuguese (complete system translation implemented)
 Specific systems supported: Tasy, SGU, SGU Card, Autorizador (Brazilian hospital systems)
 Escalation workflow: Include Nexdow escalation options when internal resolution fails
 Case management: Full CRUD operations (Create, Read, Update, Delete) for case management
+Upload functionality: Excel/CSV/PDF import for bulk case addition
+Tutorial system: Complete documentation and usage guide integrated
 
 ## System Architecture
 
