@@ -23,11 +23,8 @@ except ImportError:
 
 class FileProcessor:
     def __init__(self):
+        # Sistema 100% interno - sem OpenAI
         self.openai_client = None
-        if OPENAI_AVAILABLE:
-            api_key = os.environ.get("OPENAI_API_KEY")
-            if api_key:
-                self.openai_client = OpenAI(api_key=api_key)
     
     def process_file(self, file_path: str, format_type: str = "auto") -> List[Dict[str, str]]:
         """
@@ -35,7 +32,7 @@ class FileProcessor:
         
         Args:
             file_path: Path to the uploaded file
-            format_type: 'auto' for AI processing or 'structured' for predefined formats
+            format_type: Only 'structured' supported - no external AI processing
         
         Returns:
             List of dictionaries with 'system_type', 'problem_description', 'solution'
@@ -43,6 +40,10 @@ class FileProcessor:
         file_extension = os.path.splitext(file_path)[1].lower()
         
         try:
+            # Sistema interno - apenas formatos estruturados
+            if format_type != "structured":
+                raise ValueError("Apenas formato estruturado é suportado (sistema 100% interno)")
+            
             # Extract raw content based on file type
             if file_extension in ['.xlsx', '.xls']:
                 content = self._process_excel(file_path, format_type)
@@ -64,30 +65,18 @@ class FileProcessor:
     def _process_excel(self, file_path: str, format_type: str) -> List[Dict[str, str]]:
         """Process Excel files"""
         df = pd.read_excel(file_path)
-        
-        if format_type == "structured":
-            return self._process_structured_dataframe(df)
-        else:
-            return self._process_with_ai(df.to_string(), "excel")
+        return self._process_structured_dataframe(df)
     
     def _process_csv(self, file_path: str, format_type: str) -> List[Dict[str, str]]:
         """Process CSV files"""
         df = pd.read_csv(file_path)
-        
-        if format_type == "structured":
-            return self._process_structured_dataframe(df)
-        else:
-            return self._process_with_ai(df.to_string(), "csv")
+        return self._process_structured_dataframe(df)
     
     def _process_txt(self, file_path: str, format_type: str) -> List[Dict[str, str]]:
         """Process text files"""
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
-        
-        if format_type == "structured":
-            return self._process_structured_text(content)
-        else:
-            return self._process_with_ai(content, "text")
+        return self._process_structured_text(content)
     
     def _process_pdf(self, file_path: str, format_type: str) -> List[Dict[str, str]]:
         """Process PDF files"""
@@ -100,10 +89,7 @@ class FileProcessor:
             for page in reader.pages:
                 content += page.extract_text() + "\n"
         
-        if format_type == "structured":
-            return self._process_structured_text(content)
-        else:
-            return self._process_with_ai(content, "pdf")
+        return self._process_structured_text(content)
     
     def _process_structured_dataframe(self, df: pd.DataFrame) -> List[Dict[str, str]]:
         """Process structured Excel/CSV with expected columns"""
@@ -206,60 +192,3 @@ class FileProcessor:
         
         return None
     
-    def _process_with_ai(self, content: str, file_type: str) -> List[Dict[str, str]]:
-        """Process file content using OpenAI to extract cases"""
-        if not self.openai_client:
-            raise ValueError("OpenAI não está configurado. Configure a OPENAI_API_KEY para usar detecção automática.")
-        
-        prompt = f"""
-Analise o seguinte conteúdo de arquivo ({file_type}) e extraia casos de suporte técnico.
-
-Para cada caso encontrado, retorne um JSON com esta estrutura:
-{{
-    "system_type": "nome do sistema (SGU 2.0, SGU-Card, Autorizador, ou outro)",
-    "problem_description": "descrição detalhada do problema",
-    "solution": "solução completa passo a passo"
-}}
-
-Retorne apenas um array JSON válido com todos os casos encontrados.
-
-Conteúdo do arquivo:
-{content[:4000]}  # Limit content size
-"""
-
-        try:
-            response = self.openai_client.chat.completions.create(
-                model="gpt-4o",  # the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-                messages=[
-                    {"role": "system", "content": "Você é um especialista em extrair informações estruturadas de documentos técnicos."},
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={"type": "json_object"}
-            )
-            
-            result = json.loads(response.choices[0].message.content)
-            
-            # Handle both array format and object format
-            if isinstance(result, list):
-                cases = result
-            elif 'cases' in result:
-                cases = result['cases']
-            else:
-                cases = [result]
-            
-            # Validate and clean cases
-            validated_cases = []
-            for case in cases:
-                if isinstance(case, dict) and 'problem_description' in case and 'solution' in case:
-                    validated_case = {
-                        'system_type': case.get('system_type', 'Desconhecido'),
-                        'problem_description': case['problem_description'],
-                        'solution': case['solution']
-                    }
-                    validated_cases.append(validated_case)
-            
-            return validated_cases
-            
-        except Exception as e:
-            logging.error(f"Erro ao processar com IA: {str(e)}")
-            raise ValueError(f"Erro ao processar arquivo com IA: {str(e)}")

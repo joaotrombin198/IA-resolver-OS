@@ -4,7 +4,7 @@
 
 OS Assistant is a machine learning-powered technical support system designed to help technicians diagnose and resolve work order issues across multiple systems. The application serves as a "digital mentor" that analyzes problem descriptions and suggests solutions based on historical cases and proprietary ML models.
 
-The system focuses on multi-system support (particularly Brazilian hospital management systems like Tasy, SGU, SGU Card, and Autorizador) and uses custom machine learning algorithms to continuously improve its recommendations through user feedback and case history. It operates independently of original systems and external AI APIs, learning from exported data, reports, or manually entered information using its own ML engine. The system includes workflow for escalating complex cases to Nexdow when internal resolution is not possible.
+The system focuses on multi-system support (particularly Brazilian hospital management systems like Tasy, SGU, SGU Card, and Autorizador) and uses custom machine learning algorithms to continuously improve its recommendations through user feedback and case history. It operates as a completely internal system with NO external AI dependencies, learning from exported data, reports, or manually entered information using its own ML engine. The system includes workflow for escalating complex cases to Nexdow when internal resolution is not possible.
 
 ## User Preferences
 
@@ -13,8 +13,10 @@ Interface language: Portuguese (complete system translation implemented)
 Specific systems supported: Tasy, SGU, SGU Card, Autorizador (Brazilian hospital systems)
 Escalation workflow: Include Nexdow escalation options when internal resolution fails
 Case management: Full CRUD operations (Create, Read, Update, Delete) for case management
-Upload functionality: Excel/CSV/PDF import for bulk case addition
+Upload functionality: Excel/CSV/PDF import for bulk case addition (structured format only)
 Tutorial system: Complete documentation and usage guide integrated
+Security requirement: NO external AI connections - system must be 100% internal
+Search integration: Integrated search within cases panel (no separate search box)
 
 ## System Architecture
 
@@ -77,10 +79,11 @@ The application stores state in Flask's application config, making it easy to tr
 
 ## External Dependencies
 
-### AI/ML Services
+### AI/ML Services (100% Internal)
 - **Scikit-learn**: Complete ML pipeline including TF-IDF vectorization, classification models (SVM, Naive Bayes), and similarity calculations
 - **Custom ML Service**: Proprietary machine learning algorithms for system type detection and solution pattern matching
 - **Model Persistence**: Pickle-based model storage for training persistence and performance optimization
+- **No External AI**: System operates completely offline without OpenAI or any external AI service dependencies
 
 ### Frontend Libraries
 - **Bootstrap**: Responsive UI framework with dark theme support

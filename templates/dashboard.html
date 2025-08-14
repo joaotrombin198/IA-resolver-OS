@@ -110,42 +110,7 @@
         </div>
     </div>
 
-    <!-- Search and Filters -->
-    <div class="col-md-8 mb-4">
-        <div class="card">
-            <div class="card-header d-flex align-items-center">
-                <i data-feather="search" class="me-2"></i>
-                <h5 class="mb-0">Buscar Casos</h5>
-            </div>
-            <div class="card-body">
-                <form action="{{ url_for('list_cases') }}" method="GET" class="row g-3">
-                    <div class="col-md-8">
-                        <input type="text" 
-                               class="form-control" 
-                               name="search" 
-                               placeholder="Buscar em descrições de problemas e soluções..." 
-                               value="{{ search_query or '' }}">
-                    </div>
-                    <div class="col-md-2">
-                        <select class="form-select" name="system">
-                            <option value="">Todos os Sistemas</option>
-                            {% for system in systems or [] %}
-                            <option value="{{ system }}" {% if system == system_filter %}selected{% endif %}>
-                                {{ system }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i data-feather="search" class="me-1"></i>
-                            Buscar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+
 </div>
 
 <!-- Cases List -->
