@@ -240,7 +240,7 @@ class CaseService:
             return []
     
     def search_cases(self, query: str, system_filter: str = "") -> List[Case]:
-        """Enhanced semantic search for cases with multilingual support"""
+        """Enhanced semantic search with aggressive accent normalization and fuzzy matching"""
         try:
             cases = self.get_all_cases()
             
@@ -254,22 +254,35 @@ class CaseService:
             filtered_cases = []
             
             if query:
-                # Preprocess query for semantic matching
+                # Advanced query preprocessing
                 query_normalized = ml_service._preprocess_text(query)
                 query_tokens = set(ml_service._semantic_tokenizer(query_normalized))
                 
-                # Expand query with semantic equivalents
+                # Create expanded search terms with variations
                 expanded_query_tokens = query_tokens.copy()
                 for token in query_tokens:
                     if token in ml_service.semantic_equivalents:
-                        expanded_query_tokens.update(ml_service.semantic_equivalents[token][:3])
+                        expanded_query_tokens.update(ml_service.semantic_equivalents[token][:5])
+                    
+                    # Add common variations for Portuguese
+                    if len(token) > 3:
+                        # Add plural/singular variations
+                        if token.endswith('s'):
+                            expanded_query_tokens.add(token[:-1])  # Remove 's'
+                        else:
+                            expanded_query_tokens.add(token + 's')  # Add 's'
+                        
+                        # Add verb variations
+                        if token.endswith('ar'):
+                            expanded_query_tokens.add(token[:-2] + 'ou')  # -ar to -ou
+                            expanded_query_tokens.add(token[:-2] + 'ando')  # -ar to -ando
                 
                 for case in cases:
                     # Apply system filter first
                     if system_filter and case.system_type.lower() != system_filter.lower():
                         continue
                     
-                    # Enhanced semantic matching
+                    # Enhanced semantic matching with fuzzy logic
                     case_description_norm = ml_service._preprocess_text(case.problem_description)
                     case_solution_norm = ml_service._preprocess_text(case.solution)
                     
@@ -277,26 +290,36 @@ class CaseService:
                     case_sol_tokens = set(ml_service._semantic_tokenizer(case_solution_norm))
                     case_all_tokens = case_desc_tokens.union(case_sol_tokens)
                     
-                    # Calculate match score
+                    # Calculate enhanced match score
                     match_score = 0.0
                     
                     # Direct token matches (highest weight)
                     direct_matches = len(query_tokens.intersection(case_all_tokens))
-                    match_score += direct_matches * 3.0
+                    match_score += direct_matches * 5.0
                     
-                    # Semantic equivalent matches (medium weight)
+                    # Semantic equivalent matches (high weight)
                     semantic_matches = len(expanded_query_tokens.intersection(case_all_tokens))
-                    match_score += semantic_matches * 1.5
+                    match_score += semantic_matches * 2.0
                     
-                    # Partial string matches (lower weight)
-                    for token in query_tokens:
-                        if len(token) > 3:  # Only check longer tokens
+                    # Fuzzy substring matching (medium weight)
+                    for query_token in query_tokens:
+                        if len(query_token) > 3:
                             for case_token in case_all_tokens:
-                                if token in case_token or case_token in token:
-                                    match_score += 0.5
+                                if len(case_token) > 3:
+                                    # Check if tokens are similar (levenshtein-like)
+                                    if (query_token in case_token or case_token in query_token or
+                                        self._tokens_similar(query_token, case_token)):
+                                        match_score += 1.0
                     
-                    # Include case if there's any meaningful match
-                    if match_score > 1.0:
+                    # Raw text substring matching (lower weight but important for phrases)
+                    query_parts = query_normalized.split()
+                    case_full_text = (case_description_norm + ' ' + case_solution_norm).lower()
+                    for part in query_parts:
+                        if len(part) > 2 and part in case_full_text:
+                            match_score += 0.8
+                    
+                    # Include case if there's any meaningful match (lowered threshold)
+                    if match_score > 0.5:
                         filtered_cases.append((case, match_score))
                 
                 # Sort by match score (highest first)
@@ -316,6 +339,24 @@ class CaseService:
             logging.error(f"Error in enhanced search: {str(e)}")
             # Fallback to simple search
             return self._simple_search_fallback(query, system_filter, cases)
+    
+    def _tokens_similar(self, token1: str, token2: str) -> bool:
+        """Check if two tokens are similar using simple fuzzy logic"""
+        if len(token1) < 3 or len(token2) < 3:
+            return False
+        
+        # Check if one token is contained in another with some flexibility
+        longer = max(token1, token2, key=len)
+        shorter = min(token1, token2, key=len)
+        
+        if len(shorter) / len(longer) < 0.6:  # Too different in length
+            return False
+        
+        # Simple similarity check
+        common_chars = sum(1 for i, char in enumerate(shorter) 
+                          if i < len(longer) and char == longer[i])
+        
+        return common_chars / len(shorter) > 0.7
     
     def _simple_search_fallback(self, query: str, system_filter: str, cases: List[Case]) -> List[Case]:
         """Fallback simple search if enhanced search fails"""

@@ -44,12 +44,15 @@ class MLService:
         
         # Enhanced semantic equivalents for better matching
         self.semantic_equivalents = {
-            # Password related terms
-            'senha': ['password', 'pass', 'pwd', 'login', 'credencial', 'acesso', 'autenticacao'],
-            'password': ['senha', 'pass', 'pwd', 'login', 'credencial', 'acesso', 'autenticacao'],
-            'recuperar': ['recover', 'reset', 'resetar', 'restaurar', 'redefinir'],
-            'expirada': ['expired', 'vencida', 'bloqueada', 'blocked', 'invalid', 'invalida'],
+            # Password related terms - expanded
+            'senha': ['password', 'pass', 'pwd', 'login', 'credencial', 'acesso', 'autenticacao', 'logon', 'autenticar'],
+            'password': ['senha', 'pass', 'pwd', 'login', 'credencial', 'acesso', 'autenticacao', 'logon', 'autenticar'],
+            'recuperar': ['recover', 'reset', 'resetar', 'restaurar', 'redefinir', 'resgatar', 'recuperacao'],
+            'esqueci': ['forgot', 'perdeu', 'perdi', 'esqueceu', 'nao lembro', 'nao sei'],
+            'expirada': ['expired', 'vencida', 'bloqueada', 'blocked', 'invalid', 'invalida', 'venceu'],
             'expiry': ['expiracao', 'vencimento', 'validade'],
+            'bloqueado': ['blocked', 'travado', 'locked', 'impedido', 'restrito'],
+            'acesso': ['access', 'login', 'entrada', 'logon', 'conectar', 'acessar'],
             
             # Network terms
             'rede': ['network', 'net', 'conectividade', 'conexao', 'connection'],
@@ -165,16 +168,36 @@ class MLService:
         )
     
     def _preprocess_text(self, text: str) -> str:
-        """Enhanced text preprocessing with normalization"""
+        """Enhanced text preprocessing with aggressive normalization"""
         if not text:
             return ""
         
         # Convert to lowercase
         text = text.lower()
         
-        # Remove accents and normalize unicode
+        # Remove accents and normalize unicode more aggressively
         text = unicodedata.normalize('NFD', text)
         text = ''.join(char for char in text if unicodedata.category(char) != 'Mn')
+        
+        # Enhanced accent handling - specific Portuguese replacements
+        accent_map = {
+            'à': 'a', 'á': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a',
+            'è': 'e', 'é': 'e', 'ê': 'e', 'ë': 'e',
+            'ì': 'i', 'í': 'i', 'î': 'i', 'ï': 'i',
+            'ò': 'o', 'ó': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o',
+            'ù': 'u', 'ú': 'u', 'û': 'u', 'ü': 'u',
+            'ç': 'c', 'ñ': 'n'
+        }
+        for accented, plain in accent_map.items():
+            text = text.replace(accented, plain)
+        
+        # Normalize common contractions and abbreviations
+        contractions = {
+            'nao': 'não', 'pq': 'porque', 'vc': 'voce', 'tb': 'tambem',
+            'q': 'que', 'eh': 'e', 'soh': 'so', 'td': 'tudo'
+        }
+        for short, full in contractions.items():
+            text = text.replace(short, full)
         
         # Remove punctuation but keep meaningful characters
         text = re.sub(r'[^\w\s-]', ' ', text)
@@ -302,43 +325,134 @@ class MLService:
         return "Unknown"
     
     def _generate_solutions(self, problem_description: str, system_type: str) -> List[str]:
-        """Generate solution suggestions based on problem patterns"""
-        problem_lower = problem_description.lower()
+        """Generate diverse solution suggestions based on enhanced problem analysis"""
+        problem_normalized = self._preprocess_text(problem_description)
+        problem_tokens = set(self._semantic_tokenizer(problem_normalized))
         suggestions = []
         
-        # Pattern-based solution generation
-        if any(word in problem_lower for word in ['nao', 'não', 'erro', 'falha', 'problem']):
-            if any(word in problem_lower for word in ['conectar', 'conexao', 'rede', 'network']):
-                suggestions.extend(self.solution_patterns['network'])
-            
-            if any(word in problem_lower for word in ['banco', 'database', 'sql']):
-                suggestions.extend(self.solution_patterns['database'])
-            
-            if any(word in problem_lower for word in ['memoria', 'memory', 'ram', 'lento', 'slow']):
-                suggestions.extend(self.solution_patterns['memory'])
-            
-            if any(word in problem_lower for word in ['disco', 'disk', 'espaco', 'space']):
-                suggestions.extend(self.solution_patterns['disk'])
-            
-            if any(word in problem_lower for word in ['permiss', 'acesso', 'login', 'auth']):
-                suggestions.extend(self.solution_patterns['permissions'])
+        # Enhanced pattern-based solution generation with more variety
         
-        # If no specific patterns matched, add generic restart solution
-        if not suggestions:
-            suggestions.extend(self.solution_patterns['restart'])
+        # Password/Authentication issues
+        if any(token in problem_tokens for token in ['senha', 'password', 'login', 'acesso', 'autenticacao', 'esqueci']):
+            auth_solutions = [
+                "Verificar se o usuário está digitando a senha corretamente",
+                "Resetar senha do usuário no sistema administrativo",
+                "Verificar se a conta não está bloqueada por tentativas",
+                "Checar configurações de política de senhas",
+                "Validar sincronização com Active Directory se aplicável"
+            ]
+            suggestions.extend(auth_solutions[:3])  # Add variety by taking different amounts
         
-        # Add system-specific solutions
-        system_specific = self._get_system_specific_solutions(system_type, problem_description)
+        # Network/Connection issues
+        if any(token in problem_tokens for token in ['conectar', 'conexao', 'rede', 'network', 'internet']):
+            network_solutions = [
+                "Testar conectividade com ping para o servidor",
+                "Verificar configurações de proxy e firewall",
+                "Reiniciar adaptador de rede no computador",
+                "Checar cabos de rede e switches",
+                "Verificar configurações DNS e DHCP",
+                "Testar conectividade em outro computador"
+            ]
+            suggestions.extend(network_solutions[:2])  # Take fewer to keep variety
+        
+        # Database/Performance issues
+        if any(token in problem_tokens for token in ['banco', 'database', 'sql', 'lento', 'slow', 'performance']):
+            db_solutions = [
+                "Verificar logs de erro do banco de dados",
+                "Analisar queries lentas em execução",
+                "Checar espaço disponível no servidor",
+                "Reiniciar serviços do banco de dados",
+                "Verificar índices e estatísticas do banco",
+                "Monitorar uso de CPU e memória do servidor"
+            ]
+            suggestions.extend(db_solutions[:2])
+        
+        # System/Application errors
+        if any(token in problem_tokens for token in ['erro', 'error', 'falha', 'exception', 'crash']):
+            error_solutions = [
+                "Consultar logs de aplicação para detalhes do erro",
+                "Verificar se problema é reproduzível",
+                "Checar atualizações pendentes do sistema",
+                "Validar integridade dos arquivos de sistema",
+                "Reiniciar serviços relacionados ao problema"
+            ]
+            suggestions.extend(error_solutions[:2])
+        
+        # Hardware/Infrastructure issues  
+        if any(token in problem_tokens for token in ['hardware', 'impressora', 'printer', 'computador', 'pc']):
+            hardware_solutions = [
+                "Verificar conexões físicas dos equipamentos",
+                "Testar em outro computador para isolar problema",
+                "Verificar drivers de dispositivos",
+                "Checar logs de eventos do Windows",
+                "Reiniciar equipamentos envolvidos"
+            ]
+            suggestions.extend(hardware_solutions[:2])
+        
+        # Add system-specific solutions for variety
+        system_specific = self._get_diversified_system_solutions(system_type, problem_tokens)
         suggestions.extend(system_specific)
         
-        # Remove duplicates and limit to 5 suggestions
-        unique_suggestions = list(dict.fromkeys(suggestions))[:5]
+        # If no specific patterns matched, add contextual generic solutions
+        if not suggestions:
+            generic_solutions = [
+                "Verificar logs do sistema para identificar causa raiz",
+                "Reproduzir problema com usuário de teste",
+                "Documentar passos exatos que levaram ao problema",
+                "Checar se problema afeta outros usuários",
+                "Verificar últimas alterações no sistema"
+            ]
+            suggestions.extend(generic_solutions[:3])
         
-        return unique_suggestions if unique_suggestions else [
-            "Verificar logs do sistema para mais detalhes",
-            "Contactar suporte técnico se o problema persistir",
-            "Documentar os passos que levaram ao problema"
+        # Ensure variety by shuffling and limiting
+        import random
+        unique_suggestions = list(dict.fromkeys(suggestions))
+        if len(unique_suggestions) > 5:
+            # Keep some determinism but add variety
+            priority_suggestions = unique_suggestions[:3]  # Keep top 3
+            random_suggestions = random.sample(unique_suggestions[3:], min(2, len(unique_suggestions)-3))
+            unique_suggestions = priority_suggestions + random_suggestions
+        
+        return unique_suggestions[:5] if unique_suggestions else [
+            "Analisar logs detalhados do sistema",
+            "Contatar suporte especializado",
+            "Documentar cenário completo do problema"
         ]
+    
+    def _get_diversified_system_solutions(self, system_type: str, problem_tokens: set) -> List[str]:
+        """Get diversified system-specific solutions based on context"""
+        solutions = []
+        
+        if system_type == "Tasy":
+            if 'login' in problem_tokens or 'senha' in problem_tokens:
+                solutions.append("Verificar usuário no cadastro de funcionários do Tasy")
+            elif 'impressao' in problem_tokens or 'relatorio' in problem_tokens:
+                solutions.append("Checar configuração de impressoras no Tasy")
+            elif 'lento' in problem_tokens or 'performance' in problem_tokens:
+                solutions.append("Verificar performance de queries no banco Tasy")
+            else:
+                solutions.append("Consultar logs específicos do módulo Tasy afetado")
+        
+        elif system_type == "SGU":
+            if 'autorizacao' in problem_tokens:
+                solutions.append("Verificar regras de autorização no SGU")
+            elif 'relatorio' in problem_tokens:
+                solutions.append("Checar permissões de relatórios no SGU")
+            else:
+                solutions.append("Validar configurações de módulos SGU")
+        
+        elif system_type == "Autorizador":
+            if 'guia' in problem_tokens or 'procedimento' in problem_tokens:
+                solutions.append("Verificar fila de processamento de guias")
+            elif 'operadora' in problem_tokens:
+                solutions.append("Checar conectividade com webservices das operadoras")
+            else:
+                solutions.append("Analisar logs de autorização em tempo real")
+        
+        # Add escalation path
+        solutions.append("Considerar abertura de chamado Nexdow se necessário")
+        
+        return solutions[:2]  # Limit to 2 for variety
     
     def _get_system_specific_solutions(self, system_type: str, problem_description: str) -> List[str]:
         """Get system-specific solution suggestions"""
