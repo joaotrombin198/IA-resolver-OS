@@ -25,7 +25,7 @@
                                 <p class="small mb-1" style="font-size: 0.8rem;">
                                     {{ case.problem_description[:80] }}{% if case.problem_description|length > 80 %}...{% endif %}
                                 </p>
-                                <a href="{{ url_for('case_detail', case_id=case.id) }}" class="btn btn-outline-primary btn-sm">
+                                <a href="{{ url_for('view_case', case_id=case.id) }}" class="btn btn-outline-primary btn-sm">
                                     <i data-feather="eye" style="width: 12px; height: 12px;"></i>
                                     Ver
                                 </a>
@@ -170,7 +170,7 @@ Exemplos:
                         <p class="text-muted mb-2"><strong>Problema:</strong> {{ case.problem_description[:200] }}...</p>
                         <p class="mb-0"><strong>Solução:</strong> {{ case.solution[:200] }}...</p>
                         <div class="mt-2">
-                            <a href="{{ url_for('case_detail', case_id=case.id) }}" class="btn btn-sm btn-outline-primary">
+                            <a href="{{ url_for('view_case', case_id=case.id) }}" class="btn btn-sm btn-outline-primary">
                                 <i data-feather="external-link" class="me-1"></i>
                                 Ver Detalhes
                             </a>
