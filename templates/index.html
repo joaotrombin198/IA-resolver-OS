@@ -5,43 +5,7 @@
 {% block content %}
 <div class="row">
     <div class="col-lg-8 mx-auto">
-        <!-- Recent Cases Quick View -->
-        {% if recent_cases %}
-        <div class="card mb-4">
-            <div class="card-header d-flex align-items-center">
-                <i data-feather="clock" class="me-2"></i>
-                <h6 class="mb-0">Casos Recentes para Referência</h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    {% for case in recent_cases[:3] %}
-                    <div class="col-md-4 mb-2">
-                        <div class="card border-0 bg-light">
-                            <div class="card-body p-2">
-                                <div class="d-flex align-items-center mb-1">
-                                    <span class="badge bg-info me-2">{{ case.system_type }}</span>
-                                    <small class="text-muted">#{{ case.id }}</small>
-                                </div>
-                                <p class="small mb-1" style="font-size: 0.8rem;">
-                                    {{ case.problem_description[:80] }}{% if case.problem_description|length > 80 %}...{% endif %}
-                                </p>
-                                <a href="{{ url_for('view_case', case_id=case.id) }}" class="btn btn-outline-primary btn-sm">
-                                    <i data-feather="eye" style="width: 12px; height: 12px;"></i>
-                                    Ver
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="text-center mt-2">
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary btn-sm">
-                        Ver Todos os Casos
-                    </a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
+
 
         <!-- Problem Input Section -->
         <div class="card mb-4">
