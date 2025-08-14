@@ -160,40 +160,77 @@ class CaseService:
             return []
     
     def find_similar_cases(self, problem_description: str, limit: int = 5) -> List[Case]:
-        """Find cases similar to the given problem description"""
+        """Find cases similar to the given problem description using enhanced semantic matching"""
         try:
             cases = self.get_all_cases()
             
             if not cases:
                 return []
             
-            # Prepare text corpus
+            # Use ML service for enhanced semantic similarity
+            from ml_service import MLService
+            ml_service = MLService()
+            
+            # Prepare text corpus with semantic preprocessing
             case_descriptions = [case.problem_description for case in cases]
             all_descriptions = case_descriptions + [problem_description]
             
-            # Fit or refit vectorizer if needed
-            if not self._fitted or len(case_descriptions) > 0:
+            # Use semantic vectorizer for better matching
+            try:
+                semantic_matrix = ml_service.semantic_vectorizer.fit_transform(all_descriptions)
+                self._fitted = True
+            except Exception as e:
+                logging.error(f"Error with semantic vectorizer: {str(e)}")
+                # Fallback to standard vectorizer
                 try:
-                    tfidf_matrix = self.vectorizer.fit_transform(all_descriptions)
+                    semantic_matrix = self.vectorizer.fit_transform(all_descriptions)
                     self._fitted = True
-                except Exception as e:
-                    logging.error(f"Error fitting vectorizer: {str(e)}")
+                except Exception as e2:
+                    logging.error(f"Error fitting fallback vectorizer: {str(e2)}")
                     return []
-            else:
-                return []
             
-            # Calculate similarities
-            query_vector = tfidf_matrix[-1]  # Last item is the query
-            case_vectors = tfidf_matrix[:-1]  # All except the last
+            # Calculate semantic similarities
+            query_vector = semantic_matrix[-1]  # Last item is the query
+            case_vectors = semantic_matrix[:-1]  # All except the last
             
             similarities = cosine_similarity(query_vector, case_vectors).flatten()
             
-            # Get top similar cases
-            similar_indices = np.argsort(similarities)[::-1][:limit]
-            similar_cases = []
+            # Enhanced similarity scoring with semantic boost
+            enhanced_similarities = []
+            query_normalized = ml_service._preprocess_text(problem_description)
+            query_tokens = set(ml_service._semantic_tokenizer(query_normalized))
             
-            for idx in similar_indices:
-                if similarities[idx] > 0.1:  # Minimum similarity threshold
+            for idx, case in enumerate(cases):
+                base_similarity = similarities[idx]
+                
+                # Calculate semantic boost
+                case_normalized = ml_service._preprocess_text(case.problem_description)
+                case_tokens = set(ml_service._semantic_tokenizer(case_normalized))
+                
+                # Boost for semantic equivalents
+                semantic_boost = 0.0
+                for token in query_tokens:
+                    if token in ml_service.semantic_equivalents:
+                        for equiv in ml_service.semantic_equivalents[token]:
+                            if equiv in case_tokens:
+                                semantic_boost += 0.1
+                
+                # Boost for system type match
+                system_boost = 0.0
+                detected_system = ml_service._detect_system_type(problem_description)
+                if detected_system == case.system_type:
+                    system_boost = 0.2
+                
+                enhanced_similarity = base_similarity + semantic_boost + system_boost
+                enhanced_similarities.append((idx, enhanced_similarity))
+            
+            # Sort by enhanced similarity
+            enhanced_similarities.sort(key=lambda x: x[1], reverse=True)
+            
+            # Get top similar cases with minimum threshold
+            similar_cases = []
+            for idx, similarity in enhanced_similarities[:limit]:
+                if similarity > 0.05:  # Lower threshold due to enhanced scoring
                     similar_cases.append(cases[idx])
             
             return similar_cases
@@ -203,34 +240,102 @@ class CaseService:
             return []
     
     def search_cases(self, query: str, system_filter: str = "") -> List[Case]:
-        """Search cases by query and optional system filter"""
+        """Enhanced semantic search for cases with multilingual support"""
         try:
             cases = self.get_all_cases()
             
             if not query and not system_filter:
                 return cases
             
+            # Use ML service for enhanced search
+            from ml_service import MLService
+            ml_service = MLService()
+            
             filtered_cases = []
             
-            for case in cases:
-                # Apply system filter
-                if system_filter and case.system_type.lower() != system_filter.lower():
-                    continue
+            if query:
+                # Preprocess query for semantic matching
+                query_normalized = ml_service._preprocess_text(query)
+                query_tokens = set(ml_service._semantic_tokenizer(query_normalized))
                 
-                # Apply text search
-                if query:
-                    query_lower = query.lower()
-                    if (query_lower in case.problem_description.lower() or 
-                        query_lower in case.solution.lower()):
-                        filtered_cases.append(case)
-                else:
+                # Expand query with semantic equivalents
+                expanded_query_tokens = query_tokens.copy()
+                for token in query_tokens:
+                    if token in ml_service.semantic_equivalents:
+                        expanded_query_tokens.update(ml_service.semantic_equivalents[token][:3])
+                
+                for case in cases:
+                    # Apply system filter first
+                    if system_filter and case.system_type.lower() != system_filter.lower():
+                        continue
+                    
+                    # Enhanced semantic matching
+                    case_description_norm = ml_service._preprocess_text(case.problem_description)
+                    case_solution_norm = ml_service._preprocess_text(case.solution)
+                    
+                    case_desc_tokens = set(ml_service._semantic_tokenizer(case_description_norm))
+                    case_sol_tokens = set(ml_service._semantic_tokenizer(case_solution_norm))
+                    case_all_tokens = case_desc_tokens.union(case_sol_tokens)
+                    
+                    # Calculate match score
+                    match_score = 0.0
+                    
+                    # Direct token matches (highest weight)
+                    direct_matches = len(query_tokens.intersection(case_all_tokens))
+                    match_score += direct_matches * 3.0
+                    
+                    # Semantic equivalent matches (medium weight)
+                    semantic_matches = len(expanded_query_tokens.intersection(case_all_tokens))
+                    match_score += semantic_matches * 1.5
+                    
+                    # Partial string matches (lower weight)
+                    for token in query_tokens:
+                        if len(token) > 3:  # Only check longer tokens
+                            for case_token in case_all_tokens:
+                                if token in case_token or case_token in token:
+                                    match_score += 0.5
+                    
+                    # Include case if there's any meaningful match
+                    if match_score > 1.0:
+                        filtered_cases.append((case, match_score))
+                
+                # Sort by match score (highest first)
+                filtered_cases.sort(key=lambda x: x[1], reverse=True)
+                filtered_cases = [case for case, score in filtered_cases]
+                
+            else:
+                # Only system filter, no text query
+                for case in cases:
+                    if system_filter and case.system_type.lower() != system_filter.lower():
+                        continue
                     filtered_cases.append(case)
             
             return filtered_cases
             
         except Exception as e:
-            logging.error(f"Error searching cases: {str(e)}")
-            return []
+            logging.error(f"Error in enhanced search: {str(e)}")
+            # Fallback to simple search
+            return self._simple_search_fallback(query, system_filter, cases)
+    
+    def _simple_search_fallback(self, query: str, system_filter: str, cases: List[Case]) -> List[Case]:
+        """Fallback simple search if enhanced search fails"""
+        filtered_cases = []
+        
+        for case in cases:
+            # Apply system filter
+            if system_filter and case.system_type.lower() != system_filter.lower():
+                continue
+            
+            # Apply text search
+            if query:
+                query_lower = query.lower()
+                if (query_lower in case.problem_description.lower() or 
+                    query_lower in case.solution.lower()):
+                    filtered_cases.append(case)
+            else:
+                filtered_cases.append(case)
+        
+        return filtered_cases
     
     def get_recent_cases(self, limit: int = 10) -> List[Case]:
         """Get most recently added cases"""

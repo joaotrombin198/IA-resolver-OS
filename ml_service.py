@@ -2,6 +2,7 @@ import os
 import pickle
 import logging
 import re
+import unicodedata
 import numpy as np
 from typing import List, Dict, Tuple, Optional
 from datetime import datetime
@@ -19,26 +20,105 @@ class MLService:
     def __init__(self):
         self.system_classifier = None
         self.solution_generator = None
-        self.vectorizer = TfidfVectorizer(
-            stop_words='english', 
-            max_features=1000,
-            ngram_range=(1, 2),
-            min_df=1
-        )
+        
+        # Initialize vectorizers without custom methods first
+        self.vectorizer = None
+        self.semantic_vectorizer = None
+        
         self.label_encoder = LabelEncoder()
         self.is_trained = False
         
-        # Pre-defined system types and their keywords
+        # Multilingual stop words
+        self.stop_words = {
+            'portuguese': {'o', 'a', 'os', 'as', 'um', 'uma', 'uns', 'umas', 'de', 'do', 'da', 'dos', 'das', 
+                          'em', 'no', 'na', 'nos', 'nas', 'por', 'para', 'com', 'sem', 'sob', 'sobre',
+                          'e', 'ou', 'mas', 'que', 'se', 'quando', 'onde', 'como', 'porque', 'pois',
+                          'ser', 'estar', 'ter', 'haver', 'fazer', 'ir', 'vir', 'dar', 'ver', 'dizer',
+                          'muito', 'mais', 'menos', 'bem', 'mal', 'só', 'também', 'já', 'ainda', 'sempre'},
+            'english': {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
+                       'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after',
+                       'above', 'below', 'between', 'among', 'this', 'that', 'these', 'those',
+                       'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had',
+                       'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must'}
+        }
+        
+        # Enhanced semantic equivalents for better matching
+        self.semantic_equivalents = {
+            # Password related terms
+            'senha': ['password', 'pass', 'pwd', 'login', 'credencial', 'acesso', 'autenticacao'],
+            'password': ['senha', 'pass', 'pwd', 'login', 'credencial', 'acesso', 'autenticacao'],
+            'recuperar': ['recover', 'reset', 'resetar', 'restaurar', 'redefinir'],
+            'expirada': ['expired', 'vencida', 'bloqueada', 'blocked', 'invalid', 'invalida'],
+            'expiry': ['expiracao', 'vencimento', 'validade'],
+            
+            # Network terms
+            'rede': ['network', 'net', 'conectividade', 'conexao', 'connection'],
+            'network': ['rede', 'net', 'conectividade', 'conexao', 'connection'],
+            'internet': ['web', 'online', 'conectividade'],
+            'wifi': ['wireless', 'sem fio', 'wi-fi'],
+            
+            # System terms
+            'sistema': ['system', 'aplicacao', 'application', 'app', 'software'],
+            'system': ['sistema', 'aplicacao', 'application', 'app', 'software'],
+            'erro': ['error', 'falha', 'failure', 'problema', 'problem', 'issue'],
+            'error': ['erro', 'falha', 'failure', 'problema', 'problem', 'issue'],
+            'lento': ['slow', 'devagar', 'performance', 'lag', 'delay'],
+            'slow': ['lento', 'devagar', 'performance', 'lag', 'delay'],
+            
+            # Actions
+            'reiniciar': ['restart', 'reboot', 'reset', 'resetar'],
+            'restart': ['reiniciar', 'reboot', 'reset', 'resetar'],
+            'instalar': ['install', 'setup', 'configurar', 'configure'],
+            'install': ['instalar', 'setup', 'configurar', 'configure'],
+            'atualizar': ['update', 'upgrade', 'refresh', 'sync'],
+            'update': ['atualizar', 'upgrade', 'refresh', 'sync'],
+            
+            # Medical/Hospital terms
+            'paciente': ['patient', 'cliente', 'user', 'usuario'],
+            'medico': ['doctor', 'physician', 'clinician'],
+            'consulta': ['appointment', 'visit', 'session'],
+            'exame': ['exam', 'test', 'procedure', 'procedimento'],
+            'prontuario': ['record', 'chart', 'file', 'history']
+        }
+        
+        # Enhanced system keywords with semantic variations
         self.system_keywords = {
-            'Tasy': ['tasy', 'hospitalar', 'hospital', 'prontuario', 'paciente', 'atendimento', 'medico'],
-            'SGU': ['sgu', 'sistema de gestao', 'gestao hospitalar', 'modulo sgu'],
-            'SGU Card': ['sgu card', 'cartao', 'card', 'credenciamento', 'carteirinha'],
-            'Autorizador': ['autorizador', 'autorizacao', 'autorizar', 'procedimento', 'guia'],
-            'Healthcare': ['saude', 'health', 'emr', 'ehr', 'clinico', 'diagnostico', 'exame'],
-            'Administrative': ['administrativo', 'admin', 'rh', 'financeiro', 'contabil', 'gestao'],
-            'Network': ['rede', 'network', 'router', 'switch', 'firewall', 'ip', 'dns', 'dhcp'],
-            'Database': ['banco', 'database', 'sql', 'mysql', 'postgres', 'oracle', 'mongodb'],
-            'Application Server': ['servidor', 'server', 'apache', 'nginx', 'tomcat', 'iis', 'aplicacao']
+            'Tasy': ['tasy', 'hospitalar', 'hospital', 'prontuario', 'paciente', 'atendimento', 'medico',
+                    'record', 'patient', 'medical', 'clinical', 'clinico', 'internacao', 'alta',
+                    'prescricao', 'prescription', 'medication', 'medicamento'],
+            'SGU': ['sgu', 'sistema gestao', 'gestao hospitalar', 'modulo sgu', 'management system',
+                   'hospital management', 'sgu suite', 'suite sgu', 'gestao', 'management'],
+            'SGU Card': ['sgu card', 'cartao', 'card', 'credenciamento', 'carteirinha', 'credential',
+                        'badge', 'identification', 'id card', 'access card', 'cartao acesso'],
+            'Autorizador': ['autorizador', 'autorizacao', 'autorizar', 'procedimento', 'guia',
+                           'authorization', 'authorize', 'procedure', 'guide', 'approval',
+                           'aprovacao', 'liberacao', 'release'],
+            'AutSC': ['autsc', 'aut sc', 'autorizador sc', 'santa catarina', 'sc authorization'],
+            'Contábil': ['contabil', 'accounting', 'financeiro', 'financial', 'contabilidade',
+                        'fiscal', 'tax', 'imposto', 'lancamento', 'entry'],
+            'ERP': ['erp', 'enterprise resource', 'gestao empresarial', 'business management',
+                   'sistema integrado', 'integrated system'],
+            'Exchange Online': ['exchange', 'email', 'outlook', 'mail', 'correio', 'office365',
+                               'o365', 'microsoft exchange', 'webmail'],
+            'Hardware': ['hardware', 'computador', 'computer', 'pc', 'notebook', 'laptop',
+                        'impressora', 'printer', 'monitor', 'teclado', 'keyboard', 'mouse'],
+            'Portal Interno': ['portal interno', 'internal portal', 'intranet', 'portal corporativo',
+                              'corporate portal', 'employee portal', 'funcionario'],
+            'Rede SMB': ['rede smb', 'smb network', 'file sharing', 'compartilhamento arquivo',
+                        'shared folder', 'pasta compartilhada', 'network drive'],
+            'SGUSuite': ['sgu suite', 'sgusuite', 'suite sgu', 'sgu sistema completo'],
+            'VPN FortiClient': ['vpn', 'forticlient', 'forti client', 'remote access', 'acesso remoto',
+                               'conexao remota', 'remote connection', 'trabalho remoto'],
+            'Healthcare': ['saude', 'health', 'emr', 'ehr', 'clinico', 'diagnostico', 'exame',
+                          'clinical', 'diagnosis', 'exam', 'teste', 'laboratorio', 'lab'],
+            'Administrative': ['administrativo', 'admin', 'rh', 'financeiro', 'contabil', 'gestao',
+                              'human resources', 'hr', 'payroll', 'folha pagamento'],
+            'Network': ['rede', 'network', 'router', 'switch', 'firewall', 'ip', 'dns', 'dhcp',
+                       'conectividade', 'connectivity', 'internet', 'wifi', 'wireless'],
+            'Database': ['banco', 'database', 'sql', 'mysql', 'postgres', 'oracle', 'mongodb',
+                        'dados', 'data', 'base dados', 'bd', 'db'],
+            'Application Server': ['servidor', 'server', 'apache', 'nginx', 'tomcat', 'iis', 'aplicacao',
+                                  'application', 'app server', 'web server', 'servico', 'service']
         }
         
         # Common solutions patterns
@@ -51,8 +131,119 @@ class MLService:
             'disk': ['Verificar espaço em disco', 'Limpar arquivos temporários', 'Mover arquivos grandes']
         }
         
+        # Initialize vectorizers after methods are defined
+        self._initialize_vectorizers()
+        
         # Load trained models if they exist
         self._load_models()
+    
+    def _initialize_vectorizers(self):
+        """Initialize vectorizers after methods are defined"""
+        # Enhanced vectorizer with multilingual support
+        self.vectorizer = TfidfVectorizer(
+            max_features=2000,
+            ngram_range=(1, 3),  # Unigrams, bigrams, and trigrams
+            min_df=1,
+            max_df=0.95,
+            analyzer='word',
+            lowercase=True,
+            stop_words=None,  # We'll handle stop words ourselves
+            preprocessor=self._preprocess_text,
+            tokenizer=self._enhanced_tokenizer
+        )
+        
+        # Enhanced semantic vectorizer for similarity matching
+        self.semantic_vectorizer = TfidfVectorizer(
+            max_features=5000,
+            ngram_range=(1, 4),
+            min_df=1,
+            max_df=0.9,
+            analyzer='word',
+            lowercase=True,
+            preprocessor=self._semantic_preprocess,
+            tokenizer=self._semantic_tokenizer
+        )
+    
+    def _preprocess_text(self, text: str) -> str:
+        """Enhanced text preprocessing with normalization"""
+        if not text:
+            return ""
+        
+        # Convert to lowercase
+        text = text.lower()
+        
+        # Remove accents and normalize unicode
+        text = unicodedata.normalize('NFD', text)
+        text = ''.join(char for char in text if unicodedata.category(char) != 'Mn')
+        
+        # Remove punctuation but keep meaningful characters
+        text = re.sub(r'[^\w\s-]', ' ', text)
+        
+        # Normalize whitespace
+        text = re.sub(r'\s+', ' ', text).strip()
+        
+        return text
+    
+    def _enhanced_tokenizer(self, text: str) -> List[str]:
+        """Enhanced tokenizer with semantic expansion"""
+        if not text:
+            return []
+        
+        # Basic tokenization
+        tokens = text.split()
+        
+        # Filter out stop words
+        filtered_tokens = []
+        for token in tokens:
+            if token not in self.stop_words['portuguese'] and token not in self.stop_words['english']:
+                if len(token) > 1:  # Keep tokens with more than 1 character
+                    filtered_tokens.append(token)
+        
+        # Add semantic equivalents
+        expanded_tokens = filtered_tokens.copy()
+        for token in filtered_tokens:
+            if token in self.semantic_equivalents:
+                expanded_tokens.extend(self.semantic_equivalents[token][:3])  # Add top 3 equivalents
+        
+        return expanded_tokens
+    
+    def _semantic_preprocess(self, text: str) -> str:
+        """Semantic preprocessing for similarity matching"""
+        if not text:
+            return ""
+        
+        # Basic preprocessing
+        text = self._preprocess_text(text)
+        
+        # Expand with semantic equivalents
+        words = text.split()
+        expanded_words = []
+        
+        for word in words:
+            expanded_words.append(word)
+            if word in self.semantic_equivalents:
+                # Add semantic equivalents with lower weight
+                for equiv in self.semantic_equivalents[word][:2]:
+                    expanded_words.append(equiv)
+        
+        return ' '.join(expanded_words)
+    
+    def _semantic_tokenizer(self, text: str) -> List[str]:
+        """Semantic tokenizer for enhanced similarity matching"""
+        if not text:
+            return []
+        
+        tokens = text.split()
+        
+        # Remove stop words and short tokens
+        meaningful_tokens = []
+        for token in tokens:
+            if (token not in self.stop_words['portuguese'] and 
+                token not in self.stop_words['english'] and 
+                len(token) > 2):
+                meaningful_tokens.append(token)
+        
+        return meaningful_tokens
     
     def analyze_problem(self, problem_description: str) -> SolutionSuggestion:
         """Analyze problem description and provide ML-based suggestions"""
