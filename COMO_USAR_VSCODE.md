@@ -89,9 +89,10 @@ python run_local.py
 ## 🎮 COMANDOS DO VSCODE
 
 ### Executar Sistema
-- **Método 1:** `python run_local.py` no terminal
-- **Método 2:** Ctrl+Shift+P → "Tasks: Run Task" → "Executar OS Assistant"
-- **Método 3:** F5 (Debug mode)
+- **Desenvolvimento (1 usuário):** `python run_local.py`
+- **Produção (multi-usuário):** `python run_production.py`
+- **Via VSCode Tasks:** Ctrl+Shift+P → "Tasks: Run Task" → "Executar OS Assistant"
+- **Debug mode:** F5
 
 ### Comandos Úteis via Terminal
 ```bash
@@ -259,6 +260,38 @@ rm -rf ml_models/
 - **Dados:** `os_assistant.db`
 - **Config:** `.vscode/` (configurações VSCode)
 - **Modelos:** `ml_models/` (IA treinada)
+
+---
+
+## 🌐 ACESSO MULTI-USUÁRIO
+
+### Compartilhar na Rede Local
+1. **Execute:** `python run_production.py` (para múltiplos usuários)
+2. **Descubra seu IP:**
+   ```bash
+   # Windows
+   ipconfig
+   
+   # Mac/Linux  
+   ifconfig
+   ```
+3. **Compartilhe o link:** `http://SEU_IP:5000`
+4. **Exemplo:** `http://192.168.1.100:5000`
+
+### Sincronização Automática
+- ✅ **Todos acessam o mesmo banco** SQLite
+- ✅ **Casos adicionados aparecem para todos** instantaneamente
+- ✅ **Importações Excel** ficam disponíveis para toda equipe
+- ✅ **Modelos ML** retreinam automaticamente
+
+### Backup Centralizado
+```bash
+# Fazer backup do banco compartilhado
+cp os_assistant.db backup_$(date +%Y%m%d_%H%M).db
+
+# Restaurar backup
+cp backup_20250814_1030.db os_assistant.db
+```
 
 ---
 

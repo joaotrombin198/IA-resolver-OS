@@ -1,0 +1,53 @@
+PS C:\Users\joao.trombin\Downloads\IA-resolver-OS (1)\IA-resolver-OS> python run_local.py
+============================================================
+OS ASSISTANT - Sistema de Suporte Técnico Inteligente
+============================================================
+Configuração: SQLite (Banco Local)
+Porta: 5000
+URL: http://localhost:5000
+Pasta do projeto: C:\Users\joao.trombin\Downloads\IA-resolver-OS (1)\IA-resolver-OS
+============================================================
+2025-08-14 16:42:05,800 - root - INFO - Loaded trained ML models
+✅ Banco de dados SQLite inicializado com sucesso
+📁 Arquivo do banco: C:\Users\joao.trombin\Downloads\IA-resolver-OS (1)\IA-resolver-OS\os_assistant.db
+📊 Casos existentes no banco: 4
+
+🚀 Iniciando servidor Flask...
+💡 Pressione Ctrl+C para parar o servidor
+============================================================
+ * Serving Flask app 'app'
+ * Debug mode: on
+2025-08-14 16:42:07,099 - werkzeug - INFO - WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.104.82:5000
+2025-08-14 16:42:07,100 - werkzeug - INFO - Press CTRL+C to quit
+2025-08-14 16:42:07,101 - werkzeug - INFO -  * Restarting with stat
+============================================================
+OS ASSISTANT - Sistema de Suporte Técnico Inteligente
+============================================================
+Configuração: SQLite (Banco Local)
+Porta: 5000
+URL: http://localhost:5000
+Pasta do projeto: C:\Users\joao.trombin\Downloads\IA-resolver-OS (1)\IA-resolver-OS
+============================================================
+2025-08-14 16:42:08,477 - root - INFO - Loaded trained ML models
+✅ Banco de dados SQLite inicializado com sucesso
+📁 Arquivo do banco: C:\Users\joao.trombin\Downloads\IA-resolver-OS (1)\IA-resolver-OS\os_assistant.db
+📊 Casos existentes no banco: 4
+
+🚀 Iniciando servidor Flask...
+💡 Pressione Ctrl+C para parar o servidor
+============================================================
+2025-08-14 16:42:08,498 - werkzeug - WARNING -  * Debugger is active!
+2025-08-14 16:42:08,500 - werkzeug - INFO -  * Debugger PIN: 485-068-465
+2025-08-14 16:42:13,381 - werkzeug - INFO - 127.0.0.1 - - [14/Aug/2025 16:42:13] "GET / HTTP/1.1" 200 -
+2025-08-14 16:42:13,425 - werkzeug - INFO - 127.0.0.1 - - [14/Aug/2025 16:42:13] "GET /static/style.css HTTP/1.1" 200 -
+2025-08-14 16:42:13,627 - werkzeug - INFO - 127.0.0.1 - - [14/Aug/2025 16:42:13] "GET /static/script.js HTTP/1.1" 200 -
+2025-08-14 16:42:14,447 - werkzeug - INFO - 127.0.0.1 - - [14/Aug/2025 16:42:14] "GET /favicon.ico HTTP/1.1" 404 -
+2025-08-14 16:42:32,055 - werkzeug - INFO - 127.0.0.1 - - [14/Aug/2025 16:42:32] "GET /add_case HTTP/1.1" 200 -
+2025-08-14 16:42:32,354 - werkzeug - INFO - 127.0.0.1 - - [14/Aug/2025 16:42:32] "GET /static/style.css HTTP/1.1" 304 -
+2025-08-14 16:42:32,380 - werkzeug - INFO - 127.0.0.1 - - [14/Aug/2025 16:42:32] "GET /static/script.js HTTP/1.1" 304 -
+2025-08-14 16:42:39,835 - root - INFO - Processing file: C:\Users\JOAO~1.TRO\AppData\Local\Temp\tct_100_casos.xlsx with format: structured
+2025-08-14 16:42:40,016 - root - INFO - Processed 100 cases from file
+2025-08-14 16:42:40,021 - root - INFO - Added new case #5 to database
