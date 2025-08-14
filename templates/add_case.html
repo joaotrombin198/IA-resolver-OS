@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Add New Case - OS Assistant{% endblock %}
+{% block title %}Adicionar Novo Caso - Assistente OS{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -8,12 +8,12 @@
         <!-- Page Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="mb-1">Add New Case</h2>
-                <p class="text-muted mb-0">Contribute to the knowledge base by adding a resolved case</p>
+                <h2 class="mb-1">Adicionar Novo Caso</h2>
+                <p class="text-muted mb-0">Contribua para a base de conhecimento adicionando um caso resolvido</p>
             </div>
             <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
                 <i data-feather="arrow-left" class="me-1"></i>
-                Back to Dashboard
+                Voltar ao Painel
             </a>
         </div>
 
@@ -21,72 +21,77 @@
         <div class="card">
             <div class="card-header d-flex align-items-center">
                 <i data-feather="plus-circle" class="me-2"></i>
-                <h5 class="mb-0">Case Information</h5>
+                <h5 class="mb-0">Informações do Caso</h5>
             </div>
             <div class="card-body">
                 <form action="{{ url_for('add_case') }}" method="POST">
                     <div class="mb-4">
                         <label for="system_type" class="form-label">
-                            System Type <span class="text-danger">*</span>
+                            Tipo de Sistema <span class="text-danger">*</span>
                         </label>
-                        <select class="form-select" id="system_type" name="system_type" required>
-                            <option value="">Select System Type</option>
-                            <option value="Tasy">Tasy (Hospital Management)</option>
-                            <option value="Healthcare">Healthcare/EMR System</option>
-                            <option value="Administrative">Administrative System</option>
-                            <option value="Network">Network/Infrastructure</option>
-                            <option value="Database">Database System</option>
-                            <option value="Application Server">Application Server</option>
-                            <option value="Other">Other</option>
+                        <select class="form-select" id="system_type" name="system_type" required onchange="toggleCustomSystem()">
+                            <option value="">Selecione o Sistema</option>
+                            <option value="SGU 2.0">SGU 2.0</option>
+                            <option value="SGU-Card">SGU-Card</option>
+                            <option value="Autorizador">Autorizador</option>
+                            <option value="Outros">Outros</option>
                         </select>
+                        
+                        <!-- Campo para sistema customizado -->
+                        <div id="customSystemDiv" style="display: none;" class="mt-2">
+                            <label for="custom_system" class="form-label">Nome do Sistema</label>
+                            <input type="text" class="form-control" id="custom_system" 
+                                   placeholder="Digite o nome do sistema">
+                        </div>
+                        
                         <div class="form-text">
                             <i data-feather="info" class="me-1"></i>
-                            Select the system where this problem occurred
+                            Selecione o sistema onde o problema ocorreu
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label for="problem_description" class="form-label">
-                            Problem Description <span class="text-danger">*</span>
+                            Descrição do Problema <span class="text-danger">*</span>
                         </label>
                         <textarea class="form-control" 
                                 id="problem_description" 
                                 name="problem_description" 
                                 rows="6" 
-                                placeholder="Describe the technical problem in detail. Include:
-• System or module affected
-• Error messages (exact text)
-• Steps that led to the problem
-• User actions or system behavior
-• Environment details if relevant"
+                                placeholder="Descreva o problema técnico em detalhes. Inclua:
+• Sistema ou módulo afetado
+• Mensagens de erro (texto exato)
+• Passos que levaram ao problema
+• Ações do usuário ou comportamento do sistema
+• Detalhes do ambiente se relevante"
                                 required></textarea>
                         <div class="form-text">
                             <i data-feather="alert-triangle" class="me-1"></i>
-                            Be specific and include all relevant technical details. This helps with future problem matching.
+                            Seja específico e inclua todos os detalhes técnicos relevantes. Isso ajuda na correspondência futura de problemas.
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label for="solution" class="form-label">
-                            Solution <span class="text-danger">*</span>
+                            Solução <span class="text-danger">*</span>
                         </label>
                         <textarea class="form-control" 
                                 id="solution" 
                                 name="solution" 
                                 rows="8" 
-                                placeholder="Describe the complete solution step by step:
+                                placeholder="Descreva a solução completa passo a passo:
 
-1. First step taken to resolve the issue
-2. Any configuration changes made
-3. Commands executed or procedures followed
-4. Verification steps performed
-5. Any follow-up actions needed
+1. Primeiro passo realizado para resolver o problema
+2. Mudanças de configuração feitas
+3. Comandos executados ou procedimentos seguidos
+4. Passos de verificação realizados
+5. Ações de acompanhamento necessárias
 
-Include specific technical details that would help another technician reproduce the solution."
+Inclua detalhes técnicos específicos que ajudariam outro técnico a reproduzir a solução."
                                 required></textarea>
                         <div class="form-text">
                             <i data-feather="check-circle" class="me-1"></i>
-                            Provide detailed, actionable steps that successfully resolved the problem.
+                            Forneça passos detalhados e práticos que resolveram com sucesso o problema.
                         </div>
                     </div>
 
@@ -94,16 +99,16 @@ Include specific technical details that would help another technician reproduce 
                         <div class="d-flex justify-content-between">
                             <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">
                                 <i data-feather="refresh-cw" class="me-1"></i>
-                                Clear Form
+                                Limpar Formulário
                             </button>
                             <div>
                                 <button type="button" class="btn btn-outline-info me-2" onclick="previewCase()">
                                     <i data-feather="eye" class="me-1"></i>
-                                    Preview
+                                    Visualizar
                                 </button>
                                 <button type="submit" class="btn btn-primary">
                                     <i data-feather="save" class="me-1"></i>
-                                    Save Case
+                                    Salvar Caso
                                 </button>
                             </div>
                         </div>
@@ -115,50 +120,50 @@ Include specific technical details that would help another technician reproduce 
         <!-- Tips Card -->
         <div class="card mt-4">
             <div class="card-header d-flex align-items-center">
-                <i data-feather="lightbulb" class="me-2"></i>
-                <h5 class="mb-0">Tips for Writing Good Cases</h5>
+                <i data-feather="help-circle" class="me-2"></i>
+                <h5 class="mb-0">Dicas para Escrever Bons Casos</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <h6><i data-feather="edit" class="me-1"></i>Problem Description</h6>
+                        <h6><i data-feather="edit" class="me-1"></i>Descrição do Problema</h6>
                         <ul class="list-unstyled">
                             <li class="mb-2">
                                 <i data-feather="check" class="me-1 text-success"></i>
-                                Include exact error messages
+                                Inclua mensagens de erro exatas
                             </li>
                             <li class="mb-2">
                                 <i data-feather="check" class="me-1 text-success"></i>
-                                Mention specific system modules
+                                Mencione módulos específicos do sistema
                             </li>
                             <li class="mb-2">
                                 <i data-feather="check" class="me-1 text-success"></i>
-                                Describe user actions that triggered the issue
+                                Descreva ações do usuário que causaram o problema
                             </li>
                             <li class="mb-2">
                                 <i data-feather="check" class="me-1 text-success"></i>
-                                Include timing information when relevant
+                                Inclua informações de tempo quando relevante
                             </li>
                         </ul>
                     </div>
                     <div class="col-md-6">
-                        <h6><i data-feather="tool" class="me-1"></i>Solution</h6>
+                        <h6><i data-feather="tool" class="me-1"></i>Solução</h6>
                         <ul class="list-unstyled">
                             <li class="mb-2">
                                 <i data-feather="check" class="me-1 text-success"></i>
-                                Write step-by-step procedures
+                                Escreva procedimentos passo a passo
                             </li>
                             <li class="mb-2">
                                 <i data-feather="check" class="me-1 text-success"></i>
-                                Include verification steps
+                                Inclua passos de verificação
                             </li>
                             <li class="mb-2">
                                 <i data-feather="check" class="me-1 text-success"></i>
-                                Mention any prerequisites
+                                Mencione pré-requisitos necessários
                             </li>
                             <li class="mb-2">
                                 <i data-feather="check" class="me-1 text-success"></i>
-                                Note potential side effects or risks
+                                Anote efeitos colaterais ou riscos potenciais
                             </li>
                         </ul>
                     </div>
@@ -175,7 +180,7 @@ Include specific technical details that would help another technician reproduce 
             <div class="modal-header">
                 <h5 class="modal-title">
                     <i data-feather="eye" class="me-2"></i>
-                    Case Preview
+                    Visualizar Caso
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -185,10 +190,10 @@ Include specific technical details that would help another technician reproduce 
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="document.querySelector('form').submit()">
                     <i data-feather="save" class="me-1"></i>
-                    Save Case
+                    Salvar Caso
                 </button>
             </div>
         </div>
@@ -198,11 +203,27 @@ Include specific technical details that would help another technician reproduce 
 
 {% block scripts %}
 <script>
+function toggleCustomSystem() {
+    const systemType = document.getElementById('system_type').value;
+    const customDiv = document.getElementById('customSystemDiv');
+    
+    if (systemType === 'Outros') {
+        customDiv.style.display = 'block';
+        document.getElementById('custom_system').required = true;
+    } else {
+        customDiv.style.display = 'none';
+        document.getElementById('custom_system').required = false;
+        document.getElementById('custom_system').value = '';
+    }
+}
+
 function clearForm() {
-    if (confirm('Are you sure you want to clear all form data?')) {
+    if (confirm('Tem certeza que deseja limpar todos os dados do formulário?')) {
         document.getElementById('system_type').value = '';
         document.getElementById('problem_description').value = '';
         document.getElementById('solution').value = '';
+        document.getElementById('custom_system').value = '';
+        toggleCustomSystem();
     }
 }
 

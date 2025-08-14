@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Case #{{ case.id }} - OS Assistant{% endblock %}
+{% block title %}Caso #{{ case.id }} - Assistente OS{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -8,23 +8,23 @@
         <!-- Case Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="mb-1">Case #{{ case.id }}</h2>
+                <h2 class="mb-1">Caso #{{ case.id }}</h2>
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-info">{{ case.system_type }}</span>
                     {% if case.effectiveness_score %}
                     <span class="badge bg-success">
                         <i data-feather="star" style="width: 12px; height: 12px;"></i>
                         {{ "%.1f"|format(case.effectiveness_score) }}/5
-                        <small>({{ case.feedback_count }} reviews)</small>
+                        <small>({{ case.feedback_count }} avaliações)</small>
                     </span>
                     {% endif %}
-                    <small class="text-muted">Created: {{ case.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    <small class="text-muted">Criado: {{ case.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
                 </div>
             </div>
             <div>
                 <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
                     <i data-feather="arrow-left" class="me-1"></i>
-                    Back to Dashboard
+                    Voltar ao Painel
                 </a>
             </div>
         </div>
@@ -33,7 +33,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex align-items-center">
                 <i data-feather="alert-circle" class="me-2"></i>
-                <h5 class="mb-0">Problem Description</h5>
+                <h5 class="mb-0">Descrição do Problema</h5>
             </div>
             <div class="card-body">
                 <div class="bg-dark p-3 rounded border">
@@ -46,7 +46,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex align-items-center">
                 <i data-feather="check-circle" class="me-2"></i>
-                <h5 class="mb-0">Solution</h5>
+                <h5 class="mb-0">Solução</h5>
             </div>
             <div class="card-body">
                 <div class="bg-dark p-3 rounded border">
@@ -59,14 +59,14 @@
         <div class="card mb-4">
             <div class="card-header d-flex align-items-center">
                 <i data-feather="message-circle" class="me-2"></i>
-                <h5 class="mb-0">Solution Effectiveness</h5>
+                <h5 class="mb-0">Efetividade da Solução</h5>
             </div>
             <div class="card-body">
                 {% if case.effectiveness_score %}
                 <div class="row">
                     <div class="col-md-6">
                         <div class="d-flex align-items-center mb-2">
-                            <span class="me-2">Average Rating:</span>
+                            <span class="me-2">Avaliação Média:</span>
                             <div class="d-flex align-items-center">
                                 {% for i in range(1, 6) %}
                                 <i data-feather="star" 
@@ -75,7 +75,7 @@
                                 <span class="ms-2 fw-bold">{{ "%.1f"|format(case.effectiveness_score) }}/5</span>
                             </div>
                         </div>
-                        <p class="text-muted">Based on {{ case.feedback_count }} review{{ 's' if case.feedback_count != 1 else '' }}</p>
+                        <p class="text-muted">Baseado em {{ case.feedback_count }} avaliação{{ 'ões' if case.feedback_count != 1 else '' }}</p>
                     </div>
                     <div class="col-md-6">
                         <div class="progress mb-2" style="height: 20px;">
@@ -84,7 +84,7 @@
                                 {{ "%.0f"|format(case.effectiveness_score / 5 * 100) }}%
                             </div>
                         </div>
-                        <small class="text-muted">Solution effectiveness score</small>
+                        <small class="text-muted">Pontuação de efetividade da solução</small>
                     </div>
                 </div>
                 {% endif %}
@@ -110,32 +110,32 @@
         <div class="card">
             <div class="card-header d-flex align-items-center">
                 <i data-feather="settings" class="me-2"></i>
-                <h5 class="mb-0">Actions</h5>
+                <h5 class="mb-0">Ações</h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-3 mb-2">
                         <button class="btn btn-outline-primary w-100" onclick="copyToClipboard('problem')">
                             <i data-feather="copy" class="me-1"></i>
-                            Copy Problem
+                            Copiar Problema
                         </button>
                     </div>
                     <div class="col-md-3 mb-2">
                         <button class="btn btn-outline-primary w-100" onclick="copyToClipboard('solution')">
                             <i data-feather="copy" class="me-1"></i>
-                            Copy Solution
+                            Copiar Solução
                         </button>
                     </div>
                     <div class="col-md-3 mb-2">
                         <button class="btn btn-outline-info w-100" onclick="findSimilarCases()">
                             <i data-feather="search" class="me-1"></i>
-                            Find Similar
+                            Buscar Similares
                         </button>
                     </div>
                     <div class="col-md-3 mb-2">
                         <a href="{{ url_for('edit_case_form', case_id=case.id) }}" class="btn btn-outline-warning w-100">
                             <i data-feather="edit" class="me-1"></i>
-                            Edit Case
+                            Editar Caso
                         </a>
                     </div>
                 </div>
@@ -162,7 +162,7 @@ function submitFeedback(caseId, effectiveness) {
     .then(response => response.json())
     .then(data => {
         if (data.message) {
-            showToast('Thank you for your feedback!', 'success');
+            showToast('Obrigado pelo seu feedback!', 'success');
             // Reload page after 2 seconds to show updated rating
             setTimeout(() => {
                 window.location.reload();
@@ -173,7 +173,7 @@ function submitFeedback(caseId, effectiveness) {
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('Error submitting feedback', 'danger');
+        showToast('Erro ao enviar feedback', 'danger');
     });
 }
 
@@ -193,9 +193,9 @@ function copyToClipboard(type) {
     
     try {
         document.execCommand('copy');
-        showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} copied to clipboard!`, 'info');
+        showToast(`${type === 'problem' ? 'Problema' : 'Solução'} copiado para a área de transferência!`, 'info');
     } catch (err) {
-        showToast('Failed to copy to clipboard', 'danger');
+        showToast('Falha ao copiar para a área de transferência', 'danger');
     }
 }
 

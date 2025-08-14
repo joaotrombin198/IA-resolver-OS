@@ -117,10 +117,15 @@ def add_case():
     try:
         problem_description = request.form.get('problem_description', '').strip()
         solution = request.form.get('solution', '').strip()
-        system_type = request.form.get('system_type', 'Unknown').strip()
+        system_type = request.form.get('system_type', 'Desconhecido').strip()
+        custom_system = request.form.get('custom_system', '').strip()
+        
+        # Se selecionou "Outros", usar o sistema customizado
+        if system_type == 'Outros' and custom_system:
+            system_type = custom_system
         
         if not problem_description or not solution:
-            flash('Problem description and solution are required.', 'error')
+            flash('Descrição do problema e solução são obrigatórias.', 'error')
             return render_template('add_case.html')
         
         case = case_service.add_case(problem_description, solution, system_type)
