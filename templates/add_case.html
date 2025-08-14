@@ -11,14 +11,20 @@
                 <h2 class="mb-1">Adicionar Novo Caso</h2>
                 <p class="text-muted mb-0">Contribua para a base de conhecimento adicionando um caso resolvido</p>
             </div>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
-                <i data-feather="arrow-left" class="me-1"></i>
-                Voltar ao Painel
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                    <i data-feather="arrow-left" class="me-1"></i>
+                    Voltar ao Painel
+                </a>
+                <button type="button" class="btn btn-outline-info" onclick="toggleImportMode()">
+                    <i data-feather="upload" class="me-1"></i>
+                    Importar Arquivo
+                </button>
+            </div>
         </div>
 
-        <!-- Add Case Form -->
-        <div class="card">
+        <!-- Manual Add Case Form -->
+        <div class="card" id="manualForm">
             <div class="card-header d-flex align-items-center">
                 <i data-feather="plus-circle" class="me-2"></i>
                 <h5 class="mb-0">Informações do Caso</h5>
@@ -199,6 +205,85 @@ Inclua detalhes técnicos específicos que ajudariam outro técnico a reproduzir
         </div>
     </div>
 </div>
+
+        <!-- Import File Form -->
+        <div class="card" id="importForm" style="display: none;">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="upload" class="me-2"></i>
+                <h5 class="mb-0">Importar Casos de Arquivo</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('import_cases') }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="file" class="form-label">
+                            Arquivo de Casos <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" 
+                               class="form-control" 
+                               id="file" 
+                               name="file" 
+                               accept=".txt,.pdf,.xlsx,.csv,.xls,.docx"
+                               required>
+                        <div class="form-text">
+                            <i data-feather="info" class="me-1"></i>
+                            Tipos suportados: TXT, PDF, Excel (XLSX/XLS), CSV, Word (DOCX)
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">Formato do Arquivo</label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="format_type" 
+                                           id="auto_format" value="auto" checked>
+                                    <label class="form-check-label" for="auto_format">
+                                        <strong>Detecção Automática (Recomendado)</strong>
+                                    </label>
+                                    <div class="form-text">A IA lerá e organizará automaticamente</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="format_type" 
+                                           id="structured_format" value="structured">
+                                    <label class="form-check-label" for="structured_format">
+                                        <strong>Formato Estruturado</strong>
+                                    </label>
+                                    <div class="form-text">Para arquivos já organizados</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Structured Format Options (hidden by default) -->
+                    <div id="structuredOptions" style="display: none;">
+                        <div class="alert alert-info">
+                            <i data-feather="info" class="me-1"></i>
+                            <strong>Formato Estruturado Esperado:</strong><br>
+                            • <strong>Excel/CSV:</strong> Colunas: Sistema, Problema, Solução<br>
+                            • <strong>TXT:</strong> Seções separadas por "---" ou linhas em branco<br>
+                            • <strong>PDF/Word:</strong> Títulos claros para cada caso
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-4">
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="toggleImportMode()">
+                                <i data-feather="x" class="me-1"></i>
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="upload" class="me-1"></i>
+                                Processar e Importar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -308,6 +393,35 @@ document.addEventListener('DOMContentLoaded', loadDraft);
 // Clear draft on successful submission
 document.querySelector('form').addEventListener('submit', function() {
     localStorage.removeItem('case_draft');
+});
+
+function toggleImportMode() {
+    const manualForm = document.getElementById('manualForm');
+    const importForm = document.getElementById('importForm');
+    
+    if (importForm.style.display === 'none') {
+        manualForm.style.display = 'none';
+        importForm.style.display = 'block';
+    } else {
+        manualForm.style.display = 'block';
+        importForm.style.display = 'none';
+    }
+}
+
+// Toggle structured options when format type changes
+document.addEventListener('DOMContentLoaded', function() {
+    const structuredRadio = document.getElementById('structured_format');
+    const structuredOptions = document.getElementById('structuredOptions');
+    
+    document.querySelectorAll('input[name="format_type"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (structuredRadio.checked) {
+                structuredOptions.style.display = 'block';
+            } else {
+                structuredOptions.style.display = 'none';
+            }
+        });
+    });
 });
 
 function showToast(message, type) {

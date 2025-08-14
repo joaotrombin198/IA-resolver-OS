@@ -168,7 +168,47 @@
                     Adicionar Caso
                 </a>
             </div>
-            <div class="card-body p-0">
+            
+            <!-- Search and Filter Section -->
+            <div class="card-body border-bottom">
+                <form method="GET" action="{{ url_for('dashboard') }}" class="row g-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i data-feather="search"></i>
+                            </span>
+                            <input type="text" 
+                                   class="form-control" 
+                                   name="search" 
+                                   value="{{ search_query or '' }}" 
+                                   placeholder="Buscar casos por problema, solução ou sistema...">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" name="system">
+                            <option value="">Todos os Sistemas</option>
+                            {% for system in systems %}
+                            <option value="{{ system }}" {{ 'selected' if system_filter == system else '' }}>
+                                {{ system }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex gap-1">
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i data-feather="search"></i>
+                                Buscar
+                            </button>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                                <i data-feather="x"></i>
+                                Limpar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="p-0">
                 {% if cases %}
                 <div class="table-responsive">
                     <!-- Quick Actions Bar -->

@@ -1,13 +1,18 @@
 from flask import render_template, request, jsonify, redirect, url_for, flash
+from werkzeug.utils import secure_filename
 from app import app
 from models import Case, SolutionSuggestion
 from ml_service import MLService
 from case_service import CaseService
+from file_processor import FileProcessor
 import logging
+import os
+import tempfile
 
 # Initialize services
 ml_service = MLService()
 case_service = CaseService()
+file_processor = FileProcessor()
 
 @app.route('/')
 def index():
@@ -653,3 +658,64 @@ def add_case_feedback(case_id):
         logging.error(f"Error adding feedback to case {case_id}: {str(e)}")
         flash(f'Erro ao adicionar feedback: {str(e)}', 'error')
         return redirect(url_for('case_feedback_form', case_id=case_id))
+
+@app.route('/import-cases', methods=['POST'])
+def import_cases():
+    """Import cases from file using new AI-powered system"""
+    try:
+        if 'file' not in request.files:
+            flash('Nenhum arquivo selecionado.', 'error')
+            return redirect(url_for('add_case_form'))
+        
+        file = request.files['file']
+        format_type = request.form.get('format_type', 'auto')
+        
+        if file.filename == '':
+            flash('Nenhum arquivo selecionado.', 'error')
+            return redirect(url_for('add_case_form'))
+        
+        # Save file temporarily
+        filename = secure_filename(file.filename)
+        temp_dir = tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, filename)
+        
+        file.save(temp_path)
+        
+        try:
+            # Process file using FileProcessor
+            cases = file_processor.process_file(temp_path, format_type)
+            
+            cases_added = 0
+            for case_data in cases:
+                case = case_service.add_case(
+                    problem_description=case_data['problem_description'],
+                    solution=case_data['solution'],
+                    system_type=case_data['system_type']
+                )
+                cases_added += 1
+            
+            # Clean up temporary file
+            os.unlink(temp_path)
+            
+            if cases_added > 0:
+                # Retrain ML models with new cases
+                all_cases = case_service.get_all_cases()
+                if len(all_cases) >= 5:
+                    ml_service.train_models(all_cases)
+                
+                flash(f'{cases_added} casos importados e processados com sucesso!', 'success')
+            else:
+                flash('Nenhum caso válido encontrado no arquivo.', 'warning')
+            
+            return redirect(url_for('dashboard'))
+            
+        except Exception as e:
+            # Clean up temporary file on error
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+            raise e
+            
+    except Exception as e:
+        logging.error(f"Error importing cases: {str(e)}")
+        flash(f'Erro ao importar casos: {str(e)}', 'error')
+        return redirect(url_for('add_case_form'))
