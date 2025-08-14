@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback do Caso - OS Assistant{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i data-feather="message-square"></i> Como foi resolvido o caso #{{ case.id }}?</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5 class="text-muted">Problema Original:</h5>
+                        <p class="bg-light p-3 rounded">{{ case.problem_description }}</p>
+                        
+                        <h5 class="text-muted">Solução Sugerida:</h5>
+                        <p class="bg-light p-3 rounded">{{ case.solution }}</p>
+                    </div>
+
+                    <form action="{{ url_for('add_case_feedback', case_id=case.id) }}" method="POST">
+                        <!-- Resolution Status -->
+                        <div class="mb-4">
+                            <h5>Como o problema foi resolvido?</h5>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="resolution_method" id="first_suggestion" value="first_suggestion" required>
+                                <label class="form-check-label text-success" for="first_suggestion">
+                                    <i data-feather="check-circle"></i> 
+                                    <strong>Funcionou!</strong> A primeira sugestão resolveu o problema
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="resolution_method" id="custom_solution" value="custom_solution" required>
+                                <label class="form-check-label text-warning" for="custom_solution">
+                                    <i data-feather="edit-3"></i> 
+                                    <strong>Resolvido de outra forma</strong> - Precisei fazer algo diferente
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="resolution_method" id="not_resolved" value="not_resolved" required>
+                                <label class="form-check-label text-danger" for="not_resolved">
+                                    <i data-feather="x-circle"></i> 
+                                    <strong>Não funcionou</strong> - O problema não foi resolvido
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Custom Solution (shown only when "custom_solution" is selected) -->
+                        <div class="mb-4" id="custom_solution_div" style="display: none;">
+                            <label for="custom_solution_text" class="form-label">
+                                <h5>Descreva como você resolveu o problema:</h5>
+                                <small class="text-muted">Essa informação ajudará a IA a aprender e dar sugestões melhores</small>
+                            </label>
+                            <textarea class="form-control" id="custom_solution_text" name="custom_solution" rows="4" 
+                                      placeholder="Exemplo: 'Precisei reinstalar o software completamente e depois reconfigurar as conexões...'"></textarea>
+                        </div>
+
+                        <!-- Effectiveness Rating -->
+                        <div class="mb-4">
+                            <h5>Avalie a qualidade da sugestão original (1-5):</h5>
+                            <div class="rating-container">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="effectiveness_score" id="score1" value="1" required>
+                                    <label class="form-check-label" for="score1">1 ⭐ Ruim</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="effectiveness_score" id="score2" value="2" required>
+                                    <label class="form-check-label" for="score2">2 ⭐⭐</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="effectiveness_score" id="score3" value="3" required>
+                                    <label class="form-check-label" for="score3">3 ⭐⭐⭐</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="effectiveness_score" id="score4" value="4" required>
+                                    <label class="form-check-label" for="score4">4 ⭐⭐⭐⭐</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="effectiveness_score" id="score5" value="5" required>
+                                    <label class="form-check-label" for="score5">5 ⭐⭐⭐⭐⭐ Excelente</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('view_case', case_id=case.id) }}" class="btn btn-secondary">
+                                <i data-feather="arrow-left"></i> Voltar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i data-feather="send"></i> Enviar Feedback
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide custom solution textarea based on selection
+document.addEventListener('DOMContentLoaded', function() {
+    const resolutionMethods = document.querySelectorAll('input[name="resolution_method"]');
+    const customSolutionDiv = document.getElementById('custom_solution_div');
+    const customSolutionText = document.getElementById('custom_solution_text');
+    
+    resolutionMethods.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'custom_solution') {
+                customSolutionDiv.style.display = 'block';
+                customSolutionText.required = true;
+            } else {
+                customSolutionDiv.style.display = 'none';
+                customSolutionText.required = false;
+                customSolutionText.value = '';
+            }
+        });
+    });
+    
+    // Auto-select effectiveness score based on resolution method
+    const firstSuggestion = document.getElementById('first_suggestion');
+    const notResolved = document.getElementById('not_resolved');
+    
+    firstSuggestion.addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('score5').checked = true;
+        }
+    });
+    
+    notResolved.addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('score1').checked = true;
+        }
+    });
+});
+</script>
+{% endblock %}

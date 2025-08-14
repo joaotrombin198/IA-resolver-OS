@@ -1,19 +1,33 @@
+from app import db
 from datetime import datetime
 from typing import List, Dict, Optional
+from flask_sqlalchemy import SQLAlchemy
 
-class Case:
+
+class Case(db.Model):
     """Model for storing work order cases"""
     
-    def __init__(self, problem_description: str, solution: str, 
-                 system_type: str = "Unknown", case_id: Optional[int] = None):
-        self.id = case_id
-        self.problem_description = problem_description
-        self.solution = solution
-        self.system_type = system_type
-        self.created_at = datetime.now()
-        self.effectiveness_score: Optional[float] = None  # Will be set when feedback is provided
-        self.feedback_count = 0
-        self.tags: List[str] = []
+    __tablename__ = 'cases'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    problem_description = db.Column(db.Text, nullable=False)
+    solution = db.Column(db.Text, nullable=False)
+    system_type = db.Column(db.String(100), default="Unknown")
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    effectiveness_score = db.Column(db.Float, nullable=True)
+    feedback_count = db.Column(db.Integer, default=0)
+    tags = db.Column(db.String(500), default="")  # Stored as comma-separated string
+    
+    # Relationship to feedback entries
+    feedbacks = db.relationship("CaseFeedback", backref="case", cascade="all, delete-orphan")
+    
+    def get_tags_list(self) -> List[str]:
+        """Get tags as a list"""
+        return [tag.strip() for tag in self.tags.split(',') if tag.strip()] if self.tags else []
+    
+    def set_tags_list(self, tags: List[str]):
+        """Set tags from a list"""
+        self.tags = ','.join(tags) if tags else ""
         
     def to_dict(self) -> Dict:
         """Convert case to dictionary for JSON serialization"""
@@ -22,13 +36,14 @@ class Case:
             'problem_description': self.problem_description,
             'solution': self.solution,
             'system_type': self.system_type,
-            'created_at': self.created_at.isoformat(),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
             'effectiveness_score': self.effectiveness_score,
             'feedback_count': self.feedback_count,
-            'tags': self.tags
+            'tags': self.get_tags_list()
         }
     
-    def add_feedback(self, effectiveness: int):
+    def add_feedback(self, effectiveness: int, resolution_method: str = "", 
+                    custom_solution: str = ""):
         """Add effectiveness feedback (1-5 scale)"""
         if self.effectiveness_score is None:
             self.effectiveness_score = effectiveness
@@ -38,6 +53,41 @@ class Case:
             self.effectiveness_score = total_score / (self.feedback_count + 1)
         
         self.feedback_count += 1
+        
+        # Create feedback record
+        feedback = CaseFeedback(
+            case_id=self.id,
+            effectiveness_score=effectiveness,
+            resolution_method=resolution_method,
+            custom_solution=custom_solution
+        )
+        db.session.add(feedback)
+        db.session.commit()
+
+
+class CaseFeedback(db.Model):
+    """Model for storing detailed feedback on case resolutions"""
+    
+    __tablename__ = 'case_feedbacks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    case_id = db.Column(db.Integer, db.ForeignKey('cases.id'), nullable=False)
+    effectiveness_score = db.Column(db.Integer, nullable=False)  # 1-5 scale
+    resolution_method = db.Column(db.String(50), default="")  # "first_suggestion", "custom", "not_resolved"
+    custom_solution = db.Column(db.Text, default="")  # What actually worked
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    
+    def to_dict(self) -> Dict:
+        """Convert feedback to dictionary"""
+        return {
+            'id': self.id,
+            'case_id': self.case_id,
+            'effectiveness_score': self.effectiveness_score,
+            'resolution_method': self.resolution_method,
+            'custom_solution': self.custom_solution,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
 
 class SolutionSuggestion:
     """Model for ML-generated solution suggestions"""

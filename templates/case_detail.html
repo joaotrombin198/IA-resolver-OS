@@ -90,32 +90,17 @@
                 {% endif %}
                 
                 <div class="border-top pt-3 mt-3">
-                    <h6 class="mb-3">Rate this solution:</h6>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <button class="btn btn-sm btn-outline-success" onclick="submitFeedback({{ case.id }}, 5)">
-                            <i data-feather="star" class="me-1"></i>
-                            5 - Excellent
-                        </button>
-                        <button class="btn btn-sm btn-outline-info" onclick="submitFeedback({{ case.id }}, 4)">
-                            <i data-feather="star" class="me-1"></i>
-                            4 - Good
-                        </button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="submitFeedback({{ case.id }}, 3)">
-                            <i data-feather="star" class="me-1"></i>
-                            3 - Average
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback({{ case.id }}, 2)">
-                            <i data-feather="star" class="me-1"></i>
-                            2 - Poor
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="submitFeedback({{ case.id }}, 1)">
-                            <i data-feather="star" class="me-1"></i>
-                            1 - Terrible
-                        </button>
+                    <h6 class="mb-3">Como foi resolvido este caso?</h6>
+                    <div class="d-grid">
+                        <a href="{{ url_for('case_feedback_form', case_id=case.id) }}" 
+                           class="btn btn-primary btn-lg">
+                            <i data-feather="message-square" class="me-2"></i>
+                            Dar Feedback Detalhado
+                        </a>
                     </div>
-                    <div class="form-text mt-2">
+                    <div class="form-text mt-2 text-center">
                         <i data-feather="info" class="me-1"></i>
-                        Your feedback helps improve the system's recommendations for future cases.
+                        Conte como você resolveu este problema para melhorar as sugestões da IA
                     </div>
                 </div>
             </div>
@@ -129,23 +114,29 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-4 mb-2">
+                    <div class="col-md-3 mb-2">
                         <button class="btn btn-outline-primary w-100" onclick="copyToClipboard('problem')">
                             <i data-feather="copy" class="me-1"></i>
                             Copy Problem
                         </button>
                     </div>
-                    <div class="col-md-4 mb-2">
+                    <div class="col-md-3 mb-2">
                         <button class="btn btn-outline-primary w-100" onclick="copyToClipboard('solution')">
                             <i data-feather="copy" class="me-1"></i>
                             Copy Solution
                         </button>
                     </div>
-                    <div class="col-md-4 mb-2">
+                    <div class="col-md-3 mb-2">
                         <button class="btn btn-outline-info w-100" onclick="findSimilarCases()">
                             <i data-feather="search" class="me-1"></i>
                             Find Similar
                         </button>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('edit_case_form', case_id=case.id) }}" class="btn btn-outline-warning w-100">
+                            <i data-feather="edit" class="me-1"></i>
+                            Edit Case
+                        </a>
                     </div>
                 </div>
             </div>

@@ -2,7 +2,8 @@ import logging
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta
 from flask import current_app
-from models import Case
+from models import Case, CaseFeedback
+from app import db
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
@@ -15,95 +16,132 @@ class CaseService:
         self._fitted = False
     
     def get_all_cases(self) -> List[Case]:
-        """Get all cases from storage"""
-        return current_app.config.get('CASES_STORAGE', [])
+        """Get all cases from PostgreSQL database"""
+        try:
+            return Case.query.all()
+        except Exception as e:
+            logging.error(f"Error getting cases from database: {str(e)}")
+            # Fallback to in-memory storage
+            return current_app.config.get('CASES_STORAGE', [])
     
     def get_case_by_id(self, case_id: int) -> Optional[Case]:
-        """Get a specific case by ID"""
-        cases = self.get_all_cases()
-        for case in cases:
-            if case.id == case_id:
-                return case
-        return None
+        """Get a specific case by ID from PostgreSQL"""
+        try:
+            return Case.query.get(case_id)
+        except Exception as e:
+            logging.error(f"Error getting case {case_id} from database: {str(e)}")
+            # Fallback to in-memory storage
+            cases = current_app.config.get('CASES_STORAGE', [])
+            for case in cases:
+                if case.id == case_id:
+                    return case
+            return None
     
     def add_case(self, problem_description: str, solution: str, system_type: str = "Unknown") -> Case:
-        """Add a new case to the knowledge base"""
+        """Add a new case to the PostgreSQL database"""
         try:
-            # Get next ID
-            next_id = current_app.config.get('NEXT_CASE_ID', 1)
-            current_app.config['NEXT_CASE_ID'] = next_id + 1
-            
             # Create new case
             case = Case(
                 problem_description=problem_description,
                 solution=solution,
-                system_type=system_type,
-                case_id=next_id
+                system_type=system_type
             )
             
-            # Add to storage
-            cases = current_app.config.get('CASES_STORAGE', [])
-            cases.append(case)
-            current_app.config['CASES_STORAGE'] = cases
+            # Add to database
+            db.session.add(case)
+            db.session.commit()
             
             # Refit vectorizer when new cases are added
             self._fitted = False
             
-            logging.info(f"Added new case #{case.id}")
+            logging.info(f"Added new case #{case.id} to database")
             return case
             
         except Exception as e:
-            logging.error(f"Error adding case: {str(e)}")
-            raise
+            db.session.rollback()
+            logging.error(f"Error adding case to database: {str(e)}")
+            # Fallback to in-memory storage
+            next_id = current_app.config.get('NEXT_CASE_ID', 1)
+            current_app.config['NEXT_CASE_ID'] = next_id + 1
+            case = Case(problem_description=problem_description, solution=solution, system_type=system_type)
+            case.id = next_id
+            cases = current_app.config.get('CASES_STORAGE', [])
+            cases.append(case)
+            current_app.config['CASES_STORAGE'] = cases
+            return case
     
     def update_case(self, case_id: int, problem_description: str, solution: str, system_type: str) -> bool:
-        """Update an existing case"""
+        """Update an existing case in PostgreSQL"""
         try:
-            cases = self.get_all_cases()
-            for case in cases:
-                if case.id == case_id:
-                    case.problem_description = problem_description
-                    case.solution = solution
-                    case.system_type = system_type
-                    
-                    # Update storage
-                    current_app.config['CASES_STORAGE'] = cases
-                    
-                    # Refit vectorizer when cases are updated
-                    self._fitted = False
-                    
-                    logging.info(f"Updated case #{case_id}")
-                    return True
-            
-            return False  # Case not found
-            
-        except Exception as e:
-            logging.error(f"Error updating case {case_id}: {str(e)}")
-            raise
-    
-    def delete_case(self, case_id: int) -> bool:
-        """Delete a case from the knowledge base"""
-        try:
-            cases = self.get_all_cases()
-            original_count = len(cases)
-            
-            # Filter out the case to delete
-            updated_cases = [case for case in cases if case.id != case_id]
-            
-            if len(updated_cases) < original_count:
-                current_app.config['CASES_STORAGE'] = updated_cases
+            case = Case.query.get(case_id)
+            if case:
+                case.problem_description = problem_description
+                case.solution = solution
+                case.system_type = system_type
                 
-                # Refit vectorizer when cases are deleted
+                db.session.commit()
+                
+                # Refit vectorizer when cases are updated
                 self._fitted = False
                 
-                logging.info(f"Deleted case #{case_id}")
+                logging.info(f"Updated case #{case_id} in database")
                 return True
             
             return False  # Case not found
             
         except Exception as e:
-            logging.error(f"Error deleting case {case_id}: {str(e)}")
-            raise
+            db.session.rollback()
+            logging.error(f"Error updating case {case_id} in database: {str(e)}")
+            return False
+    
+    def delete_case(self, case_id: int) -> bool:
+        """Delete a case from PostgreSQL database"""
+        try:
+            case = Case.query.get(case_id)
+            if case:
+                db.session.delete(case)
+                db.session.commit()
+                
+                # Refit vectorizer when cases are deleted
+                self._fitted = False
+                
+                logging.info(f"Deleted case #{case_id} from database")
+                return True
+            
+            return False  # Case not found
+            
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"Error deleting case {case_id} from database: {str(e)}")
+            return False
+            
+    def add_case_feedback(self, case_id: int, effectiveness_score: int, 
+                         resolution_method: str = "", custom_solution: str = "") -> bool:
+        """Add feedback to a case"""
+        try:
+            case = Case.query.get(case_id)
+            if not case:
+                return False
+                
+            # Add feedback using the model method
+            case.add_feedback(effectiveness_score, resolution_method, custom_solution)
+            db.session.commit()
+            
+            logging.info(f"Added feedback to case #{case_id}: {resolution_method} (score: {effectiveness_score})")
+            return True
+            
+        except Exception as e:
+            db.session.rollback()
+            logging.error(f"Error adding feedback to case {case_id}: {str(e)}")
+            return False
+    
+    def get_case_feedbacks(self, case_id: int) -> List[CaseFeedback]:
+        """Get all feedback for a specific case"""
+        try:
+            return CaseFeedback.query.filter_by(case_id=case_id).order_by(CaseFeedback.created_at.desc()).all()
+        except Exception as e:
+            logging.error(f"Error getting feedbacks for case {case_id}: {str(e)}")
+            return []
     
     def find_similar_cases(self, problem_description: str, limit: int = 5) -> List[Case]:
         """Find cases similar to the given problem description"""
