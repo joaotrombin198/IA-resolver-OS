@@ -63,7 +63,7 @@
                                 <th>Categoria</th>
                                 <th>Casos</th>
                                 <th>Última Utilização</th>
-                                <th width="120">Ações</th>
+                                <th width="120">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,22 +108,11 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <div class="btn-group" role="group">
-                                        <button type="button" 
-                                                class="btn btn-sm btn-outline-warning" 
-                                                title="Editar"
-                                                onclick="editSystem('{{ system.name }}', '{{ system.category }}', '{{ system.description or '' }}')">
-                                            <i data-feather="edit" style="width: 14px; height: 14px;"></i>
-                                        </button>
-                                        {% if system.case_count == 0 %}
-                                        <button type="button" 
-                                                class="btn btn-sm btn-outline-danger" 
-                                                title="Excluir"
-                                                onclick="confirmDeleteSystem('{{ system.name }}')">
-                                            <i data-feather="trash-2" style="width: 14px; height: 14px;"></i>
-                                        </button>
-                                        {% endif %}
-                                    </div>
+                                    {% if system.case_count == 0 %}
+                                        <span class="badge bg-warning">Não utilizado</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Em uso</span>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}
@@ -150,45 +139,7 @@
     </div>
 </div>
 
-<!-- Edit System Modal -->
-<div class="modal fade" id="editSystemModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Editar Sistema</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ url_for('edit_system') }}" method="POST">
-                <div class="modal-body">
-                    <input type="hidden" id="edit_original_name" name="original_name">
-                    <div class="mb-3">
-                        <label for="edit_system_name" class="form-label">Nome do Sistema *</label>
-                        <input type="text" class="form-control" id="edit_system_name" name="system_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_system_category" class="form-label">Categoria</label>
-                        <select class="form-select" id="edit_system_category" name="system_category">
-                            <option value="Healthcare">Sistema Hospitalar</option>
-                            <option value="Administrative">Sistema Administrativo</option>
-                            <option value="Network">Rede/Infraestrutura</option>
-                            <option value="Database">Banco de Dados</option>
-                            <option value="Application Server">Servidor de Aplicação</option>
-                            <option value="Other">Outro</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="edit_system_description" class="form-label">Descrição</label>
-                        <input type="text" class="form-control" id="edit_system_description" name="system_description">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+
 {% endblock %}
 
 {% block scripts %}
