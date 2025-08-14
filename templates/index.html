@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Diagnose Problem - OS Assistant{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Problem Input Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="edit-3" class="me-2"></i>
+                <h5 class="mb-0">Describe Your Technical Problem</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('analyze_problem') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="problem_description" class="form-label">
+                            Descrição do Problema <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" 
+                                id="problem_description" 
+                                name="problem_description" 
+                                rows="6" 
+                                placeholder="Descreva o problema técnico que você está enfrentando. Inclua nomes de sistemas, mensagens de erro e detalhes relevantes...
+
+Exemplos:
+• Sistema Tasy não consegue conectar com banco de dados
+• Erro de permissão ao acessar módulo administrativo
+• Lentidão no sistema de rede hospitalar"
+                                required>{{ problem_description or '' }}</textarea>
+                        <div class="form-text">
+                            <i data-feather="info" class="me-1"></i>
+                            Seja o mais específico possível. Mencione nomes de sistemas (como Tasy), códigos de erro e passos que levaram ao problema.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i data-feather="search" class="me-2"></i>
+                            Analisar Problema & Obter Soluções
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if suggestion %}
+        <!-- ML Analysis Results -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i data-feather="cpu" class="me-2"></i>
+                    <h5 class="mb-0">Análise por Machine Learning</h5>
+                </div>
+                <div>
+                    <span class="badge bg-{{ 'success' if suggestion.confidence > 0.7 else 'warning' if suggestion.confidence > 0.4 else 'secondary' }}">
+                        {{ "%.0f"|format(suggestion.confidence * 100) }}% Confidence
+                    </span>
+                    <span class="badge bg-info ms-1">{{ suggestion.system_type }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <h6 class="text-muted mb-3">Suggested Solutions:</h6>
+                <div class="row">
+                    {% for solution in suggestion.suggested_solutions %}
+                    <div class="col-12 mb-3">
+                        <div class="card bg-dark border-secondary">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start">
+                                    <span class="badge bg-primary me-3 mt-1">{{ loop.index }}</span>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-0">{{ solution }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Feedback Section -->
+                <div class="border-top pt-3 mt-3">
+                    <h6 class="text-muted mb-3">Was this helpful?</h6>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-success" onclick="submitFeedback(5)">
+                            <i data-feather="thumbs-up" class="me-1"></i>
+                            Very Helpful
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="submitFeedback(4)">
+                            <i data-feather="check" class="me-1"></i>
+                            Helpful
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="submitFeedback(3)">
+                            <i data-feather="minus" class="me-1"></i>
+                            Somewhat
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback(2)">
+                            <i data-feather="x" class="me-1"></i>
+                            Not Much
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="submitFeedback(1)">
+                            <i data-feather="thumbs-down" class="me-1"></i>
+                            Not Helpful
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if suggestion.similar_cases %}
+        <!-- Similar Cases Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="layers" class="me-2"></i>
+                <h5 class="mb-0">Similar Cases Found</h5>
+            </div>
+            <div class="card-body">
+                {% for case in suggestion.similar_cases %}
+                <div class="card bg-dark border-secondary mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="mb-0">Case #{{ case.id }}</h6>
+                            <div>
+                                <span class="badge bg-info">{{ case.system_type }}</span>
+                                {% if case.effectiveness_score %}
+                                <span class="badge bg-success">{{ "%.1f"|format(case.effectiveness_score) }}/5</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="text-muted mb-2"><strong>Problem:</strong> {{ case.problem_description[:200] }}...</p>
+                        <p class="mb-0"><strong>Solution:</strong> {{ case.solution[:200] }}...</p>
+                        <div class="mt-2">
+                            <a href="{{ url_for('case_detail', case_id=case.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i data-feather="external-link" class="me-1"></i>
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <!-- Quick Actions -->
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i data-feather="plus-circle" class="mb-2" style="width: 48px; height: 48px;"></i>
+                        <h6>Add New Case</h6>
+                        <p class="text-muted small">Contribute to the knowledge base by adding resolved cases</p>
+                        <a href="{{ url_for('add_case_form') }}" class="btn btn-outline-primary">Add Case</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i data-feather="bar-chart-2" class="mb-2" style="width: 48px; height: 48px;"></i>
+                        <h6>View Dashboard</h6>
+                        <p class="text-muted small">Browse all cases and system statistics</p>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">View Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function submitFeedback(effectiveness) {
+    // For now, just show a success message since we don't have a specific case ID
+    // This would be enhanced when saving analysis results
+    showToast('Feedback received! This will help improve future suggestions.', 'success');
+}
+
+function showToast(message, type) {
+    const toastHtml = `
+        <div class="toast align-items-center text-bg-${type} border-0" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 1050;">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    const toast = new bootstrap.Toast(document.querySelector('.toast:last-child'));
+    toast.show();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}Case #{{ case.id }} - OS Assistant{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Case Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Case #{{ case.id }}</h2>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-info">{{ case.system_type }}</span>
+                    {% if case.effectiveness_score %}
+                    <span class="badge bg-success">
+                        <i data-feather="star" style="width: 12px; height: 12px;"></i>
+                        {{ "%.1f"|format(case.effectiveness_score) }}/5
+                        <small>({{ case.feedback_count }} reviews)</small>
+                    </span>
+                    {% endif %}
+                    <small class="text-muted">Created: {{ case.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
+            </div>
+            <div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                    <i data-feather="arrow-left" class="me-1"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Problem Description -->
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="alert-circle" class="me-2"></i>
+                <h5 class="mb-0">Problem Description</h5>
+            </div>
+            <div class="card-body">
+                <div class="bg-dark p-3 rounded border">
+                    <pre class="mb-0 text-wrap">{{ case.problem_description }}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Solution -->
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="check-circle" class="me-2"></i>
+                <h5 class="mb-0">Solution</h5>
+            </div>
+            <div class="card-body">
+                <div class="bg-dark p-3 rounded border">
+                    <pre class="mb-0 text-wrap">{{ case.solution }}</pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="message-circle" class="me-2"></i>
+                <h5 class="mb-0">Solution Effectiveness</h5>
+            </div>
+            <div class="card-body">
+                {% if case.effectiveness_score %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="me-2">Average Rating:</span>
+                            <div class="d-flex align-items-center">
+                                {% for i in range(1, 6) %}
+                                <i data-feather="star" 
+                                   style="width: 20px; height: 20px; color: {{ 'var(--bs-warning)' if i <= case.effectiveness_score else 'var(--bs-secondary)' }};"></i>
+                                {% endfor %}
+                                <span class="ms-2 fw-bold">{{ "%.1f"|format(case.effectiveness_score) }}/5</span>
+                            </div>
+                        </div>
+                        <p class="text-muted">Based on {{ case.feedback_count }} review{{ 's' if case.feedback_count != 1 else '' }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar bg-warning" 
+                                 style="width: {{ (case.effectiveness_score / 5 * 100)|round|int }}%">
+                                {{ "%.0f"|format(case.effectiveness_score / 5 * 100) }}%
+                            </div>
+                        </div>
+                        <small class="text-muted">Solution effectiveness score</small>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="border-top pt-3 mt-3">
+                    <h6 class="mb-3">Rate this solution:</h6>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-sm btn-outline-success" onclick="submitFeedback({{ case.id }}, 5)">
+                            <i data-feather="star" class="me-1"></i>
+                            5 - Excellent
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="submitFeedback({{ case.id }}, 4)">
+                            <i data-feather="star" class="me-1"></i>
+                            4 - Good
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="submitFeedback({{ case.id }}, 3)">
+                            <i data-feather="star" class="me-1"></i>
+                            3 - Average
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback({{ case.id }}, 2)">
+                            <i data-feather="star" class="me-1"></i>
+                            2 - Poor
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="submitFeedback({{ case.id }}, 1)">
+                            <i data-feather="star" class="me-1"></i>
+                            1 - Terrible
+                        </button>
+                    </div>
+                    <div class="form-text mt-2">
+                        <i data-feather="info" class="me-1"></i>
+                        Your feedback helps improve the system's recommendations for future cases.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="settings" class="me-2"></i>
+                <h5 class="mb-0">Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-outline-primary w-100" onclick="copyToClipboard('problem')">
+                            <i data-feather="copy" class="me-1"></i>
+                            Copy Problem
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-outline-primary w-100" onclick="copyToClipboard('solution')">
+                            <i data-feather="copy" class="me-1"></i>
+                            Copy Solution
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <button class="btn btn-outline-info w-100" onclick="findSimilarCases()">
+                            <i data-feather="search" class="me-1"></i>
+                            Find Similar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden content for copying -->
+<textarea id="hiddenCopyArea" style="position: absolute; left: -9999px;"></textarea>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function submitFeedback(caseId, effectiveness) {
+    const formData = new FormData();
+    formData.append('case_id', caseId);
+    formData.append('effectiveness', effectiveness);
+    
+    fetch('/feedback', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            showToast('Thank you for your feedback!', 'success');
+            // Reload page after 2 seconds to show updated rating
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            showToast(data.error || 'Error submitting feedback', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error submitting feedback', 'danger');
+    });
+}
+
+function copyToClipboard(type) {
+    const copyArea = document.getElementById('hiddenCopyArea');
+    let textToCopy = '';
+    
+    if (type === 'problem') {
+        textToCopy = `{{ case.problem_description|safe }}`;
+    } else if (type === 'solution') {
+        textToCopy = `{{ case.solution|safe }}`;
+    }
+    
+    copyArea.value = textToCopy;
+    copyArea.select();
+    copyArea.setSelectionRange(0, 99999);
+    
+    try {
+        document.execCommand('copy');
+        showToast(`${type.charAt(0).toUpperCase() + type.slice(1)} copied to clipboard!`, 'info');
+    } catch (err) {
+        showToast('Failed to copy to clipboard', 'danger');
+    }
+}
+
+function findSimilarCases() {
+    const problemText = `{{ case.problem_description|safe }}`;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("analyze_problem") }}';
+    
+    const textarea = document.createElement('textarea');
+    textarea.name = 'problem_description';
+    textarea.value = problemText;
+    form.appendChild(textarea);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function showToast(message, type) {
+    const toastHtml = `
+        <div class="toast align-items-center text-bg-${type} border-0" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 1050;">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    const toast = new bootstrap.Toast(document.querySelector('.toast:last-child'));
+    toast.show();
+}
+</script>
+{% endblock %}

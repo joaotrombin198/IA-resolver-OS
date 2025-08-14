@@ -1,0 +1,242 @@
+/* Custom styles for OS Assistant */
+
+/* Override some Bootstrap defaults for better technical interface */
+:root {
+    --custom-code-bg: #1a1a1a;
+    --custom-border-radius: 8px;
+}
+
+/* Code and pre styling */
+pre {
+    background-color: var(--custom-code-bg) !important;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--custom-border-radius);
+    color: var(--bs-body-color);
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Card styling improvements */
+.card {
+    border-radius: var(--custom-border-radius);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+}
+
+.card-header {
+    background-color: var(--bs-dark);
+    border-bottom: 1px solid var(--bs-border-color);
+    border-radius: var(--custom-border-radius) var(--custom-border-radius) 0 0 !important;
+}
+
+/* Form improvements */
+.form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+textarea.form-control {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Button improvements */
+.btn {
+    border-radius: var(--custom-border-radius);
+    font-weight: 500;
+}
+
+.btn-group .btn {
+    border-radius: 0;
+}
+
+.btn-group .btn:first-child {
+    border-radius: var(--custom-border-radius) 0 0 var(--custom-border-radius);
+}
+
+.btn-group .btn:last-child {
+    border-radius: 0 var(--custom-border-radius) var(--custom-border-radius) 0;
+}
+
+/* Table improvements */
+.table-responsive {
+    border-radius: var(--custom-border-radius);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table td {
+    vertical-align: middle;
+    border-color: var(--bs-border-color);
+}
+
+/* Progress bar styling */
+.progress {
+    border-radius: var(--custom-border-radius);
+    background-color: var(--bs-secondary-bg);
+}
+
+.progress-bar {
+    border-radius: var(--custom-border-radius);
+}
+
+/* Badge improvements */
+.badge {
+    border-radius: var(--custom-border-radius);
+    font-weight: 500;
+    font-size: 0.75rem;
+}
+
+/* Alert styling */
+.alert {
+    border-radius: var(--custom-border-radius);
+    border: none;
+}
+
+/* Navigation improvements */
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.nav-link {
+    font-weight: 500;
+}
+
+/* Footer styling */
+footer {
+    margin-top: auto;
+}
+
+/* Modal improvements */
+.modal-content {
+    border-radius: var(--custom-border-radius);
+    border: none;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .btn {
+        font-size: 0.875rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+}
+
+/* Utility classes */
+.text-wrap {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -12px 0 0 -12px;
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--bs-primary);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Toast positioning */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+
+/* Highlight search results */
+.search-highlight {
+    background-color: rgba(var(--bs-warning-rgb), 0.3);
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bs-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bs-secondary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-light);
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .btn,
+    footer {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .card-body {
+        padding: 1rem !important;
+    }
+    
+    pre {
+        background-color: #f8f9fa !important;
+        border: 1px solid #000 !important;
+        color: #000 !important;
+    }
+}

@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Case - OS Assistant{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Add New Case</h2>
+                <p class="text-muted mb-0">Contribute to the knowledge base by adding a resolved case</p>
+            </div>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <i data-feather="arrow-left" class="me-1"></i>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Add Case Form -->
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="plus-circle" class="me-2"></i>
+                <h5 class="mb-0">Case Information</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('add_case') }}" method="POST">
+                    <div class="mb-4">
+                        <label for="system_type" class="form-label">
+                            System Type <span class="text-danger">*</span>
+                        </label>
+                        <select class="form-select" id="system_type" name="system_type" required>
+                            <option value="">Select System Type</option>
+                            <option value="Tasy">Tasy (Hospital Management)</option>
+                            <option value="Healthcare">Healthcare/EMR System</option>
+                            <option value="Administrative">Administrative System</option>
+                            <option value="Network">Network/Infrastructure</option>
+                            <option value="Database">Database System</option>
+                            <option value="Application Server">Application Server</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <div class="form-text">
+                            <i data-feather="info" class="me-1"></i>
+                            Select the system where this problem occurred
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="problem_description" class="form-label">
+                            Problem Description <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" 
+                                id="problem_description" 
+                                name="problem_description" 
+                                rows="6" 
+                                placeholder="Describe the technical problem in detail. Include:
+• System or module affected
+• Error messages (exact text)
+• Steps that led to the problem
+• User actions or system behavior
+• Environment details if relevant"
+                                required></textarea>
+                        <div class="form-text">
+                            <i data-feather="alert-triangle" class="me-1"></i>
+                            Be specific and include all relevant technical details. This helps with future problem matching.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="solution" class="form-label">
+                            Solution <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control" 
+                                id="solution" 
+                                name="solution" 
+                                rows="8" 
+                                placeholder="Describe the complete solution step by step:
+
+1. First step taken to resolve the issue
+2. Any configuration changes made
+3. Commands executed or procedures followed
+4. Verification steps performed
+5. Any follow-up actions needed
+
+Include specific technical details that would help another technician reproduce the solution."
+                                required></textarea>
+                        <div class="form-text">
+                            <i data-feather="check-circle" class="me-1"></i>
+                            Provide detailed, actionable steps that successfully resolved the problem.
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-4">
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearForm()">
+                                <i data-feather="refresh-cw" class="me-1"></i>
+                                Clear Form
+                            </button>
+                            <div>
+                                <button type="button" class="btn btn-outline-info me-2" onclick="previewCase()">
+                                    <i data-feather="eye" class="me-1"></i>
+                                    Preview
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i data-feather="save" class="me-1"></i>
+                                    Save Case
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tips Card -->
+        <div class="card mt-4">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="lightbulb" class="me-2"></i>
+                <h5 class="mb-0">Tips for Writing Good Cases</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i data-feather="edit" class="me-1"></i>Problem Description</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i data-feather="check" class="me-1 text-success"></i>
+                                Include exact error messages
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="check" class="me-1 text-success"></i>
+                                Mention specific system modules
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="check" class="me-1 text-success"></i>
+                                Describe user actions that triggered the issue
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="check" class="me-1 text-success"></i>
+                                Include timing information when relevant
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i data-feather="tool" class="me-1"></i>Solution</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i data-feather="check" class="me-1 text-success"></i>
+                                Write step-by-step procedures
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="check" class="me-1 text-success"></i>
+                                Include verification steps
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="check" class="me-1 text-success"></i>
+                                Mention any prerequisites
+                            </li>
+                            <li class="mb-2">
+                                <i data-feather="check" class="me-1 text-success"></i>
+                                Note potential side effects or risks
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i data-feather="eye" class="me-2"></i>
+                    Case Preview
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="previewContent">
+                    <!-- Preview content will be inserted here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="document.querySelector('form').submit()">
+                    <i data-feather="save" class="me-1"></i>
+                    Save Case
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function clearForm() {
+    if (confirm('Are you sure you want to clear all form data?')) {
+        document.getElementById('system_type').value = '';
+        document.getElementById('problem_description').value = '';
+        document.getElementById('solution').value = '';
+    }
+}
+
+function previewCase() {
+    const systemType = document.getElementById('system_type').value || 'Not specified';
+    const problem = document.getElementById('problem_description').value || 'No problem description provided';
+    const solution = document.getElementById('solution').value || 'No solution provided';
+    
+    const previewHtml = `
+        <div class="mb-3">
+            <h6><i data-feather="tag" class="me-1"></i>System Type</h6>
+            <span class="badge bg-info">${systemType}</span>
+        </div>
+        
+        <div class="mb-3">
+            <h6><i data-feather="alert-circle" class="me-1"></i>Problem Description</h6>
+            <div class="bg-dark p-3 rounded border">
+                <pre class="mb-0 text-wrap">${problem}</pre>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <h6><i data-feather="check-circle" class="me-1"></i>Solution</h6>
+            <div class="bg-dark p-3 rounded border">
+                <pre class="mb-0 text-wrap">${solution}</pre>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('previewContent').innerHTML = previewHtml;
+    
+    // Re-initialize feather icons in the modal
+    setTimeout(() => {
+        feather.replace();
+    }, 100);
+    
+    const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+    modal.show();
+}
+
+// Auto-save draft to localStorage
+function saveDraft() {
+    const draft = {
+        system_type: document.getElementById('system_type').value,
+        problem_description: document.getElementById('problem_description').value,
+        solution: document.getElementById('solution').value
+    };
+    localStorage.setItem('case_draft', JSON.stringify(draft));
+}
+
+// Load draft from localStorage
+function loadDraft() {
+    const draft = localStorage.getItem('case_draft');
+    if (draft) {
+        try {
+            const data = JSON.parse(draft);
+            if (data.system_type) document.getElementById('system_type').value = data.system_type;
+            if (data.problem_description) document.getElementById('problem_description').value = data.problem_description;
+            if (data.solution) document.getElementById('solution').value = data.solution;
+            
+            // Show notification if draft was loaded
+            if (data.system_type || data.problem_description || data.solution) {
+                showToast('Draft loaded from previous session', 'info');
+            }
+        } catch (e) {
+            console.error('Error loading draft:', e);
+        }
+    }
+}
+
+// Auto-save every 30 seconds
+setInterval(saveDraft, 30000);
+
+// Save on input changes
+document.getElementById('system_type').addEventListener('change', saveDraft);
+document.getElementById('problem_description').addEventListener('input', saveDraft);
+document.getElementById('solution').addEventListener('input', saveDraft);
+
+// Load draft on page load
+document.addEventListener('DOMContentLoaded', loadDraft);
+
+// Clear draft on successful submission
+document.querySelector('form').addEventListener('submit', function() {
+    localStorage.removeItem('case_draft');
+});
+
+function showToast(message, type) {
+    const toastHtml = `
+        <div class="toast align-items-center text-bg-${type} border-0" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 1050;">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    const toast = new bootstrap.Toast(document.querySelector('.toast:last-child'));
+    toast.show();
+}
+</script>
+{% endblock %}
