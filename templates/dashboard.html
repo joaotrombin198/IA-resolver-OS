@@ -187,6 +187,10 @@
                                 <i data-feather="settings" class="me-1"></i>
                                 Gerenciar Sistemas
                             </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDeleteAllCases()">
+                                <i data-feather="trash-2" class="me-1"></i>
+                                Apagar Todos
+                            </button>
                         </div>
                         <small class="text-muted">{{ cases|length }} caso(s) encontrado(s)</small>
                     </div>
@@ -366,6 +370,36 @@ function confirmDelete(caseId) {
         
         document.body.appendChild(form);
         form.submit();
+    }
+}
+
+// Function to confirm deletion of ALL cases with double confirmation
+function confirmDeleteAllCases() {
+    // First confirmation
+    if (confirm('⚠️ ATENÇÃO: Você está prestes a apagar TODOS os casos do sistema!\n\nEsta ação vai remover permanentemente todos os dados e não pode ser desfeita.\n\nTem ABSOLUTA CERTEZA que deseja continuar?')) {
+        
+        // Second confirmation with more emphasis
+        if (confirm('🚨 CONFIRMAÇÃO FINAL 🚨\n\nEsta é sua última chance!\n\nTodos os ' + document.querySelectorAll('tbody tr').length + ' casos serão permanentemente deletados.\n\nDigite OK para confirmar ou CANCELAR para desistir.\n\nConfirma a exclusão total?')) {
+            
+            // Create and submit form for bulk deletion
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/cases/delete-all';
+            
+            // Add hidden confirmation field
+            const confirmInput = document.createElement('input');
+            confirmInput.type = 'hidden';
+            confirmInput.name = 'confirm_delete_all';
+            confirmInput.value = 'yes';
+            form.appendChild(confirmInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        } else {
+            alert('Operação cancelada. Nenhum caso foi removido.');
+        }
+    } else {
+        alert('Operação cancelada.');
     }
 }
 </script>

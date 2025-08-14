@@ -6,3 +6,4 @@
 [x] 6. Diversify ML solutions for different problems
 [x] 7. Fix white div background issue in dashboard
 [x] 8. Enhance ML algorithm for better case matching
+[x] 9. Add "Delete All Cases" feature with double confirmation safety

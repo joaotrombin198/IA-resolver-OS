@@ -469,3 +469,42 @@ class CaseService:
         except Exception as e:
             logging.error(f"Error adding feedback: {str(e)}")
             return False
+    
+    def delete_all_cases(self) -> int:
+        """Delete ALL cases from the database - DESTRUCTIVE OPERATION"""
+        try:
+            cases = self.get_all_cases()
+            if not cases:
+                return 0
+            
+            deleted_count = 0
+            
+            # Try to delete from database first
+            try:
+                deleted_count = Case.query.count()
+                Case.query.delete()
+                db.session.commit()
+                
+                # Reset vectorizer since all data is gone
+                self._fitted = False
+                
+                logging.warning(f"BULK DELETE: Removed {deleted_count} cases from database")
+                
+            except Exception as db_error:
+                logging.error(f"Database bulk delete failed: {str(db_error)}")
+                try:
+                    db.session.rollback()
+                except:
+                    pass
+                
+                # Fallback: clear in-memory storage
+                current_app.config['CASES_STORAGE'] = []
+                current_app.config['NEXT_CASE_ID'] = 1
+                deleted_count = len(cases)
+                logging.warning(f"Fallback: Cleared {deleted_count} cases from memory")
+            
+            return deleted_count
+            
+        except Exception as e:
+            logging.error(f"Critical error in bulk delete: {str(e)}")
+            return 0

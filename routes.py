@@ -277,6 +277,46 @@ def delete_case(case_id):
         flash(f'Erro ao excluir caso: {str(e)}', 'error')
         return redirect(url_for('dashboard'))
 
+@app.route('/cases/delete-all', methods=['POST'])
+def delete_all_cases():
+    """Delete ALL cases with double confirmation"""
+    try:
+        # Check for confirmation parameter
+        confirm = request.form.get('confirm_delete_all')
+        if confirm != 'yes':
+            flash('Operação cancelada: confirmação não recebida.', 'error')
+            return redirect(url_for('dashboard'))
+        
+        # Get current case count for logging
+        current_cases = case_service.get_all_cases()
+        case_count = len(current_cases)
+        
+        if case_count == 0:
+            flash('Nenhum caso encontrado para remover.', 'info')
+            return redirect(url_for('dashboard'))
+        
+        # Delete all cases
+        success_count = case_service.delete_all_cases()
+        
+        if success_count > 0:
+            flash(f'✅ Sucesso: {success_count} casos foram removidos permanentemente do sistema.', 'success')
+            logging.warning(f"BULK DELETE: {success_count} cases deleted by user")
+            
+            # Clear ML models since all training data is gone
+            try:
+                ml_service.is_trained = False
+                logging.info("ML models reset after bulk delete")
+            except:
+                pass
+        else:
+            flash('Erro: Nenhum caso foi removido. Tente novamente.', 'error')
+            
+    except Exception as e:
+        logging.error(f"Error in bulk delete operation: {str(e)}")
+        flash('Erro crítico durante remoção em massa. Contate o administrador.', 'error')
+    
+    return redirect(url_for('dashboard'))
+
 @app.route('/train-models', methods=['POST'])
 def train_models():
     """Manually trigger ML model training"""
