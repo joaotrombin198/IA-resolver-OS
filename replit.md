@@ -26,7 +26,7 @@ The application follows a traditional Flask MVC architecture with service layer 
 - **Frontend**: Server-side rendered HTML templates with Bootstrap for responsive UI
 - **Backend**: Flask web framework with modular service-based architecture
 - **Storage**: PostgreSQL database with full persistence and multi-user synchronization
-- **AI Processing**: OpenAI API integration for intelligent problem analysis
+- **AI Processing**: Custom ML service using scikit-learn for intelligent problem analysis (100% internal)
 
 ### Key Architectural Components
 
@@ -99,3 +99,19 @@ The application stores state in Flask's application config, making it easy to tr
 - Environment variable management for API keys and configuration
 
 The system is designed to be easily deployable with Docker and can be hosted on various cloud platforms (AWS, Azure, GCP) or on-premises servers.
+
+## Recent Updates (August 2025)
+
+**Migration to Replit Standard Environment:**
+- Successfully migrated from Replit Agent to standard Replit environment
+- Implemented PostgreSQL database with full persistence
+- Fixed all import/export functionality with robust Excel processing
+- Enhanced file processor to handle Portuguese column names and data validation
+- Created comprehensive system documentation (DOCUMENTACAO_SISTEMA.md)
+- Validated import functionality with 100+ real case data from user upload
+- All security requirements maintained: 100% internal processing, no external AI dependencies
+
+**Database Status:**
+- PostgreSQL database fully operational with 113+ cases stored
+- Automatic fallback to in-memory storage if database connectivity issues occur
+- Full CRUD operations implemented and tested

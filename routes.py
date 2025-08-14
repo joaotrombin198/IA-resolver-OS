@@ -488,7 +488,8 @@ def download_template():
         
         # Create Excel file in memory
         output = io.BytesIO()
-        df.to_excel(output, engine='openpyxl', sheet_name='Casos', index=False)
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='Casos', index=False)
         
         output.seek(0)
         

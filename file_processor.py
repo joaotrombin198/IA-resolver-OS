@@ -83,6 +83,7 @@ class FileProcessor:
         if not PDF_AVAILABLE:
             raise ValueError("PyPDF2 não está disponível para processar arquivos PDF")
         
+        import PyPDF2
         with open(file_path, 'rb') as f:
             reader = PyPDF2.PdfReader(f)
             content = ""
@@ -102,26 +103,35 @@ class FileProcessor:
         problem_col = None
         solution_col = None
         
-        # Map common column names
+        # Map common column names (including Portuguese variations)
         for col_lower, col_original in columns.items():
             if any(word in col_lower for word in ['sistema', 'system', 'tipo']):
                 system_col = col_original
             elif any(word in col_lower for word in ['problema', 'problem', 'issue', 'erro', 'error']):
                 problem_col = col_original
-            elif any(word in col_lower for word in ['solução', 'solution', 'resolução', 'fix']):
+            elif any(word in col_lower for word in ['solução', 'soluçao', 'solution', 'resolução', 'resolucao', 'fix']):
                 solution_col = col_original
         
         if not problem_col or not solution_col:
             raise ValueError("Não foi possível identificar as colunas de problema e solução no arquivo")
         
         for _, row in df.iterrows():
+            # Skip empty rows
+            if pd.isna(row[problem_col]).any() if hasattr(pd.isna(row[problem_col]), 'any') else pd.isna(row[problem_col]) or \
+               pd.isna(row[solution_col]).any() if hasattr(pd.isna(row[solution_col]), 'any') else pd.isna(row[solution_col]):
+                continue
+                
+            system_val = row[system_col] if system_col else None
             case = {
-                'system_type': str(row[system_col]) if system_col else 'Desconhecido',
-                'problem_description': str(row[problem_col]),
-                'solution': str(row[solution_col])
+                'system_type': str(system_val).strip() if system_col and not (pd.isna(system_val).any() if hasattr(pd.isna(system_val), 'any') else pd.isna(system_val)) else 'Desconhecido',
+                'problem_description': str(row[problem_col]).strip(),
+                'solution': str(row[solution_col]).strip()
             }
             
-            if case['problem_description'] and case['solution']:
+            # Only add cases with meaningful content
+            if (case['problem_description'] and case['solution'] and 
+                case['problem_description'] != 'nan' and case['solution'] != 'nan' and
+                len(case['problem_description']) > 10 and len(case['solution']) > 10):
                 cases.append(case)
         
         return cases
