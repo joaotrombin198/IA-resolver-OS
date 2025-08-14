@@ -268,14 +268,14 @@ class MLService:
         
         return meaningful_tokens
     
-    def analyze_problem(self, problem_description: str) -> SolutionSuggestion:
-        """Analyze problem description and provide ML-based suggestions"""
+    def analyze_problem(self, problem_description: str, similar_cases: list = None) -> SolutionSuggestion:
+        """Analyze problem description and provide ML-based suggestions with priority for similar cases"""
         try:
             # Detect system type
             system_type = self._detect_system_type(problem_description)
             
-            # Generate solution suggestions
-            suggestions = self._generate_solutions(problem_description, system_type)
+            # Generate solution suggestions with similar cases priority
+            suggestions = self._generate_solutions_with_similar_cases(problem_description, system_type, similar_cases)
             
             # Calculate confidence
             confidence = self._calculate_confidence(problem_description, system_type, suggestions)
@@ -418,6 +418,41 @@ class MLService:
             "Contatar suporte especializado",
             "Documentar cenário completo do problema"
         ]
+    
+    def _generate_solutions_with_similar_cases(self, problem_description: str, system_type: str, similar_cases: list = None) -> List[str]:
+        """Generate solutions prioritizing similar cases first, then pattern-based"""
+        suggestions = []
+        
+        # PRIORITY 1: Solutions from similar cases (most important)
+        if similar_cases:
+            similar_solutions = []
+            for case in similar_cases[:3]:  # Top 3 most similar
+                if hasattr(case, 'solution') and case.solution:
+                    # Clean and format solution
+                    solution = case.solution.strip()
+                    if solution and solution not in similar_solutions:
+                        similar_solutions.append(solution)
+            
+            suggestions.extend(similar_solutions[:3])  # Add top 3 similar solutions
+            logging.info(f"Added {len(similar_solutions)} solutions from similar cases")
+        
+        # PRIORITY 2: Pattern-based solutions (only if we need more)
+        if len(suggestions) < 4:
+            pattern_solutions = self._generate_solutions(problem_description, system_type)
+            # Add pattern solutions that aren't already in suggestions
+            for solution in pattern_solutions:
+                if solution not in suggestions and len(suggestions) < 5:
+                    suggestions.append(solution)
+        
+        # Ensure we have at least some suggestions
+        if not suggestions:
+            suggestions = [
+                "Verificar logs do sistema para mais detalhes",
+                "Consultar base de conhecimento",
+                "Contactar suporte técnico se necessário"
+            ]
+        
+        return suggestions[:5]
     
     def _get_diversified_system_solutions(self, system_type: str, problem_tokens: set) -> List[str]:
         """Get diversified system-specific solutions based on context"""

@@ -34,11 +34,11 @@ def analyze_problem():
             flash('Please enter a problem description.', 'error')
             return redirect(url_for('index'))
         
-        # Get ML analysis and suggestions
-        suggestion = ml_service.analyze_problem(problem_description)
-        
-        # Find similar cases
+        # Find similar cases first
         similar_cases = case_service.find_similar_cases(problem_description, limit=5)
+        
+        # Get ML analysis and suggestions with similar cases priority
+        suggestion = ml_service.analyze_problem(problem_description, similar_cases)
         suggestion.similar_cases = similar_cases
         
         # Get recent cases for reference
