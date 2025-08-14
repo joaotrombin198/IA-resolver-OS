@@ -55,12 +55,11 @@ class Case(db.Model):
         self.feedback_count += 1
         
         # Create feedback record
-        feedback = CaseFeedback(
-            case_id=self.id,
-            effectiveness_score=effectiveness,
-            resolution_method=resolution_method,
-            custom_solution=custom_solution
-        )
+        feedback = CaseFeedback()
+        feedback.case_id = self.id
+        feedback.effectiveness_score = effectiveness
+        feedback.resolution_method = resolution_method
+        feedback.custom_solution = custom_solution
         db.session.add(feedback)
         db.session.commit()
 

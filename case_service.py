@@ -41,11 +41,10 @@ class CaseService:
         """Add a new case to the PostgreSQL database"""
         try:
             # Create new case
-            case = Case(
-                problem_description=problem_description,
-                solution=solution,
-                system_type=system_type
-            )
+            case = Case()
+            case.problem_description = problem_description
+            case.solution = solution
+            case.system_type = system_type
             
             # Add to database
             db.session.add(case)
@@ -63,7 +62,10 @@ class CaseService:
             # Fallback to in-memory storage
             next_id = current_app.config.get('NEXT_CASE_ID', 1)
             current_app.config['NEXT_CASE_ID'] = next_id + 1
-            case = Case(problem_description=problem_description, solution=solution, system_type=system_type)
+            case = Case()
+            case.problem_description = problem_description
+            case.solution = solution
+            case.system_type = system_type
             case.id = next_id
             cases = current_app.config.get('CASES_STORAGE', [])
             cases.append(case)

@@ -488,8 +488,7 @@ def download_template():
         
         # Create Excel file in memory
         output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl', mode='w') as writer:
-            df.to_excel(writer, sheet_name='Casos', index=False)
+        df.to_excel(output, engine='openpyxl', sheet_name='Casos', index=False)
         
         output.seek(0)
         
@@ -528,6 +527,7 @@ def manage_systems():
                 system_stats[system]['last_used'] = case.created_at
         
         # Get custom systems from config
+        from flask import current_app
         custom_systems = current_app.config.get('CUSTOM_SYSTEMS', [])
         
         # Merge with usage stats
@@ -562,6 +562,7 @@ def add_system():
             return redirect(url_for('manage_systems'))
         
         # Get current custom systems
+        from flask import current_app
         custom_systems = current_app.config.get('CUSTOM_SYSTEMS', [])
         
         # Check if system already exists
@@ -675,7 +676,7 @@ def import_cases():
             return redirect(url_for('add_case_form'))
         
         # Save file temporarily
-        filename = secure_filename(file.filename)
+        filename = secure_filename(file.filename or "upload.txt")
         temp_dir = tempfile.gettempdir()
         temp_path = os.path.join(temp_dir, filename)
         
