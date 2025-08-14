@@ -1,0 +1,50 @@
+Título do projeto:
+Assistente Inteligente para Diagnóstico e Resolução de OS Multissistema
+
+Descrição geral:
+Quero desenvolver um sistema de inteligência artificial que auxilie técnicos na resolução de Ordens de Serviço (OS) de diferentes sistemas (ex.: Tasy, e outros).
+O sistema funcionará como um “mentor digital”, onde descrevo o problema encontrado na OS e ele me sugere possíveis soluções com base em casos anteriores, aprendendo continuamente a partir de OS já resolvidas.
+Não haverá integração direta com os sistemas originais — o aprendizado será feito a partir de dados exportados, relatórios, planilhas ou informações digitadas manualmente.
+
+Funcionalidades principais:
+
+Entrada de problema: Campo para colar ou digitar a descrição da OS (podendo incluir prints, texto livre ou dados de relatórios).
+
+Orientação inteligente: Sugestão de diagnósticos e procedimentos com base em histórico de OS resolvidas.
+
+Treinamento incremental: Upload ou cadastro manual de OS resolvidas para que o modelo aprenda e melhore suas respostas.
+
+Reconhecimento multissistema: Identificar o sistema origem da OS (Tasy, outro hospitalar, administrativo, etc.) e ajustar a sugestão conforme o contexto.
+
+Busca por casos semelhantes: Mostrar histórico de OS parecidas e suas soluções.
+
+Registro de eficácia: Registrar se a solução sugerida funcionou, para retroalimentar o aprendizado.
+
+Fluxo de funcionamento:
+
+Usuário informa o problema da OS.
+
+O sistema detecta o contexto (se possível, o sistema origem).
+
+Busca casos semelhantes no histórico.
+
+Sugere diagnósticos e passos de resolução.
+
+Usuário confirma se funcionou e, se necessário, ajusta a resposta correta.
+
+Essa informação é adicionada ao banco de dados para melhorar o desempenho futuro.
+
+Tecnologias sugeridas:
+
+Backend: Python (FastAPI ou Flask)
+
+IA/NLP: Modelos de embeddings (Sentence Transformers, OpenAI Embeddings, ou similar) + banco vetorial (Milvus, Weaviate, Pinecone ou Chroma)
+
+Banco de dados: PostgreSQL ou MongoDB para armazenar OS e metadados
+
+Frontend: Web app (React/Vue) ou até interface simples (Streamlit) para protótipo rápido
+
+Hospedagem: Docker + servidor cloud (AWS, Azure, GCP ou local)
+
+Objetivo final:
+Aumentar a eficiência na resolução de OS de múltiplos sistemas, reduzindo retrabalho e centralizando conhecimento técnico num só lugar, de forma independente das plataformas originais.
