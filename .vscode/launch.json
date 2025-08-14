@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "OS Assistant - Flask App",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/run_local.py",
+            "console": "integratedTerminal",
+            "args": [],
+            "env": {
+                "FLASK_ENV": "development",
+                "FLASK_DEBUG": "1"
+            },
+            "jinja": true,
+            "justMyCode": false
+        },
+        {
+            "name": "OS Assistant - Main Entry",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "console": "integratedTerminal",
+            "args": [],
+            "env": {
+                "FLASK_ENV": "development"
+            }
+        }
+    ]
+}

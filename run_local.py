@@ -30,6 +30,7 @@ print("="*60)
 print("Configuração: SQLite (Banco Local)")
 print("Porta: 5000")
 print("URL: http://localhost:5000")
+print("Pasta do projeto:", Path(__file__).parent)
 print("="*60)
 
 try:

@@ -1,0 +1,65 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Executar OS Assistant",
+            "type": "shell",
+            "command": "python",
+            "args": ["run_local.py"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "problemMatcher": [],
+            "detail": "Executa o OS Assistant em modo local"
+        },
+        {
+            "label": "Instalar Dependências",
+            "type": "shell",
+            "command": "pip",
+            "args": [
+                "install",
+                "flask",
+                "flask-sqlalchemy", 
+                "pandas",
+                "openpyxl",
+                "scikit-learn",
+                "werkzeug",
+                "numpy",
+                "PyPDF2",
+                "email-validator"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "detail": "Instala todas as dependências necessárias"
+        },
+        {
+            "label": "Verificar Status do Banco",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-c",
+                "from app import *; import os; with app.app_context(): print(f'Banco: {os.path.exists(\"os_assistant.db\")}'); print(f'Casos: {Case.query.count() if os.path.exists(\"os_assistant.db\") else 0}')"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "new"
+            },
+            "detail": "Verifica status do banco de dados"
+        }
+    ]
+}

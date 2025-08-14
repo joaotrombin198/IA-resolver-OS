@@ -1,0 +1,22 @@
+{
+    "python.defaultInterpreterPath": "python",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.formatting.provider": "black",
+    "files.associations": {
+        "*.html": "html",
+        "*.css": "css",
+        "*.js": "javascript",
+        "*.py": "python"
+    },
+    "emmet.includeLanguages": {
+        "html": "html",
+        "javascript": "javascriptreact"
+    },
+    "html.format.indentInnerHtml": true,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.typeCheckingMode": "basic"
+}
