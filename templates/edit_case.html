@@ -95,7 +95,7 @@
                 <div class="row text-sm">
                     <div class="col-md-6">
                         <strong>ID do Caso:</strong> #{{ case.id }}<br>
-                        <strong>Sistema Atual:</strong> <span class="badge bg-info">{{ case.system_type }}</span><br>
+                        <strong>Sistema Atual:</strong> <span class="badge system-badge" data-system="{{ case.system_type }}">{{ case.system_type }}</span><br>
                         <strong>Criado em:</strong> {{ case.created_at.strftime('%d/%m/%Y às %H:%M') }}
                     </div>
                     <div class="col-md-6">

@@ -100,11 +100,11 @@
                 <div id="mlInfo">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span>Status do Modelo</span>
-                        <span id="mlTrained" class="badge bg-secondary">Loading...</span>
+                        <span class="badge bg-success">Ativo</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span>Sistemas Suportados</span>
-                        <span id="mlSystems" class="badge bg-info">-</span>
+                        <span class="badge bg-info">{{ stats.systems|length if stats and stats.systems else 0 }}</span>
                     </div>
                     <div class="mt-3 d-grid gap-2">
                         <form action="{{ url_for('train_models') }}" method="POST" class="d-inline">
@@ -165,29 +165,6 @@
                 <h5 class="mb-0">Distribuição por Sistemas</h5>
             </div>
             <div class="card-body">
-                {% for system, count in stats.systems.items() %}
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>{{ system }}</span>
-                    <span class="badge bg-secondary">{{ count }}</span>
-                </div>
-                <div class="progress mb-3" style="height: 6px;">
-                    <div class="progress-bar" style="width: {{ (count / stats.total_cases * 100)|round|int }}%"></div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- System Categories with Colors -->
-    <div class="col-lg-6 mb-4">
-        <div class="card h-100">
-            <div class="card-header d-flex align-items-center">
-                <i data-feather="layers" class="me-2"></i>
-                <h5 class="mb-0">Categorias por Sistema</h5>
-            </div>
-            <div class="card-body">
-                {% if stats and stats.systems %}
                 {% set system_colors = {
                     'Sistema SGU': 'primary',
                     'SGU-CRM': 'info', 
@@ -201,51 +178,61 @@
                     'Pep RS': 'orange',
                     'Database': 'pink'
                 } %}
-                
-                <div class="row">
-                    {% for system, count in stats.systems.items() %}
-                    {% set color = system_colors.get(system, 'secondary') %}
-                    <div class="col-12 mb-3">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <div class="badge bg-{{ color }} me-2" style="width: 12px; height: 12px; border-radius: 50%;"></div>
-                                <span class="fw-medium">{{ system }}</span>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-{{ color }} me-2">{{ count }}</span>
-                                <small class="text-muted">{{ "%.1f"|format((count / stats.total_cases * 100) if stats.total_cases > 0 else 0) }}%</small>
-                            </div>
-                        </div>
-                        <div class="progress mt-2" style="height: 4px;">
-                            <div class="progress-bar bg-{{ color }}" 
-                                 style="width: {{ (count / stats.total_cases * 100)|round|int }}%"></div>
-                        </div>
-                    </div>
-                    {% endfor %}
+                {% for system, count in stats.systems.items() %}
+                {% set color = system_colors.get(system, 'secondary') %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>{{ system }}</span>
+                    <span class="badge bg-{{ color }}">{{ count }}</span>
+                </div>
+                <div class="progress mb-3" style="height: 6px;">
+                    <div class="progress-bar bg-{{ color }}" style="width: {{ (count / stats.total_cases * 100)|round|int }}%"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- System Management -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="settings" class="me-2"></i>
+                <h5 class="mb-0">Gerenciar Sistemas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('recent_cases') }}" class="btn btn-outline-primary">
+                        <i data-feather="list" class="me-2"></i>
+                        Ver Todos os Casos
+                    </a>
+                    <a href="{{ url_for('add_case_form') }}" class="btn btn-outline-success">
+                        <i data-feather="plus-circle" class="me-2"></i>
+                        Adicionar Novo Caso
+                    </a>
+                    <a href="{{ url_for('upload_cases') }}" class="btn btn-outline-info">
+                        <i data-feather="upload" class="me-2"></i>
+                        Importar Casos Excel
+                    </a>
+                    <a href="{{ url_for('ml_learning_info') }}" class="btn btn-outline-warning">
+                        <i data-feather="cpu" class="me-2"></i>
+                        Info ML & Aprendizado
+                    </a>
                 </div>
                 
-                <!-- Legend -->
                 <div class="mt-4 pt-3 border-top">
-                    <h6 class="text-muted mb-3">Legenda de Cores:</h6>
-                    <div class="row">
-                        {% for system, color in system_colors.items() %}
-                        {% if system in stats.systems %}
-                        <div class="col-6 col-lg-12 mb-1">
-                            <small class="d-flex align-items-center">
-                                <div class="badge bg-{{ color }} me-2" style="width: 8px; height: 8px; border-radius: 50%;"></div>
-                                {{ system }}
-                            </small>
+                    <h6 class="text-muted mb-3">Estatísticas Rápidas:</h6>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <small class="text-muted">Total Casos</small>
+                            <div class="fw-bold text-primary">{{ stats.total_cases or 0 }}</div>
                         </div>
-                        {% endif %}
-                        {% endfor %}
+                        <div class="col-6">
+                            <small class="text-muted">Com Feedback</small>
+                            <div class="fw-bold text-success">{{ stats.cases_with_feedback or 0 }}</div>
+                        </div>
                     </div>
                 </div>
-                {% else %}
-                <div class="text-center py-4">
-                    <i data-feather="pie-chart" style="width: 48px; height: 48px;" class="text-muted"></i>
-                    <p class="text-muted mt-2 mb-0">Nenhum sistema encontrado</p>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>

@@ -106,6 +106,37 @@
         document.addEventListener('DOMContentLoaded', function() {
             feather.replace();
             
+            // Global system color mapping
+            const systemColors = {
+                'Sistema SGU': 'bg-primary',
+                'SGU-CRM': 'bg-info', 
+                'SGU-Card': 'bg-success',
+                'SGU-Portais': 'bg-warning',
+                'SGU GPL': 'bg-secondary',
+                'Autorizador/AutSC': 'bg-danger',
+                'Aplicativo Unimed Criciúma': 'bg-dark',
+                'Tasy': 'bg-purple',
+                'Syngoo': 'bg-cyan',
+                'Pep RS': 'bg-orange',
+                'Database': 'bg-pink'
+            };
+            
+            // Apply colors to all system badges in the page
+            function applySystemColors() {
+                document.querySelectorAll('.system-badge').forEach(badge => {
+                    const system = badge.getAttribute('data-system');
+                    const colorClass = systemColors[system] || 'bg-secondary';
+                    badge.className = 'badge system-badge ' + colorClass;
+                });
+            }
+            
+            // Apply colors immediately and after any DOM changes
+            applySystemColors();
+            
+            // Observer for dynamic content
+            const observer = new MutationObserver(applySystemColors);
+            observer.observe(document.body, { childList: true, subtree: true });
+            
             // Create scroll to top button
             const scrollBtn = document.createElement('button');
             scrollBtn.id = 'scrollToTop';

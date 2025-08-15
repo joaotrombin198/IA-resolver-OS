@@ -10,7 +10,7 @@
             <div>
                 <h2 class="mb-1">Caso #{{ case.id }}</h2>
                 <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-info">{{ case.system_type }}</span>
+                    <span class="badge system-badge" data-system="{{ case.system_type }}">{{ case.system_type }}</span>
                     {% if case.effectiveness_score %}
                     <span class="badge bg-success">
                         <i data-feather="star" style="width: 12px; height: 12px;"></i>
