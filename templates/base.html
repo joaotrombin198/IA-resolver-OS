@@ -107,74 +107,80 @@
             // Initialize feather icons first
             feather.replace();
             
-            // Global system color mapping - ensure unique colors
-            const systemColors = {
-                'Sistema SGU': 'bg-primary',
-                'SGU': 'bg-primary',
-                'SGU-CRM': 'bg-info', 
-                'SGU-Card': 'bg-success',
-                'SGU Card': 'bg-success',
-                'SGU-Portais': 'bg-warning',
-                'SGU GPL': 'bg-secondary',
-                'Autorizador/AutSC': 'bg-danger',
-                'Autorizador': 'bg-danger',
-                'Aplicativo Unimed Criciúma': 'bg-dark',
-                'Tasy': 'bg-purple',
-                'Syngoo': 'bg-cyan',
-                'Pep RS': 'bg-orange',
-                'Database': 'bg-pink',
-                'Network': 'bg-info'
+            // Complete system color mapping - unique colors only
+            const systemColorMapping = {
+                'Sistema SGU': { badge: 'bg-primary', progress: 'bg-primary' },
+                'SGU': { badge: 'bg-primary', progress: 'bg-primary' },
+                'SGU-CRM': { badge: 'bg-info', progress: 'bg-info' }, 
+                'SGU-Card': { badge: 'bg-success', progress: 'bg-success' },
+                'SGU Card': { badge: 'bg-success', progress: 'bg-success' },
+                'SGU-Portais': { badge: 'bg-warning', progress: 'bg-warning' },
+                'SGU GPL': { badge: 'bg-secondary', progress: 'bg-secondary' },
+                'Autorizador/AutSC': { badge: 'bg-danger', progress: 'bg-danger' },
+                'Autorizador': { badge: 'bg-danger', progress: 'bg-danger' },
+                'Aplicativo Unimed Criciúma': { badge: 'bg-dark', progress: 'bg-dark' },
+                'Tasy': { badge: 'bg-purple', progress: 'bg-purple' },
+                'Syngoo': { badge: 'bg-cyan', progress: 'bg-cyan' },
+                'Pep RS': { badge: 'bg-orange', progress: 'bg-orange' },
+                'Database': { badge: 'bg-pink', progress: 'bg-pink' },
+                'Network': { badge: 'bg-light', progress: 'bg-light' }
             };
             
-            // Used colors to prevent duplicates
-            const usedColors = new Set();
+            // Available unique colors for new systems
+            const availableUniqueColors = [
+                { badge: 'bg-purple', progress: 'bg-purple' },
+                { badge: 'bg-cyan', progress: 'bg-cyan' },
+                { badge: 'bg-orange', progress: 'bg-orange' },
+                { badge: 'bg-pink', progress: 'bg-pink' },
+                { badge: 'bg-indigo', progress: 'bg-indigo' },
+                { badge: 'bg-teal', progress: 'bg-teal' }
+            ];
             
-            // Apply colors to all system badges in the page
+            let colorIndex = 0;
+            
+            // Apply unified colors to badges and progress bars
             function applySystemColors() {
-                const availableColors = ['bg-primary', 'bg-secondary', 'bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'bg-dark'];
-                const assignedColors = {};
-                usedColors.clear();
+                // Track assigned systems to prevent duplicates
+                const assignedSystems = new Map();
                 
-                // First pass: assign predefined colors
-                document.querySelectorAll('.system-badge, [data-system]').forEach(badge => {
-                    const system = badge.getAttribute('data-system');
+                // Process all system elements (badges and progress bars)
+                document.querySelectorAll('[data-system]').forEach(element => {
+                    const system = element.getAttribute('data-system');
                     if (!system) return;
                     
-                    let colorClass = systemColors[system];
+                    let colorConfig = systemColorMapping[system];
                     
-                    // Special handling for problematic systems
-                    if (system && system.toLowerCase().includes('aplicativo unimed')) {
-                        colorClass = 'bg-dark';
-                    } else if (system && system.toLowerCase().includes('sgu gpl')) {
-                        colorClass = 'bg-secondary';
+                    // If system not in mapping, assign next available unique color
+                    if (!colorConfig && !assignedSystems.has(system)) {
+                        if (colorIndex < availableUniqueColors.length) {
+                            colorConfig = availableUniqueColors[colorIndex];
+                            systemColorMapping[system] = colorConfig;
+                            colorIndex++;
+                        } else {
+                            // Fallback to secondary if out of unique colors
+                            colorConfig = { badge: 'bg-secondary', progress: 'bg-secondary' };
+                        }
+                        assignedSystems.set(system, colorConfig);
+                    } else if (colorConfig) {
+                        assignedSystems.set(system, colorConfig);
                     }
                     
-                    if (colorClass) {
-                        assignedColors[system] = colorClass;
-                        usedColors.add(colorClass);
-                    }
-                });
-                
-                // Second pass: assign unique colors to systems without predefined colors
-                document.querySelectorAll('.system-badge, [data-system]').forEach(badge => {
-                    const system = badge.getAttribute('data-system');
-                    if (!system) return;
+                    // Apply appropriate color based on element type
+                    const config = assignedSystems.get(system);
+                    if (!config) return;
                     
-                    let colorClass = assignedColors[system];
+                    // Remove all existing bg- classes
+                    element.className = element.className.replace(/\bbg-\w+/g, '');
                     
-                    if (!colorClass) {
-                        // Find first unused color
-                        colorClass = availableColors.find(color => !usedColors.has(color)) || 'bg-secondary';
-                        assignedColors[system] = colorClass;
-                        usedColors.add(colorClass);
-                    }
-                    
-                    // Apply the color class
-                    badge.className = badge.className.replace(/\bbg-\w+/g, '');
-                    if (badge.classList.contains('system-badge')) {
-                        badge.className = 'badge system-badge ' + colorClass;
+                    if (element.classList.contains('progress-bar')) {
+                        // Progress bar styling
+                        element.classList.add(config.progress);
                     } else {
-                        badge.classList.add('badge', colorClass);
+                        // Badge styling
+                        element.classList.add('badge', config.badge);
+                        if (!element.classList.contains('system-badge')) {
+                            element.classList.add('system-badge');
+                        }
                     }
                 });
             }

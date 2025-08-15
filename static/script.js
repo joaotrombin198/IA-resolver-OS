@@ -68,6 +68,11 @@ function getSystemColor(systemType) {
 
 // Create scroll to top button
 function createScrollToTopButton() {
+    // Only create if it doesn't exist
+    if (document.getElementById('scrollToTop')) {
+        return;
+    }
+    
     const scrollBtn = document.createElement('button');
     scrollBtn.id = 'scrollToTop';
     scrollBtn.innerHTML = '<i data-feather="arrow-up"></i>';
@@ -103,13 +108,14 @@ function createScrollToTopButton() {
 
 // Setup scroll to top functionality
 function setupScrollToTop() {
-    const scrollBtn = document.getElementById('scrollToTop');
-    
     window.addEventListener('scroll', function() {
-        if (window.pageYOffset > 300) {
-            scrollBtn.style.display = 'block';
-        } else {
-            scrollBtn.style.display = 'none';
+        const scrollBtn = document.getElementById('scrollToTop');
+        if (scrollBtn) {
+            if (window.pageYOffset > 300) {
+                scrollBtn.style.display = 'block';
+            } else {
+                scrollBtn.style.display = 'none';
+            }
         }
     });
 }
