@@ -131,8 +131,8 @@ Exemplos:
                                 {% endif %}
                             </div>
                         </div>
-                        <p class="text-muted mb-2"><strong>Problema:</strong> {{ case.problem_description[:200] }}...</p>
-                        <p class="mb-0"><strong>Solução:</strong> {{ case.solution[:200] }}...</p>
+                        <p class="text-muted mb-2"><strong>Problema:</strong> {{ case.problem_description[:350] }}{% if case.problem_description|length > 350 %}...{% endif %}</p>
+                        <p class="mb-0"><strong>Solução:</strong> {{ case.solution[:350] }}{% if case.solution|length > 350 %}...{% endif %}</p>
                         <div class="mt-2">
                             <a href="{{ url_for('view_case', case_id=case.id) }}" class="btn btn-sm btn-outline-primary">
                                 <i data-feather="external-link" class="me-1"></i>

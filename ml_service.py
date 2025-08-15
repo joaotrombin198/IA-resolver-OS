@@ -419,6 +419,52 @@ class MLService:
             "Documentar cenário completo do problema"
         ]
     
+    def _convert_to_infinitive(self, text: str) -> str:
+        """Convert common past participle forms to infinitive"""
+        # Common past participle to infinitive conversions for Portuguese
+        conversions = {
+            # Pattern: past participle -> infinitive
+            'corrigida': 'corrigir',
+            'corrigido': 'corrigir', 
+            'analisada': 'analisar',
+            'analisado': 'analisar',
+            'ajustada': 'ajustar',
+            'ajustado': 'ajustar',
+            'verificada': 'verificar',
+            'verificado': 'verificar',
+            'checada': 'checar',
+            'checado': 'checar',
+            'configurada': 'configurar',
+            'configurado': 'configurar',
+            'resetada': 'resetar',
+            'resetado': 'resetar',
+            'reiniciada': 'reiniciar',
+            'reiniciado': 'reiniciar',
+            'atualizada': 'atualizar',
+            'atualizado': 'atualizar',
+            'validada': 'validar',
+            'validado': 'validar',
+            'testada': 'testar',
+            'testado': 'testar',
+            'consultada': 'consultar',
+            'consultado': 'consultar',
+            'documentada': 'documentar',
+            'documentado': 'documentar',
+            'monitorada': 'monitorar',
+            'monitorado': 'monitorar'
+        }
+        
+        # Apply conversions
+        result = text.lower()
+        for past_participle, infinitive in conversions.items():
+            result = result.replace(past_participle, infinitive)
+        
+        # Capitalize first letter to maintain original format
+        if result and result[0].islower() and text and text[0].isupper():
+            result = result[0].upper() + result[1:]
+            
+        return result
+
     def _generate_solutions_with_similar_cases(self, problem_description: str, system_type: str, similar_cases: list = None) -> List[str]:
         """Generate solutions prioritizing similar cases first, then pattern-based"""
         suggestions = []
@@ -428,8 +474,9 @@ class MLService:
             similar_solutions = []
             for case in similar_cases[:3]:  # Top 3 most similar
                 if hasattr(case, 'solution') and case.solution:
-                    # Clean and format solution
+                    # Clean and format solution, convert to infinitive
                     solution = case.solution.strip()
+                    solution = self._convert_to_infinitive(solution)
                     if solution and solution not in similar_solutions:
                         similar_solutions.append(solution)
             
@@ -439,10 +486,11 @@ class MLService:
         # PRIORITY 2: Pattern-based solutions (only if we need more)
         if len(suggestions) < 4:
             pattern_solutions = self._generate_solutions(problem_description, system_type)
-            # Add pattern solutions that aren't already in suggestions
+            # Add pattern solutions that aren't already in suggestions, convert to infinitive
             for solution in pattern_solutions:
-                if solution not in suggestions and len(suggestions) < 5:
-                    suggestions.append(solution)
+                converted_solution = self._convert_to_infinitive(solution)
+                if converted_solution not in suggestions and len(suggestions) < 5:
+                    suggestions.append(converted_solution)
         
         # Ensure we have at least some suggestions
         if not suggestions:
