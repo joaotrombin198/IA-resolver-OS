@@ -33,29 +33,79 @@ pre {
 }
 
 /* Form improvements */
-.form-control {
-    background-color: var(--bs-dark) !important;
-    border-color: var(--bs-secondary) !important;
-    color: var(--bs-light) !important;
+.form-control, .form-select {
+    background-color: #2d3748 !important;
+    border-color: #4a5568 !important;
+    color: #e2e8f0 !important;
 }
 
-.form-control:focus {
-    border-color: var(--bs-primary) !important;
-    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25) !important;
-    background-color: var(--bs-dark) !important;
-    color: var(--bs-light) !important;
+.form-control:focus, .form-select:focus {
+    border-color: #63b3ed !important;
+    box-shadow: 0 0 0 0.2rem rgba(99, 179, 237, 0.25) !important;
+    background-color: #2d3748 !important;
+    color: #e2e8f0 !important;
 }
 
 .form-control::placeholder {
-    color: var(--bs-secondary) !important;
+    color: #a0aec0 !important;
 }
 
 textarea.form-control {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-size: 1rem;
     line-height: 1.6;
-    background-color: var(--bs-dark) !important;
-    color: var(--bs-light) !important;
+    background-color: #2d3748 !important;
+    color: #e2e8f0 !important;
+}
+
+/* Radio and checkbox visibility fixes */
+.form-check-input {
+    background-color: #2d3748 !important;
+    border-color: #4a5568 !important;
+    margin-top: 0.25rem !important;
+}
+
+.form-check-input:checked {
+    background-color: #3182ce !important;
+    border-color: #3182ce !important;
+}
+
+.form-check-input:focus {
+    border-color: #63b3ed !important;
+    box-shadow: 0 0 0 0.2rem rgba(99, 179, 237, 0.25) !important;
+}
+
+/* Radio button specific fixes for better visibility */
+.form-check-input[type="radio"] {
+    background-color: #374151 !important;
+    border: 2px solid #6b7280 !important;
+    width: 1.2em !important;
+    height: 1.2em !important;
+}
+
+.form-check-input[type="radio"]:checked {
+    background-color: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23ffffff'/%3e%3c/svg%3e") !important;
+}
+
+.form-check-input[type="radio"]:focus {
+    border-color: #60a5fa !important;
+    outline: 0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+}
+
+/* Form labels and text in dark theme */
+.form-check-label {
+    color: #e5e7eb !important;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.form-label {
+    color: #e5e7eb !important;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
 /* Modal specific form styling */
