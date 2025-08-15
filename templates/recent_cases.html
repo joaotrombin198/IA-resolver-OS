@@ -167,12 +167,12 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{{ url_for('case_detail', case_id=case.id) }}" 
+                                        <a href="{{ url_for('view_case', case_id=case.id) }}" 
                                            class="btn btn-outline-primary btn-sm" 
                                            title="Ver Detalhes">
                                             <i data-feather="eye"></i>
                                         </a>
-                                        <a href="{{ url_for('edit_case', case_id=case.id) }}" 
+                                        <a href="{{ url_for('edit_case_form', case_id=case.id) }}" 
                                            class="btn btn-outline-warning btn-sm" 
                                            title="Editar">
                                             <i data-feather="edit"></i>
@@ -261,7 +261,7 @@
 <script>
 function confirmDelete(caseId) {
     if (confirm('Tem certeza que deseja excluir este caso? Esta ação não pode ser desfeita.')) {
-        fetch(`/case/${caseId}/delete`, {
+        fetch(`/cases/${caseId}/delete`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

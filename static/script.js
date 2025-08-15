@@ -46,6 +46,24 @@ function setupEventListeners() {
     window.addEventListener('popstate', handleBackNavigation);
 }
 
+// Handle Enter key submission for textarea
+function handleEnterSubmit(event) {
+    // Check if Enter key is pressed without Shift (Shift+Enter for new line)
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault(); // Prevent new line
+        
+        // Find the form and submit it
+        const form = event.target.closest('form');
+        if (form) {
+            // Check if textarea has content
+            const textarea = event.target;
+            if (textarea.value.trim().length > 0) {
+                form.submit();
+            }
+        }
+    }
+}
+
 // Handle form submissions with loading states
 function handleFormSubmission(event) {
     const form = event.target;
