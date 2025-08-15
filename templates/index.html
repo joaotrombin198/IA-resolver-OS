@@ -21,9 +21,8 @@
     <div class="col-lg-8 mx-auto">
         <!-- Problem Input Section -->
         <div class="card mb-4">
-            <div class="card-header d-flex align-items-center">
-                <i data-feather="edit-3" class="me-2"></i>
-                <h5 class="mb-0">Descreva Seu Problema Técnico</h5>
+            <div class="card-header">
+                <h5 class="mb-0 text-center">Descreva Seu Problema Técnico</h5>
             </div>
             <div class="card-body">
                 <form action="{{ url_for('analyze_problem') }}" method="POST">
@@ -44,16 +43,16 @@ Exemplos:
 • Erro de permissão ao acessar módulo SGU
 • Problema que pode precisar de chamado Nexdow"
                                 required>{{ problem_description or '' }}</textarea>
-                        <div class="form-text">
-                            <i data-feather="info" class="me-1"></i>
-                            Seja o mais específico possível. Mencione nomes de sistemas (Tasy, SGU, SGU Card, Autorizador), códigos de erro e passos que levaram ao problema.
+                        <div class="form-text text-center">
+                            <i data-feather="lightbulb" class="me-1"></i>
+                            <strong>Dica:</strong> Seja específico - mencione sistemas, códigos de erro e detalhes relevantes
                         </div>
                     </div>
                     
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i data-feather="search" class="me-2"></i>
-                            Analisar Problema & Obter Soluções
+                            Analisar Problema
                         </button>
                     </div>
                 </form>
