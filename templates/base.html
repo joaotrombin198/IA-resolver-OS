@@ -107,7 +107,7 @@
             // Initialize feather icons first
             feather.replace();
             
-            // Global system color mapping - updated with all systems
+            // Global system color mapping - ensure unique colors
             const systemColors = {
                 'Sistema SGU': 'bg-primary',
                 'SGU': 'bg-primary',
@@ -126,10 +126,20 @@
                 'Network': 'bg-info'
             };
             
+            // Used colors to prevent duplicates
+            const usedColors = new Set();
+            
             // Apply colors to all system badges in the page
             function applySystemColors() {
-                document.querySelectorAll('.system-badge').forEach(badge => {
+                const availableColors = ['bg-primary', 'bg-secondary', 'bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'bg-dark'];
+                const assignedColors = {};
+                usedColors.clear();
+                
+                // First pass: assign predefined colors
+                document.querySelectorAll('.system-badge, [data-system]').forEach(badge => {
                     const system = badge.getAttribute('data-system');
+                    if (!system) return;
+                    
                     let colorClass = systemColors[system];
                     
                     // Special handling for problematic systems
@@ -137,30 +147,35 @@
                         colorClass = 'bg-dark';
                     } else if (system && system.toLowerCase().includes('sgu gpl')) {
                         colorClass = 'bg-secondary';
-                    } else if (!colorClass) {
-                        colorClass = 'bg-secondary';
                     }
                     
-                    // Force remove all existing bg- classes and apply new one
-                    badge.className = badge.className.replace(/\bbg-\w+/g, '');
-                    badge.className = 'badge system-badge ' + colorClass;
+                    if (colorClass) {
+                        assignedColors[system] = colorClass;
+                        usedColors.add(colorClass);
+                    }
                 });
                 
-                // Also apply to badges without system-badge class but with data-system
-                document.querySelectorAll('[data-system]:not(.system-badge)').forEach(badge => {
+                // Second pass: assign unique colors to systems without predefined colors
+                document.querySelectorAll('.system-badge, [data-system]').forEach(badge => {
                     const system = badge.getAttribute('data-system');
-                    let colorClass = systemColors[system];
+                    if (!system) return;
                     
-                    if (system && system.toLowerCase().includes('aplicativo unimed')) {
-                        colorClass = 'bg-dark';
-                    } else if (system && system.toLowerCase().includes('sgu gpl')) {
-                        colorClass = 'bg-secondary';
-                    } else if (!colorClass) {
-                        colorClass = 'bg-secondary';
+                    let colorClass = assignedColors[system];
+                    
+                    if (!colorClass) {
+                        // Find first unused color
+                        colorClass = availableColors.find(color => !usedColors.has(color)) || 'bg-secondary';
+                        assignedColors[system] = colorClass;
+                        usedColors.add(colorClass);
                     }
                     
+                    // Apply the color class
                     badge.className = badge.className.replace(/\bbg-\w+/g, '');
-                    badge.classList.add('badge', colorClass);
+                    if (badge.classList.contains('system-badge')) {
+                        badge.className = 'badge system-badge ' + colorClass;
+                    } else {
+                        badge.classList.add('badge', colorClass);
+                    }
                 });
             }
             
@@ -207,10 +222,13 @@
             
             // Show/hide scroll button
             window.addEventListener('scroll', function() {
-                if (window.pageYOffset > 300) {
-                    scrollBtn.style.display = 'block';
-                } else {
-                    scrollBtn.style.display = 'none';
+                const scrollBtn = document.getElementById('scrollToTop');
+                if (scrollBtn) {
+                    if (window.pageYOffset > 300) {
+                        scrollBtn.style.display = 'block';
+                    } else {
+                        scrollBtn.style.display = 'none';
+                    }
                 }
             });
         });
