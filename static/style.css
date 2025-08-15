@@ -12,10 +12,14 @@
 .navbar-brand-glow {
     text-shadow: 0 0 10px var(--glow-secondary);
     transition: text-shadow 0.3s ease;
+    cursor: default !important;
+    pointer-events: none !important;
 }
 
-.navbar-brand-glow:hover {
-    text-shadow: 0 0 15px var(--glow-color);
+.navbar-brand {
+    cursor: default !important;
+    pointer-events: none !important;
+    text-decoration: none !important;
 }
 
 .nav-link.active {
