@@ -163,15 +163,15 @@ def add_case():
         flash(f'Error adding case: {str(e)}', 'error')
         return render_template('add_case.html')
 
-@app.route('/feedback', methods=['POST'])
-def submit_feedback():
+@app.route('/submit-case-feedback', methods=['POST'])
+def submit_case_feedback():
     """Submit feedback on solution effectiveness"""
     try:
         case_id = request.form.get('case_id', type=int)
         effectiveness = request.form.get('effectiveness', type=int)
         
         if not case_id or effectiveness is None:
-            return jsonify({'error': 'Missing required parameters'}), 400
+            return jsonify({'error': 'Case ID e effectiveness são obrigatórios'}), 400
         
         if effectiveness < 1 or effectiveness > 5:
             return jsonify({'error': 'Effectiveness must be between 1 and 5'}), 400
@@ -805,6 +805,9 @@ def feedback():
         from datetime import datetime
         import json
         
+        # Log received data for debugging
+        logging.info(f"Feedback form data: {dict(request.form)}")
+        
         # Get form data
         score = request.form.get('score', type=int)
         problem_description = request.form.get('problem_description', '')
@@ -812,6 +815,13 @@ def feedback():
         good_aspects = request.form.get('good_aspects', '[]')
         improvements = request.form.get('improvements', '[]')
         suggestion_ratings = request.form.get('suggestion_ratings', '{}')
+        
+        # Validate required data
+        if score is None:
+            return jsonify({
+                'success': False,
+                'message': 'Score é obrigatório'
+            }), 400
         
         # Parse JSON strings
         try:

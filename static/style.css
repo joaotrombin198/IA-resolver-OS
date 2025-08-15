@@ -33,15 +33,53 @@ pre {
 }
 
 /* Form improvements */
+.form-control {
+    background-color: var(--bs-dark) !important;
+    border-color: var(--bs-secondary) !important;
+    color: var(--bs-light) !important;
+}
+
 .form-control:focus {
-    border-color: var(--bs-primary);
-    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+    border-color: var(--bs-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25) !important;
+    background-color: var(--bs-dark) !important;
+    color: var(--bs-light) !important;
+}
+
+.form-control::placeholder {
+    color: var(--bs-secondary) !important;
 }
 
 textarea.form-control {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-size: 1rem;
     line-height: 1.6;
+    background-color: var(--bs-dark) !important;
+    color: var(--bs-light) !important;
+}
+
+/* Modal specific form styling */
+.modal .form-control {
+    background-color: #343a40 !important;
+    border: 1px solid #495057 !important;
+    color: #fff !important;
+}
+
+.modal .form-control:focus {
+    background-color: #343a40 !important;
+    border-color: #86b7fe !important;
+    color: #fff !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.modal .form-check-input {
+    background-color: #343a40 !important;
+    border: 1px solid #495057 !important;
+}
+
+.modal .form-check-input:checked {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
 }
 
 /* Button improvements */

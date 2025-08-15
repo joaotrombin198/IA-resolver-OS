@@ -444,12 +444,20 @@ function submitDetailedFeedback() {
     formData.append('improvements', JSON.stringify(improvements));
     
     // Submit feedback
+    console.log('Enviando feedback...');
     fetch('/feedback', {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
         if (data.success) {
             // Close modal
             const modal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
@@ -460,13 +468,16 @@ function submitDetailedFeedback() {
             
             // Reset form
             form.reset();
+            
+            // Clear suggestion ratings
+            suggestionRatings = {};
         } else {
-            showToast('Erro ao enviar feedback. Tente novamente.', 'danger');
+            showToast(data.message || 'Erro ao enviar feedback. Tente novamente.', 'danger');
         }
     })
     .catch(error => {
         console.error('Error submitting feedback:', error);
-        showToast('Erro ao enviar feedback. Tente novamente.', 'danger');
+        showToast(`Erro de comunicação: ${error.message}`, 'danger');
     });
 }
 
