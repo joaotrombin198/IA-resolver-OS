@@ -56,13 +56,7 @@
 /* Adjust navbar alignment to match page content */
 @media (min-width: 992px) {
     .navbar-collapse {
-        padding-left: 120px; /* Better alignment with container content */
-    }
-}
-
-@media (min-width: 1200px) {
-    .navbar-collapse {
-        padding-left: 150px; /* Fine-tune for larger screens */
+        padding-left: 80px; /* Adjust to align with page content */
     }
 }
 
