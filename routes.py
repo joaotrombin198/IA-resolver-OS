@@ -797,3 +797,59 @@ def import_cases():
         traceback.print_exc()
         flash(f'Erro ao importar casos: {str(e)}', 'error')
         return redirect(url_for('upload_cases_form'))
+
+@app.route('/feedback', methods=['POST'])
+def feedback():
+    """Process detailed feedback from users"""
+    try:
+        from datetime import datetime
+        import json
+        
+        # Get form data
+        score = request.form.get('score', type=int)
+        problem_description = request.form.get('problem_description', '')
+        comments = request.form.get('comments', '')
+        good_aspects = request.form.get('good_aspects', '[]')
+        improvements = request.form.get('improvements', '[]')
+        
+        # Parse JSON strings
+        try:
+            good_aspects_list = json.loads(good_aspects)
+            improvements_list = json.loads(improvements)
+        except json.JSONDecodeError:
+            good_aspects_list = []
+            improvements_list = []
+        
+        # Log feedback for analysis (in a real system, this would go to a database)
+        feedback_data = {
+            'timestamp': datetime.now().isoformat(),
+            'score': score,
+            'problem_description': problem_description[:200],  # Truncate for privacy
+            'good_aspects': good_aspects_list,
+            'improvements': improvements_list,
+            'comments': comments,
+            'user_agent': request.headers.get('User-Agent', '')
+        }
+        
+        # Log the feedback (in production, save to database)
+        logging.info(f"User Feedback Received: {feedback_data}")
+        
+        # In a future version, this feedback could be used to:
+        # 1. Improve ML model training
+        # 2. Adjust suggestion algorithms
+        # 3. Update similar case matching
+        # 4. Enhance system detection accuracy
+        
+        return jsonify({
+            'success': True,
+            'message': 'Feedback processado com sucesso!'
+        })
+        
+    except Exception as e:
+        logging.error(f"Error processing feedback: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'Erro ao processar feedback'
+        }), 500
+
+

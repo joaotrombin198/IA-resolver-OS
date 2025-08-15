@@ -84,25 +84,48 @@ Exemplos:
                 
                 <!-- Feedback Section -->
                 <div class="border-top pt-3 mt-3">
-                    <h6 class="text-muted mb-3">Isso foi útil?</h6>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-success" onclick="submitFeedback(5)">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted mb-0">Avalie as Sugestões</h6>
+                        <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#feedbackHelp">
+                            <i data-feather="help-circle" class="me-1"></i>
+                            Como Funciona?
+                        </button>
+                    </div>
+                    
+                    <!-- Explicação do sistema de feedback -->
+                    <div class="collapse mb-3" id="feedbackHelp">
+                        <div class="card card-body bg-dark border-secondary">
+                            <h6 class="text-info mb-2">
+                                <i data-feather="brain" class="me-1"></i>
+                                Como o Feedback Melhora o Sistema
+                            </h6>
+                            <ul class="mb-0 small text-muted">
+                                <li><strong>Machine Learning:</strong> Suas avaliações treinam o algoritmo para gerar sugestões mais precisas</li>
+                                <li><strong>Casos Similares:</strong> Feedback ajuda a identificar quais soluções funcionam melhor para cada tipo de problema</li>
+                                <li><strong>Priorizações:</strong> Soluções bem avaliadas aparecem primeiro em buscas futuras</li>
+                                <li><strong>Melhoria Contínua:</strong> Seus comentários ajudam nossa equipe a aprimorar o sistema</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button class="btn btn-sm btn-outline-success" onclick="openFeedbackModal(5)">
                             <i data-feather="thumbs-up" class="me-1"></i>
                             Muito Útil
                         </button>
-                        <button class="btn btn-sm btn-outline-info" onclick="submitFeedback(4)">
+                        <button class="btn btn-sm btn-outline-info" onclick="openFeedbackModal(4)">
                             <i data-feather="check" class="me-1"></i>
                             Útil
                         </button>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="submitFeedback(3)">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="openFeedbackModal(3)">
                             <i data-feather="minus" class="me-1"></i>
-                            Mais ou Menos
+                            Razoável
                         </button>
-                        <button class="btn btn-sm btn-outline-warning" onclick="submitFeedback(2)">
+                        <button class="btn btn-sm btn-outline-warning" onclick="openFeedbackModal(2)">
                             <i data-feather="x" class="me-1"></i>
                             Pouco Útil
                         </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="submitFeedback(1)">
+                        <button class="btn btn-sm btn-outline-danger" onclick="openFeedbackModal(1)">
                             <i data-feather="thumbs-down" class="me-1"></i>
                             Não Útil
                         </button>
@@ -172,14 +195,235 @@ Exemplos:
         </div>
     </div>
 </div>
+
+<!-- Modal de Feedback Detalhado -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="feedbackModalLabel">
+                    <i data-feather="star" class="me-2"></i>
+                    Feedback Detalhado
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="feedbackForm">
+                    <input type="hidden" id="feedbackScore" name="score">
+                    
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">Avaliação Geral: <span id="feedbackScoreText" class="text-primary"></span></h6>
+                        <div class="rating-display mb-3">
+                            <div id="starRating" class="d-flex gap-1">
+                                <!-- Stars will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">O que funcionou bem? (Opcional)</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="goodRelevant" name="good[]" value="relevant">
+                                    <label class="form-check-label" for="goodRelevant">
+                                        Sugestões relevantes para o problema
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="goodClear" name="good[]" value="clear">
+                                    <label class="form-check-label" for="goodClear">
+                                        Instruções claras e detalhadas
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="goodSystem" name="good[]" value="system">
+                                    <label class="form-check-label" for="goodSystem">
+                                        Identificou o sistema corretamente
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="goodSimilar" name="good[]" value="similar">
+                                    <label class="form-check-label" for="goodSimilar">
+                                        Casos similares foram úteis
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="goodOrder" name="good[]" value="order">
+                                    <label class="form-check-label" for="goodOrder">
+                                        Ordem das sugestões faz sentido
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="goodComplete" name="good[]" value="complete">
+                                    <label class="form-check-label" for="goodComplete">
+                                        Sugestões completas e abrangentes
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-3">O que pode melhorar? (Opcional)</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="improveRelevant" name="improve[]" value="more_relevant">
+                                    <label class="form-check-label" for="improveRelevant">
+                                        Sugestões mais específicas para o problema
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="improveSystem" name="improve[]" value="system_detection">
+                                    <label class="form-check-label" for="improveSystem">
+                                        Melhor detecção do sistema
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="improveOrder" name="improve[]" value="better_order">
+                                    <label class="form-check-label" for="improveOrder">
+                                        Melhor priorização das sugestões
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="improveSimilar" name="improve[]" value="similar_cases">
+                                    <label class="form-check-label" for="improveSimilar">
+                                        Casos similares mais relevantes
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="improveDetail" name="improve[]" value="more_detail">
+                                    <label class="form-check-label" for="improveDetail">
+                                        Instruções mais detalhadas
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="improveMore" name="improve[]" value="more_suggestions">
+                                    <label class="form-check-label" for="improveMore">
+                                        Mais opções de solução
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="feedbackComments" class="form-label">
+                            <h6 class="text-muted mb-0">Comentários Adicionais (Opcional)</h6>
+                        </label>
+                        <textarea class="form-control" id="feedbackComments" name="comments" rows="3" 
+                                placeholder="Compartilhe sua experiência, sugestões específicas, ou conte se a solução funcionou..."></textarea>
+                        <div class="form-text">
+                            <i data-feather="info" class="me-1"></i>
+                            Seus comentários são valiosos para melhorar o sistema para todos os usuários.
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="submitDetailedFeedback()">
+                    <i data-feather="send" class="me-1"></i>
+                    Enviar Feedback
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-function submitFeedback(effectiveness) {
-    // For now, just show a success message since we don't have a specific case ID
-    // This would be enhanced when saving analysis results
-    showToast('Feedback received! This will help improve future suggestions.', 'success');
+let currentProblemDescription = "{{ problem_description | escape }}" || "";
+
+function openFeedbackModal(score) {
+    // Set the score
+    document.getElementById('feedbackScore').value = score;
+    
+    // Update score display
+    const scoreTexts = {
+        5: 'Muito Útil ⭐⭐⭐⭐⭐',
+        4: 'Útil ⭐⭐⭐⭐',
+        3: 'Razoável ⭐⭐⭐',
+        2: 'Pouco Útil ⭐⭐',
+        1: 'Não Útil ⭐'
+    };
+    document.getElementById('feedbackScoreText').textContent = scoreTexts[score];
+    
+    // Create star rating display
+    const starRating = document.getElementById('starRating');
+    starRating.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('i');
+        star.setAttribute('data-feather', i <= score ? 'star' : 'star');
+        star.className = i <= score ? 'text-warning' : 'text-muted';
+        star.style.width = '20px';
+        star.style.height = '20px';
+        starRating.appendChild(star);
+    }
+    
+    // Refresh feather icons
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+    modal.show();
+}
+
+function submitDetailedFeedback() {
+    const form = document.getElementById('feedbackForm');
+    const formData = new FormData(form);
+    
+    // Add problem description for context
+    formData.append('problem_description', currentProblemDescription);
+    
+    // Collect checkboxes
+    const goodAspects = [];
+    const improvements = [];
+    
+    document.querySelectorAll('input[name="good[]"]:checked').forEach(checkbox => {
+        goodAspects.push(checkbox.value);
+    });
+    
+    document.querySelectorAll('input[name="improve[]"]:checked').forEach(checkbox => {
+        improvements.push(checkbox.value);
+    });
+    
+    formData.append('good_aspects', JSON.stringify(goodAspects));
+    formData.append('improvements', JSON.stringify(improvements));
+    
+    // Submit feedback
+    fetch('/feedback', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
+            modal.hide();
+            
+            // Show success message
+            showToast('Obrigado pelo seu feedback! Suas sugestões nos ajudam a melhorar o sistema.', 'success');
+            
+            // Reset form
+            form.reset();
+        } else {
+            showToast('Erro ao enviar feedback. Tente novamente.', 'danger');
+        }
+    })
+    .catch(error => {
+        console.error('Error submitting feedback:', error);
+        showToast('Erro ao enviar feedback. Tente novamente.', 'danger');
+    });
 }
 
 function showToast(message, type) {
@@ -195,6 +439,11 @@ function showToast(message, type) {
     document.body.insertAdjacentHTML('beforeend', toastHtml);
     const toast = new bootstrap.Toast(document.querySelector('.toast:last-child'));
     toast.show();
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        toast.hide();
+    }, 5000);
 }
 </script>
 {% endblock %}
