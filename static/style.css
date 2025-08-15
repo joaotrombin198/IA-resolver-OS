@@ -583,3 +583,14 @@ footer {
         color: #000 !important;
     }
 }
+
+/* Custom system color classes */
+.bg-purple { background-color: #6f42c1 !important; }
+.bg-cyan { background-color: #0dcaf0 !important; }
+.bg-orange { background-color: #fd7e14 !important; }
+.bg-pink { background-color: #d63384 !important; }
+
+.progress-bar.bg-purple { background-color: #6f42c1 !important; }
+.progress-bar.bg-cyan { background-color: #0dcaf0 !important; }
+.progress-bar.bg-orange { background-color: #fd7e14 !important; }
+.progress-bar.bg-pink { background-color: #d63384 !important; }
