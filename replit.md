@@ -111,9 +111,6 @@ The system is designed to be easily deployable with Docker and can be hosted on 
 - ✅ Fixed JavaScript scroll button errors and undefined variable issues
 - ✅ Implemented unique color system with 14 bright colors, avoiding black/gray/silver
 - ✅ Ensured color consistency between badges and progress bars with no duplicates
-- ✅ Removed tips box from edit case page as requested
-- ✅ Simplified all titles and descriptions across the system - removed verbose explanations
-- ✅ Made interface more direct and objective - explanations moved to tutorial section
 - Implemented PostgreSQL database with full persistence and connection pooling
 - Fixed all import/export functionality with robust Excel processing
 - Enhanced file processor to handle Portuguese column names and data validation

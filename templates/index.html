@@ -10,7 +10,9 @@
                 <i data-feather="search" class="me-2"></i>
                 Diagnóstico Inteligente
             </h1>
-            <p class="text-secondary mb-0">Descreva seu problema técnico e obtenha soluções inteligentes baseadas em casos similares</p>
+            <p class="text-secondary mb-0">
+                Descreva seu problema técnico e obtenha soluções inteligentes baseadas em casos similares
+            </p>
         </div>
     </div>
 </div>
@@ -29,7 +31,14 @@
                                 id="problem_description" 
                                 name="problem_description" 
                                 rows="6" 
-                                placeholder="Descreva o problema técnico que você está enfrentando. Inclua sistema, erro e detalhes..."
+                                placeholder="Descreva o problema técnico que você está enfrentando. Inclua nomes de sistemas, mensagens de erro e detalhes relevantes...
+
+Exemplos:
+• Sistema Tasy não consegue conectar com banco de dados
+• SGU Card não imprime carteirinhas
+• Autorizador não processa guias
+• Erro de permissão ao acessar módulo SGU
+• Problema que pode precisar de chamado Nexdow"
                                 onkeydown="handleEnterSubmit(event)"
                                 required>{{ problem_description or '' }}</textarea>
 
@@ -183,7 +192,7 @@
                     <div class="card-body text-center">
                         <i data-feather="plus-circle" class="mb-2" style="width: 48px; height: 48px;"></i>
                         <h6>Adicionar Novo Caso</h6>
-                        <p class="text-muted small">Adicione casos resolvidos</p>
+                        <p class="text-muted small">Contribua para a base de conhecimento adicionando casos resolvidos</p>
                         <a href="{{ url_for('add_case_form') }}" class="btn btn-outline-primary">Adicionar Caso</a>
                     </div>
                 </div>
@@ -193,7 +202,7 @@
                     <div class="card-body text-center">
                         <i data-feather="bar-chart-2" class="mb-2" style="width: 48px; height: 48px;"></i>
                         <h6>Ver Painel</h6>
-                        <p class="text-muted small">Ver todos os casos e estatísticas</p>
+                        <p class="text-muted small">Navegar todos os casos e estatísticas do sistema</p>
                         <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">Ver Painel</a>
                     </div>
                 </div>

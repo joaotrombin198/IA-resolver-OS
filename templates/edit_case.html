@@ -21,8 +21,12 @@
                                 id="problem_description" 
                                 name="problem_description" 
                                 rows="6" 
-                                placeholder="Descreva o problema técnico detalhadamente"
+                                placeholder="Descreva o problema técnico detalhadamente. Inclua nomes de sistemas (Tasy, SGU, SGU Card, Autorizador), mensagens de erro e passos para reproduzir..."
                                 required>{{ case.problem_description }}</textarea>
+                        <div class="form-text">
+                            <i data-feather="info" class="me-1"></i>
+                            Seja específico sobre sistemas envolvidos, mensagens de erro e contexto do problema.
+                        </div>
                     </div>
                     
                     <div class="mb-3">
@@ -33,8 +37,12 @@
                                 id="solution" 
                                 name="solution" 
                                 rows="6" 
-                                placeholder="Descreva a solução completa"
+                                placeholder="Descreva a solução completa que resolveu o problema. Inclua passos detalhados, configurações alteradas e se foi necessário abrir chamado para Nexdow..."
                                 required>{{ case.solution }}</textarea>
+                        <div class="form-text">
+                            <i data-feather="help-circle" class="me-1"></i>
+                            Inclua todos os passos necessários para implementar a solução.
+                        </div>
                     </div>
                     
                     <div class="mb-3">
@@ -53,12 +61,16 @@
                             <option value="Database" {% if case.system_type == 'Database' %}selected{% endif %}>Banco de Dados</option>
                             <option value="Application Server" {% if case.system_type == 'Application Server' %}selected{% endif %}>Servidor de Aplicação</option>
                         </select>
+                        <div class="form-text">
+                            <i data-feather="layers" class="me-1"></i>
+                            Selecione o sistema principal relacionado ao problema.
+                        </div>
                     </div>
                     
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-success">
                             <i data-feather="save" class="me-2"></i>
-                            Salvar
+                            Salvar Alterações
                         </button>
                         <a href="{{ url_for('view_case', case_id=case.id) }}" class="btn btn-secondary">
                             <i data-feather="x" class="me-2"></i>
@@ -74,14 +86,14 @@
         <div class="card mt-4">
             <div class="card-header d-flex align-items-center">
                 <i data-feather="info" class="me-2"></i>
-                <h6 class="mb-0">Info</h6>
+                <h6 class="mb-0">Informações do Caso</h6>
             </div>
             <div class="card-body">
                 <div class="row text-sm">
                     <div class="col-md-6">
-                        <strong>ID:</strong> #{{ case.id }}<br>
-                        <strong>Sistema:</strong> <span class="badge system-badge" data-system="{{ case.system_type }}">{{ case.system_type }}</span><br>
-                        <strong>Criado:</strong> {{ case.created_at.strftime('%d/%m/%Y') }}
+                        <strong>ID do Caso:</strong> #{{ case.id }}<br>
+                        <strong>Sistema Atual:</strong> <span class="badge system-badge" data-system="{{ case.system_type }}">{{ case.system_type }}</span><br>
+                        <strong>Criado em:</strong> {{ case.created_at.strftime('%d/%m/%Y às %H:%M') }}
                     </div>
                     <div class="col-md-6">
                         {% if case.effectiveness_score %}
@@ -92,7 +104,7 @@
                         </span>
                         ({{ "%.1f"|format(case.effectiveness_score) }}/5)<br>
                         {% endif %}
-                        <strong>Feedback:</strong> {{ case.feedback_count or 0 }}
+                        <strong>Feedback:</strong> {{ case.feedback_count or 0 }} avaliações
                     </div>
                 </div>
             </div>

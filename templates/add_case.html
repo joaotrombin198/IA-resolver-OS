@@ -9,7 +9,7 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="mb-1">Adicionar Novo Caso</h2>
-                <p class="text-muted mb-0">Adicione um caso resolvido para ajudar outros técnicos</p>
+                <p class="text-muted mb-0">Contribua para a base de conhecimento adicionando um caso resolvido</p>
             </div>
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-outline-info" onclick="toggleImportMode()">
@@ -57,7 +57,12 @@
                                 id="problem_description" 
                                 name="problem_description" 
                                 rows="6" 
-                                placeholder="Descreva o problema técnico detalhadamente. Inclua sistema, erro e contexto..."
+                                placeholder="Descreva o problema técnico em detalhes. Inclua:
+• Sistema ou módulo afetado
+• Mensagens de erro (texto exato)
+• Passos que levaram ao problema
+• Ações do usuário ou comportamento do sistema
+• Detalhes do ambiente se relevante"
                                 required></textarea>
 
                     </div>
@@ -70,7 +75,15 @@
                                 id="solution" 
                                 name="solution" 
                                 rows="8" 
-                                placeholder="Descreva a solução passo a passo"
+                                placeholder="Descreva a solução completa passo a passo:
+
+1. Primeiro passo realizado para resolver o problema
+2. Mudanças de configuração feitas
+3. Comandos executados ou procedimentos seguidos
+4. Passos de verificação realizados
+5. Ações de acompanhamento necessárias
+
+Inclua detalhes técnicos específicos que ajudariam outro técnico a reproduzir a solução."
                                 required></textarea>
 
                     </div>
@@ -117,6 +130,10 @@
                                name="file" 
                                accept=".txt,.pdf,.xlsx,.csv,.xls,.docx"
                                required>
+                        <div class="form-text">
+                            <i data-feather="info" class="me-1"></i>
+                            Tipos suportados: TXT, PDF, Excel (XLSX/XLS), CSV, Word (DOCX)
+                        </div>
                     </div>
                     
                     <div class="mb-4">
@@ -129,6 +146,7 @@
                                     <label class="form-check-label" for="structured_format">
                                         <strong>Formato Estruturado (Único Disponível)</strong>
                                     </label>
+                                    <div class="form-text">Para arquivos organizados com estrutura definida</div>
                                 </div>
                             </div>
                         </div>
@@ -136,6 +154,13 @@
 
                     <!-- Structured Format Options (hidden by default) -->
                     <div id="structuredOptions" style="display: none;">
+                        <div class="alert alert-info">
+                            <i data-feather="info" class="me-1"></i>
+                            <strong>Formato Estruturado Esperado:</strong><br>
+                            • <strong>Excel/CSV:</strong> Colunas: Sistema, Problema, Solução<br>
+                            • <strong>TXT:</strong> Seções separadas por "---" ou linhas em branco<br>
+                            • <strong>PDF/Word:</strong> Títulos claros para cada caso
+                        </div>
                     </div>
 
                     <div class="border-top pt-4">

@@ -70,7 +70,7 @@
                                 <span class="ms-2 fw-bold">{{ "%.1f"|format(case.effectiveness_score) }}/5</span>
                             </div>
                         </div>
-                        <p class="text-muted">{{ case.feedback_count }} avaliações</p>
+                        <p class="text-muted">Baseado em {{ case.feedback_count }} avaliação{{ 'ões' if case.feedback_count != 1 else '' }}</p>
                     </div>
                     <div class="col-md-6">
                         <div class="progress mb-2" style="height: 20px;">
@@ -79,7 +79,7 @@
                                 {{ "%.0f"|format(case.effectiveness_score / 5 * 100) }}%
                             </div>
                         </div>
-                        <small class="text-muted">Efetividade</small>
+                        <small class="text-muted">Pontuação de efetividade da solução</small>
                     </div>
                 </div>
                 {% endif %}
@@ -90,7 +90,7 @@
                         <a href="{{ url_for('case_feedback_form', case_id=case.id) }}" 
                            class="btn btn-primary btn-lg">
                             <i data-feather="message-square" class="me-2"></i>
-                            Dar Feedback
+                            Dar Feedback Detalhado
                         </a>
                     </div>
 
