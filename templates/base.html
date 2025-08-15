@@ -104,6 +104,7 @@
     <!-- Initialize Feather Icons and Scroll to Top -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize feather icons first
             feather.replace();
             
             // Global system color mapping - updated with all systems
@@ -170,34 +171,39 @@
             const observer = new MutationObserver(applySystemColors);
             observer.observe(document.body, { childList: true, subtree: true });
             
-            // Create scroll to top button
-            const scrollBtn = document.createElement('button');
-            scrollBtn.id = 'scrollToTop';
-            scrollBtn.innerHTML = '<i data-feather="arrow-up"></i>';
-            scrollBtn.className = 'btn btn-primary scroll-to-top-btn';
-            scrollBtn.style.cssText = `
-                position: fixed;
-                bottom: 30px;
-                right: 30px;
-                width: 50px;
-                height: 50px;
-                border-radius: 50%;
-                display: none;
-                z-index: 1000;
-                border: none;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                transition: all 0.3s ease;
-            `;
-            
-            scrollBtn.addEventListener('click', function() {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
+            // Create scroll to top button - only if it doesn't exist
+            if (!document.getElementById('scrollToTop')) {
+                const scrollBtn = document.createElement('button');
+                scrollBtn.id = 'scrollToTop';
+                scrollBtn.innerHTML = '<i data-feather="arrow-up"></i>';
+                scrollBtn.className = 'btn btn-primary scroll-to-top-btn';
+                scrollBtn.style.cssText = `
+                    position: fixed;
+                    bottom: 30px;
+                    right: 30px;
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 50%;
+                    display: none;
+                    z-index: 1000;
+                    border: none;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                    transition: all 0.3s ease;
+                `;
+                
+                scrollBtn.addEventListener('click', function() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
                 });
-            });
-            
-            document.body.appendChild(scrollBtn);
-            feather.replace(); // Replace icons again for the new button
+                
+                // Ensure body exists before appending
+                if (document.body) {
+                    document.body.appendChild(scrollBtn);
+                    feather.replace(); // Replace icons again for the new button
+                }
+            }
             
             // Show/hide scroll button
             window.addEventListener('scroll', function() {

@@ -74,9 +74,67 @@
 .navbar-nav {
     display: flex;
     justify-content: center;
-    align-items: center;
-    width: 100%;
-    margin: 0 !important;
+    flex-wrap: wrap;
+    margin: 0 auto;
+}
+
+/* Custom Badge Colors - Enhanced */
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+.badge.bg-dark {
+    background-color: #212529 !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-primary {
+    background-color: #0d6efd !important;
+}
+
+.badge.bg-info {
+    background-color: #0dcaf0 !important;
+}
+
+.badge.bg-success {
+    background-color: #198754 !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000000 !important;
+}
+
+.badge.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+/* System-specific color overrides */
+.system-badge[data-system*="Aplicativo Unimed"],
+.system-badge[data-system*="aplicativo unimed"] {
+    background-color: #212529 !important;
+    color: #ffffff !important;
+    border: 1px solid #495057;
+}
+
+.system-badge[data-system*="SGU GPL"],
+.system-badge[data-system*="sgu gpl"] {
+    background-color: #6c757d !important;
+    color: #ffffff !important;
+}
+
+/* Force badge visibility and proper styling */
+.badge {
+    display: inline-block !important;
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.75em !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+    color: #fff !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    vertical-align: baseline !important;
+    border-radius: 0.375rem !important;
 }
 
 .navbar-toggler {
