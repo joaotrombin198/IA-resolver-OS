@@ -12,7 +12,7 @@
                     <i data-feather="clock" class="me-2"></i>
                     Casos Recentes
                 </h2>
-                <p class="text-muted mb-0">Visualize e gerencie casos</p>
+                <p class="text-muted mb-0">Visualize e gerencie todos os casos do sistema</p>
             </div>
             <a href="{{ url_for('add_case_form') }}" class="btn btn-primary">
                 <i data-feather="plus" class="me-1"></i>
@@ -37,7 +37,7 @@
                            class="form-control" 
                            name="search" 
                            value="{{ search_query or '' }}" 
-                           placeholder="Buscar casos...">
+                           placeholder="Buscar casos por problema, solução ou sistema...">
                 </div>
             </div>
             <div class="col-md-3">

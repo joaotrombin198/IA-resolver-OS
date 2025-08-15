@@ -54,7 +54,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex align-items-center">
                 <i data-feather="message-circle" class="me-2"></i>
-                <h5 class="mb-0">Avaliação</h5>
+                <h5 class="mb-0">Efetividade da Solução</h5>
             </div>
             <div class="card-body">
                 {% if case.effectiveness_score %}
@@ -85,7 +85,7 @@
                 {% endif %}
                 
                 <div class="border-top pt-3 mt-3">
-                    <h6 class="mb-3">Avalie este caso:</h6>
+                    <h6 class="mb-3">Como foi resolvido este caso?</h6>
                     <div class="d-grid">
                         <a href="{{ url_for('case_feedback_form', case_id=case.id) }}" 
                            class="btn btn-primary btn-lg">

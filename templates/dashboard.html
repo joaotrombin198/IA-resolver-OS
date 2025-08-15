@@ -12,7 +12,7 @@
                     <i data-feather="bar-chart-2" class="me-2"></i>
                     Painel de Controle
                 </h2>
-                <p class="text-muted mb-0">Visão geral e estatísticas</p>
+                <p class="text-muted mb-0">Visão geral do sistema e estatísticas dos casos</p>
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ url_for('recent_cases') }}" class="btn btn-outline-primary">
@@ -162,7 +162,7 @@
         <div class="card h-100">
             <div class="card-header d-flex align-items-center">
                 <i data-feather="pie-chart" class="me-2"></i>
-                <h5 class="mb-0">Por Sistema</h5>
+                <h5 class="mb-0">Distribuição por Sistema</h5>
             </div>
             <div class="card-body">
                 {% set bright_colors = ['primary', 'info', 'success', 'warning', 'danger', 'purple', 'cyan', 'orange', 'pink', 'indigo', 'teal', 'lime', 'violet', 'emerald'] %}
