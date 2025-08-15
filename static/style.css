@@ -4,6 +4,49 @@
 :root {
     --custom-code-bg: #1a1a1a;
     --custom-border-radius: 8px;
+    --glow-color: #0dcaf0;
+    --glow-secondary: rgba(13, 202, 240, 0.3);
+}
+
+/* Navigation glow effects */
+.navbar-brand-glow {
+    text-shadow: 0 0 10px var(--glow-secondary);
+    transition: text-shadow 0.3s ease;
+}
+
+.navbar-brand-glow:hover {
+    text-shadow: 0 0 15px var(--glow-color);
+}
+
+.nav-link.active {
+    color: var(--glow-color) !important;
+    text-shadow: 0 0 8px var(--glow-secondary);
+    font-weight: 500;
+    position: relative;
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--glow-color), transparent);
+    border-radius: 2px;
+    box-shadow: 0 0 5px var(--glow-secondary);
+}
+
+.nav-link {
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    padding: 0.5rem 1rem !important;
+}
+
+.nav-link:hover {
+    background-color: rgba(13, 202, 240, 0.1);
+    color: var(--glow-color) !important;
 }
 
 /* Code and pre styling */

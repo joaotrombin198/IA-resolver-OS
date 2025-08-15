@@ -6,13 +6,16 @@
 <div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 class="text-white mb-1">🧠 Análise de Aprendizado ML</h1>
+            <div class="text-center mb-4">
+                <div class="mb-3">
+                    <h1 class="text-white mb-2">
+                        <i data-feather="cpu" class="me-2"></i>
+                        Análise de Aprendizado ML
+                    </h1>
                     <p class="text-secondary mb-0">Como o sistema está aprendendo com os feedbacks "útil" e "não útil"</p>
                 </div>
                 <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
-                    <i data-feather="arrow-left"></i> Voltar
+                    <i data-feather="arrow-left"></i> Voltar ao Dashboard
                 </a>
             </div>
         </div>
@@ -236,7 +239,7 @@
                         <div class="col-md-4">
                             <div class="text-center mb-3">
                                 <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                    <i data-feather="brain" class="text-white"></i>
+                                    <i data-feather="cpu" class="text-white"></i>
                                 </div>
                                 <h6 class="text-white mt-2">Aprendizado Contínuo</h6>
                                 <p class="text-secondary small">Retreina automaticamente a cada 5 feedbacks recebidos</p>
