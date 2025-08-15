@@ -21,10 +21,6 @@
     <div class="col-lg-8 mx-auto">
         <!-- Problem Input Section -->
         <div class="card mb-4">
-            <div class="card-header d-flex align-items-center">
-                <i data-feather="edit-3" class="me-2"></i>
-                <h5 class="mb-0">Descreva Seu Problema Técnico</h5>
-            </div>
             <div class="card-body">
                 <form action="{{ url_for('analyze_problem') }}" method="POST">
                     <div class="mb-3">
@@ -53,7 +49,7 @@ Exemplos:
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary btn-lg">
                             <i data-feather="search" class="me-2"></i>
-                            Analisar Problema & Obter Soluções
+                            Analisar Problema
                         </button>
                     </div>
                 </form>
