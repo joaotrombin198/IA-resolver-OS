@@ -379,16 +379,20 @@ let suggestionRatings = {};
 document.addEventListener('DOMContentLoaded', function() {
     const systemColors = {
         'Sistema SGU': 'bg-primary',
+        'SGU': 'bg-primary',
         'SGU-CRM': 'bg-info', 
         'SGU-Card': 'bg-success',
+        'SGU Card': 'bg-success',
         'SGU-Portais': 'bg-warning',
         'SGU GPL': 'bg-secondary',
         'Autorizador/AutSC': 'bg-danger',
+        'Autorizador': 'bg-danger',
         'Aplicativo Unimed Criciúma': 'bg-dark',
         'Tasy': 'bg-purple',
         'Syngoo': 'bg-cyan',
         'Pep RS': 'bg-orange',
-        'Database': 'bg-pink'
+        'Database': 'bg-pink',
+        'Network': 'bg-info'
     };
     
     document.querySelectorAll('.system-badge').forEach(badge => {

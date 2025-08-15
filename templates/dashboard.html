@@ -167,16 +167,20 @@
             <div class="card-body">
                 {% set system_colors = {
                     'Sistema SGU': 'primary',
+                    'SGU': 'primary',
                     'SGU-CRM': 'info', 
                     'SGU-Card': 'success',
+                    'SGU Card': 'success',
                     'SGU-Portais': 'warning',
                     'SGU GPL': 'secondary',
                     'Autorizador/AutSC': 'danger',
+                    'Autorizador': 'danger',
                     'Aplicativo Unimed Criciúma': 'dark',
                     'Tasy': 'purple',
                     'Syngoo': 'cyan',
                     'Pep RS': 'orange',
-                    'Database': 'pink'
+                    'Database': 'pink',
+                    'Network': 'info'
                 } %}
                 {% for system, count in stats.systems.items() %}
                 {% set color = system_colors.get(system, 'secondary') %}
