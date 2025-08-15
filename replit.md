@@ -1,8 +1,8 @@
-# Assistente Unimed - AI Technical Support System
+# OS Assistant - AI Technical Support System
 
 ## Overview
 
-Assistente Unimed is a machine learning-powered technical support system designed to help technicians diagnose and resolve work order issues across multiple systems. The application serves as a "digital mentor" that analyzes problem descriptions and suggests solutions based on historical cases and proprietary ML models.
+OS Assistant is a machine learning-powered technical support system designed to help technicians diagnose and resolve work order issues across multiple systems. The application serves as a "digital mentor" that analyzes problem descriptions and suggests solutions based on historical cases and proprietary ML models.
 
 The system focuses on multi-system support (particularly Brazilian hospital management systems like Tasy, SGU, SGU Card, and Autorizador) and uses custom machine learning algorithms to continuously improve its recommendations through user feedback and case history. It operates as a completely internal system with NO external AI dependencies, learning from exported data, reports, or manually entered information using its own ML engine. The system includes workflow for escalating complex cases to Nexdow when internal resolution is not possible.
 
