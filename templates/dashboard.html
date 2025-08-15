@@ -165,31 +165,16 @@
                 <h5 class="mb-0">Distribuição por Sistemas</h5>
             </div>
             <div class="card-body">
-                {% set system_colors = {
-                    'Sistema SGU': 'primary',
-                    'SGU': 'primary',
-                    'SGU-CRM': 'info', 
-                    'SGU-Card': 'success',
-                    'SGU Card': 'success',
-                    'SGU-Portais': 'warning',
-                    'SGU GPL': 'secondary',
-                    'Autorizador/AutSC': 'danger',
-                    'Autorizador': 'danger',
-                    'Aplicativo Unimed Criciúma': 'dark',
-                    'Tasy': 'purple',
-                    'Syngoo': 'cyan',
-                    'Pep RS': 'orange',
-                    'Database': 'pink',
-                    'Network': 'info'
-                } %}
+                {% set bright_colors = ['primary', 'info', 'success', 'warning', 'danger', 'purple', 'cyan', 'orange', 'pink', 'indigo', 'teal', 'lime', 'violet', 'emerald'] %}
+                {% set systems_list = stats.systems.keys() | list %}
                 {% for system, count in stats.systems.items() %}
-                {% set color = system_colors.get(system, 'secondary') %}
+                {% set color = bright_colors[loop.index0 % bright_colors|length] %}
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <span>{{ system }}</span>
-                    <span class="badge bg-{{ color }}">{{ count }}</span>
+                    <span class="badge bg-{{ color }}" data-system="{{ system }}">{{ count }}</span>
                 </div>
                 <div class="progress mb-3" style="height: 6px;">
-                    <div class="progress-bar bg-{{ color }}" style="width: {{ (count / stats.total_cases * 100)|round|int }}%"></div>
+                    <div class="progress-bar bg-{{ color }}" data-system="{{ system }}" style="width: {{ (count / stats.total_cases * 100)|round|int }}%"></div>
                 </div>
                 {% endfor %}
             </div>
