@@ -585,15 +585,36 @@ footer {
 }
 
 /* Custom system color classes */
-.bg-purple { background-color: #6f42c1 !important; }
-.bg-cyan { background-color: #0dcaf0 !important; }
-.bg-orange { background-color: #fd7e14 !important; }
-.bg-pink { background-color: #d63384 !important; }
+.bg-purple { background-color: #6f42c1 !important; color: white !important; }
+.bg-cyan { background-color: #0dcaf0 !important; color: white !important; }
+.bg-orange { background-color: #fd7e14 !important; color: white !important; }
+.bg-pink { background-color: #d63384 !important; color: white !important; }
 
 .progress-bar.bg-purple { background-color: #6f42c1 !important; }
 .progress-bar.bg-cyan { background-color: #0dcaf0 !important; }
 .progress-bar.bg-orange { background-color: #fd7e14 !important; }
 .progress-bar.bg-pink { background-color: #d63384 !important; }
+
+/* Force system badge colors - critical fixes */
+.badge.system-badge {
+    color: white !important;
+    font-weight: 600 !important;
+    border: none !important;
+}
+
+.badge.bg-dark,
+.badge[data-system*="Aplicativo Unimed"],
+.badge[data-system*="aplicativo unimed"] {
+    background-color: #212529 !important;
+    color: white !important;
+}
+
+.badge.bg-secondary,
+.badge[data-system*="SGU GPL"],
+.badge[data-system*="sgu gpl"] {
+    background-color: #6c757d !important;
+    color: white !important;
+}
 
 /* Scroll to top button styling */
 .scroll-to-top-btn:hover {

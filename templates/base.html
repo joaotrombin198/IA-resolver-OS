@@ -129,8 +129,37 @@
             function applySystemColors() {
                 document.querySelectorAll('.system-badge').forEach(badge => {
                     const system = badge.getAttribute('data-system');
-                    const colorClass = systemColors[system] || 'bg-secondary';
+                    let colorClass = systemColors[system];
+                    
+                    // Special handling for problematic systems
+                    if (system && system.toLowerCase().includes('aplicativo unimed')) {
+                        colorClass = 'bg-dark';
+                    } else if (system && system.toLowerCase().includes('sgu gpl')) {
+                        colorClass = 'bg-secondary';
+                    } else if (!colorClass) {
+                        colorClass = 'bg-secondary';
+                    }
+                    
+                    // Force remove all existing bg- classes and apply new one
+                    badge.className = badge.className.replace(/\bbg-\w+/g, '');
                     badge.className = 'badge system-badge ' + colorClass;
+                });
+                
+                // Also apply to badges without system-badge class but with data-system
+                document.querySelectorAll('[data-system]:not(.system-badge)').forEach(badge => {
+                    const system = badge.getAttribute('data-system');
+                    let colorClass = systemColors[system];
+                    
+                    if (system && system.toLowerCase().includes('aplicativo unimed')) {
+                        colorClass = 'bg-dark';
+                    } else if (system && system.toLowerCase().includes('sgu gpl')) {
+                        colorClass = 'bg-secondary';
+                    } else if (!colorClass) {
+                        colorClass = 'bg-secondary';
+                    }
+                    
+                    badge.className = badge.className.replace(/\bbg-\w+/g, '');
+                    badge.classList.add('badge', colorClass);
                 });
             }
             
