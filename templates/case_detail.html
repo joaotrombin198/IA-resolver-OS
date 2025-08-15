@@ -15,7 +15,6 @@
                     <span class="badge bg-success">
                         <i data-feather="star" style="width: 12px; height: 12px;"></i>
                         {{ "%.1f"|format(case.effectiveness_score) }}/5
-                        <small>({{ case.feedback_count }} avaliações)</small>
                     </span>
                     {% endif %}
                     <small class="text-muted">Criado: {{ case.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
@@ -49,50 +48,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Feedback Section -->
-        <div class="card mb-4">
-            <div class="card-header d-flex align-items-center">
-                <i data-feather="message-circle" class="me-2"></i>
-                <h5 class="mb-0">Efetividade da Solução</h5>
-            </div>
-            <div class="card-body">
-                {% if case.effectiveness_score %}
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="me-2">Avaliação Média:</span>
-                            <div class="d-flex align-items-center">
-                                {% for i in range(1, 6) %}
-                                <i data-feather="star" 
-                                   style="width: 20px; height: 20px; color: {{ 'var(--bs-warning)' if i <= case.effectiveness_score else 'var(--bs-secondary)' }};"></i>
-                                {% endfor %}
-                                <span class="ms-2 fw-bold">{{ "%.1f"|format(case.effectiveness_score) }}/5</span>
-                            </div>
-                        </div>
-                        <p class="text-muted">Baseado em {{ case.feedback_count }} avaliação{{ 'ões' if case.feedback_count != 1 else '' }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="progress mb-2" style="height: 20px;">
-                            <div class="progress-bar bg-warning" 
-                                 style="width: {{ (case.effectiveness_score / 5 * 100)|round|int }}%">
-                                {{ "%.0f"|format(case.effectiveness_score / 5 * 100) }}%
-                            </div>
-                        </div>
-                        <small class="text-muted">Pontuação de efetividade da solução</small>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <div class="border-top pt-3 mt-3">
-                    <h6 class="mb-3">Como foi resolvido este caso?</h6>
-                    <div class="d-grid">
-                        <a href="{{ url_for('case_feedback_form', case_id=case.id) }}" 
-                           class="btn btn-primary btn-lg">
-                            <i data-feather="message-square" class="me-2"></i>
-                            Dar Feedback Detalhado
-                        </a>
-                    </div>
 
                 </div>
             </div>
