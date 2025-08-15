@@ -811,14 +811,17 @@ def feedback():
         comments = request.form.get('comments', '')
         good_aspects = request.form.get('good_aspects', '[]')
         improvements = request.form.get('improvements', '[]')
+        suggestion_ratings = request.form.get('suggestion_ratings', '{}')
         
         # Parse JSON strings
         try:
             good_aspects_list = json.loads(good_aspects)
             improvements_list = json.loads(improvements)
+            suggestion_ratings_dict = json.loads(suggestion_ratings)
         except json.JSONDecodeError:
             good_aspects_list = []
             improvements_list = []
+            suggestion_ratings_dict = {}
         
         # Log feedback for analysis (in a real system, this would go to a database)
         feedback_data = {
@@ -827,6 +830,7 @@ def feedback():
             'problem_description': problem_description[:200],  # Truncate for privacy
             'good_aspects': good_aspects_list,
             'improvements': improvements_list,
+            'suggestion_ratings': suggestion_ratings_dict,
             'comments': comments,
             'user_agent': request.headers.get('User-Agent', '')
         }

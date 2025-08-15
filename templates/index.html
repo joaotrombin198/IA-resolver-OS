@@ -70,10 +70,20 @@ Exemplos:
                     <div class="col-12 mb-3">
                         <div class="card bg-dark border-secondary">
                             <div class="card-body">
-                                <div class="d-flex align-items-start">
-                                    <span class="badge bg-primary me-3 mt-1">{{ loop.index }}</span>
-                                    <div class="flex-grow-1">
-                                        <p class="mb-0">{{ solution }}</p>
+                                <div class="d-flex align-items-start justify-content-between">
+                                    <div class="d-flex align-items-start flex-grow-1">
+                                        <span class="badge bg-primary me-3 mt-1">{{ loop.index }}</span>
+                                        <div class="flex-grow-1">
+                                            <p class="mb-0">{{ solution }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-1 ms-3">
+                                        <button class="btn btn-sm btn-outline-success" onclick="rateSuggestion({{ loop.index0 }}, 'helpful')" title="Útil">
+                                            <i data-feather="thumbs-up" style="width: 14px; height: 14px;"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="rateSuggestion({{ loop.index0 }}, 'not_helpful')" title="Não útil">
+                                            <i data-feather="thumbs-down" style="width: 14px; height: 14px;"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -96,14 +106,14 @@ Exemplos:
                     <div class="collapse mb-3" id="feedbackHelp">
                         <div class="card card-body bg-dark border-secondary">
                             <h6 class="text-info mb-2">
-                                <i data-feather="brain" class="me-1"></i>
+                                <i data-feather="cpu" class="me-1"></i>
                                 Como o Feedback Melhora o Sistema
                             </h6>
                             <ul class="mb-0 small text-muted">
                                 <li><strong>Machine Learning:</strong> Suas avaliações treinam o algoritmo para gerar sugestões mais precisas</li>
                                 <li><strong>Casos Similares:</strong> Feedback ajuda a identificar quais soluções funcionam melhor para cada tipo de problema</li>
                                 <li><strong>Priorizações:</strong> Soluções bem avaliadas aparecem primeiro em buscas futuras</li>
-                                <li><strong>Melhoria Contínua:</strong> Seus comentários ajudam nossa equipe a aprimorar o sistema</li>
+
                             </ul>
                         </div>
                     </div>
@@ -320,7 +330,7 @@ Exemplos:
                                 placeholder="Compartilhe sua experiência, sugestões específicas, ou conte se a solução funcionou..."></textarea>
                         <div class="form-text">
                             <i data-feather="info" class="me-1"></i>
-                            Seus comentários são valiosos para melhorar o sistema para todos os usuários.
+                            Seus comentários são valiosos para melhorar o sistema.
                         </div>
                     </div>
                 </form>
@@ -339,7 +349,38 @@ Exemplos:
 
 {% block scripts %}
 <script>
-let currentProblemDescription = "{{ problem_description | escape }}" || "";
+let currentProblemDescription = {{ (problem_description or "") | tojson }};
+let suggestionRatings = {};
+
+function rateSuggestion(suggestionIndex, rating) {
+    suggestionRatings[suggestionIndex] = rating;
+    
+    // Visual feedback
+    const buttons = document.querySelectorAll(`button[onclick*="rateSuggestion(${suggestionIndex}"]`);
+    buttons.forEach(btn => {
+        btn.classList.remove('btn-success', 'btn-danger');
+        btn.classList.add('btn-outline-success', 'btn-outline-danger');
+    });
+    
+    // Highlight selected button
+    const targetBtn = document.querySelector(`button[onclick*="rateSuggestion(${suggestionIndex}, '${rating}'"]`);
+    if (targetBtn) {
+        if (rating === 'helpful') {
+            targetBtn.classList.remove('btn-outline-success');
+            targetBtn.classList.add('btn-success');
+        } else {
+            targetBtn.classList.remove('btn-outline-danger');
+            targetBtn.classList.add('btn-danger');
+        }
+    }
+    
+    // Log individual rating
+    console.log(`Sugestão ${suggestionIndex + 1} avaliada como: ${rating}`);
+    
+    // Show brief feedback
+    showToast(rating === 'helpful' ? 'Sugestão marcada como útil!' : 'Sugestão marcada como não útil!', 
+              rating === 'helpful' ? 'success' : 'warning');
+}
 
 function openFeedbackModal(score) {
     // Set the score
@@ -383,6 +424,9 @@ function submitDetailedFeedback() {
     
     // Add problem description for context
     formData.append('problem_description', currentProblemDescription);
+    
+    // Add individual suggestion ratings
+    formData.append('suggestion_ratings', JSON.stringify(suggestionRatings));
     
     // Collect checkboxes
     const goodAspects = [];
