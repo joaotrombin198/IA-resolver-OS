@@ -8,6 +8,7 @@ from file_processor import FileProcessor
 import logging
 import os
 import tempfile
+from datetime import datetime, timedelta
 
 # Initialize services
 ml_service = MLService()
@@ -56,24 +57,43 @@ def analyze_problem():
 
 @app.route('/dashboard')
 def dashboard():
-    """Dashboard showing case statistics and recent cases"""
+    """Dashboard showing analytics and system overview"""
+    try:
+        stats = case_service.get_statistics()
+        return render_template('dashboard.html', stats=stats)
+        
+    except Exception as e:
+        logging.error(f"Error loading dashboard: {str(e)}")
+        flash(f'Error loading dashboard: {str(e)}', 'error')
+        return render_template('dashboard.html', stats={})
+
+@app.route('/recent-cases')
+def recent_cases():
+    """Page dedicated to recent cases with search and pagination"""
     search_query = request.args.get('search', '').strip()
     system_filter = request.args.get('system', '')
+    sort_by = request.args.get('sort', 'recent')
     page = int(request.args.get('page', 1))
     per_page = 30  # Cases per page
     
     try:
-        stats = case_service.get_statistics()
-        
         # Get all cases first
         if search_query or system_filter:
             all_cases = case_service.search_cases(search_query, system_filter)
         else:
             all_cases = case_service.get_all_cases()
         
+        # Apply sorting
+        if sort_by == 'oldest':
+            all_cases = sorted(all_cases, key=lambda x: x.created_at or datetime.min)
+        elif sort_by == 'system':
+            all_cases = sorted(all_cases, key=lambda x: x.system_type)
+        else:  # recent (default)
+            all_cases = sorted(all_cases, key=lambda x: x.created_at or datetime.min, reverse=True)
+        
         # Calculate pagination
         total_cases = len(all_cases)
-        total_pages = (total_cases + per_page - 1) // per_page
+        total_pages = (total_cases + per_page - 1) // per_page if total_cases > 0 else 1
         start_idx = (page - 1) * per_page
         end_idx = start_idx + per_page
         cases = all_cases[start_idx:end_idx]
@@ -84,14 +104,20 @@ def dashboard():
         prev_page = page - 1 if has_prev else None
         next_page = page + 1 if has_next else None
         
+        # Get additional stats for the page
+        stats = case_service.get_statistics()
         systems = case_service.get_unique_systems()
         
-        return render_template('dashboard.html', 
-                             stats=stats, 
+        # Quick stats for this page
+        today_cases = len([c for c in all_cases if c.created_at and c.created_at.date() == datetime.now().date()]) if all_cases else 0
+        week_cases = len([c for c in all_cases if c.created_at and c.created_at >= datetime.now() - timedelta(days=7)]) if all_cases else 0
+        with_feedback = len([c for c in all_cases if c.effectiveness_score is not None]) if all_cases else 0
+        
+        return render_template('recent_cases.html',
                              cases=cases,
-                             recent_cases=cases,  # For backward compatibility
                              search_query=search_query,
                              system_filter=system_filter,
+                             sort_by=sort_by,
                              systems=systems,
                              # Pagination
                              current_page=page,
@@ -101,12 +127,15 @@ def dashboard():
                              has_next=has_next,
                              prev_page=prev_page,
                              next_page=next_page,
-                             per_page=per_page)
+                             # Quick stats
+                             today_cases=today_cases,
+                             week_cases=week_cases,
+                             with_feedback=with_feedback)
         
     except Exception as e:
-        logging.error(f"Error loading dashboard: {str(e)}")
-        flash(f'Error loading dashboard: {str(e)}', 'error')
-        return render_template('dashboard.html', stats={}, cases=[], recent_cases=[], systems=[])
+        logging.error(f"Error loading recent cases: {str(e)}")
+        flash(f'Error loading cases: {str(e)}', 'error')
+        return render_template('recent_cases.html', cases=[], systems=[], total_cases=0, total_pages=1, current_page=1, has_prev=False, has_next=False)
 
 @app.route('/cases')
 def list_cases():

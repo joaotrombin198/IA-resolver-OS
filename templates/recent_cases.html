@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Casos Recentes - Assistente OS{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1">
+                    <i data-feather="clock" class="me-2"></i>
+                    Casos Recentes
+                </h2>
+                <p class="text-muted mb-0">Visualize e gerencie todos os casos cadastrados no sistema</p>
+            </div>
+            <a href="{{ url_for('add_case_form') }}" class="btn btn-primary">
+                <i data-feather="plus" class="me-1"></i>
+                Adicionar Novo Caso
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="database" class="mb-2" style="width: 32px; height: 32px; color: var(--bs-primary);"></i>
+                <h4 class="mb-1">{{ total_cases }}</h4>
+                <p class="text-muted mb-0 small">Total de Casos</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="calendar" class="mb-2" style="width: 32px; height: 32px; color: var(--bs-success);"></i>
+                <h4 class="mb-1">{{ today_cases }}</h4>
+                <p class="text-muted mb-0 small">Hoje</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="trending-up" class="mb-2" style="width: 32px; height: 32px; color: var(--bs-warning);"></i>
+                <h4 class="mb-1">{{ week_cases }}</h4>
+                <p class="text-muted mb-0 small">Esta Semana</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i data-feather="star" class="mb-2" style="width: 32px; height: 32px; color: var(--bs-info);"></i>
+                <h4 class="mb-1">{{ with_feedback }}</h4>
+                <p class="text-muted mb-0 small">Com Feedback</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filter Section -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('recent_cases') }}" class="row g-3">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i data-feather="search"></i>
+                    </span>
+                    <input type="text" 
+                           class="form-control" 
+                           name="search" 
+                           value="{{ search_query or '' }}" 
+                           placeholder="Buscar casos por problema, solução ou sistema...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="system">
+                    <option value="">Todos os Sistemas</option>
+                    {% for system in systems %}
+                    <option value="{{ system }}" {{ 'selected' if system_filter == system else '' }}>
+                        {{ system }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select class="form-select" name="sort">
+                    <option value="recent" {{ 'selected' if sort_by == 'recent' else '' }}>Mais Recentes</option>
+                    <option value="oldest" {{ 'selected' if sort_by == 'oldest' else '' }}>Mais Antigos</option>
+                    <option value="system" {{ 'selected' if sort_by == 'system' else '' }}>Por Sistema</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex gap-1">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i data-feather="search"></i>
+                        Buscar
+                    </button>
+                    <a href="{{ url_for('recent_cases') }}" class="btn btn-outline-secondary">
+                        <i data-feather="x"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Cases List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    {% if search_query or system_filter %}
+                        Resultados da Busca ({{ total_cases }} casos encontrados)
+                    {% else %}
+                        Todos os Casos ({{ total_cases }} casos)
+                    {% endif %}
+                </h5>
+                <div class="d-flex align-items-center gap-2">
+                    <small class="text-muted">Página {{ current_page }} de {{ total_pages }}</small>
+                </div>
+            </div>
+            
+            <div class="card-body p-0">
+                {% if cases %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col" style="width: 60px;">#</th>
+                                <th scope="col" style="width: 40%;">Problema</th>
+                                <th scope="col" style="width: 25%;">Sistema</th>
+                                <th scope="col" style="width: 15%;">Data</th>
+                                <th scope="col" style="width: 10%;">Feedback</th>
+                                <th scope="col" style="width: 10%;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for case in cases %}
+                            <tr>
+                                <td class="fw-bold text-primary">#{{ case.id }}</td>
+                                <td>
+                                    <div class="text-truncate" style="max-width: 300px;" title="{{ case.problem_description }}">
+                                        {{ case.problem_description }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ case.system_type }}</span>
+                                </td>
+                                <td class="text-muted small">
+                                    {{ case.created_at.strftime('%d/%m/%Y') if case.created_at else 'N/A' }}
+                                </td>
+                                <td class="text-center">
+                                    {% if case.effectiveness_score %}
+                                        <span class="badge bg-success" title="Avaliação: {{ case.effectiveness_score }}">
+                                            {{ "%.1f"|format(case.effectiveness_score) }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ url_for('case_detail', case_id=case.id) }}" 
+                                           class="btn btn-outline-primary btn-sm" 
+                                           title="Ver Detalhes">
+                                            <i data-feather="eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('edit_case', case_id=case.id) }}" 
+                                           class="btn btn-outline-warning btn-sm" 
+                                           title="Editar">
+                                            <i data-feather="edit"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-outline-danger btn-sm" 
+                                                onclick="confirmDelete({{ case.id }})" 
+                                                title="Excluir">
+                                            <i data-feather="trash-2"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                {% if total_pages > 1 %}
+                <div class="card-footer">
+                    <nav aria-label="Case pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if has_prev %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('recent_cases', page=prev_page, search=search_query, system=system_filter, sort=sort_by) }}">
+                                    <i data-feather="chevron-left"></i>
+                                    Anterior
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for page_num in range(1, total_pages + 1) %}
+                                {% if page_num == current_page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% elif page_num <= 3 or page_num > total_pages - 3 or (page_num >= current_page - 1 and page_num <= current_page + 1) %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('recent_cases', page=page_num, search=search_query, system=system_filter, sort=sort_by) }}">{{ page_num }}</a>
+                                </li>
+                                {% elif page_num == 4 or page_num == total_pages - 3 %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('recent_cases', page=next_page, search=search_query, system=system_filter, sort=sort_by) }}">
+                                    Próxima
+                                    <i data-feather="chevron-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <div class="text-center py-5">
+                    <i data-feather="inbox" style="width: 64px; height: 64px; color: var(--bs-secondary);"></i>
+                    <h4 class="mt-3 mb-2">Nenhum caso encontrado</h4>
+                    {% if search_query or system_filter %}
+                        <p class="text-muted mb-3">Nenhum caso corresponde aos critérios de busca.</p>
+                        <a href="{{ url_for('recent_cases') }}" class="btn btn-outline-primary">
+                            <i data-feather="refresh-cw" class="me-1"></i>
+                            Ver Todos os Casos
+                        </a>
+                    {% else %}
+                        <p class="text-muted mb-3">Comece adicionando seu primeiro caso ao sistema.</p>
+                        <a href="{{ url_for('add_case_form') }}" class="btn btn-primary">
+                            <i data-feather="plus" class="me-1"></i>
+                            Adicionar Primeiro Caso
+                        </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(caseId) {
+    if (confirm('Tem certeza que deseja excluir este caso? Esta ação não pode ser desfeita.')) {
+        fetch(`/case/${caseId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Erro ao excluir o caso. Tente novamente.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erro ao excluir o caso. Tente novamente.');
+        });
+    }
+}
+</script>
+
+{% endblock %}
