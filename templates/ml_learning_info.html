@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Análise de Aprendizado ML - OS Assistant{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="text-white mb-1">🧠 Análise de Aprendizado ML</h1>
+                    <p class="text-secondary mb-0">Como o sistema está aprendendo com os feedbacks "útil" e "não útil"</p>
+                </div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                    <i data-feather="arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Status -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-dark border-secondary">
+                <div class="card-header">
+                    <h5 class="text-white mb-0">📊 Status do Modelo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h3 class="text-{{ 'success' if model_info.is_trained else 'warning' }}">
+                                    {{ '✓' if model_info.is_trained else '⚠' }}
+                                </h3>
+                                <small class="text-secondary">Modelo Treinado</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <h3 class="text-{{ 'info' if model_info.learning_statistics.learning_active else 'secondary' }}">
+                                    {{ '🧠' if model_info.learning_statistics.learning_active else '💤' }}
+                                </h3>
+                                <small class="text-secondary">Aprendizado Ativo</small>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="border-secondary">
+                    <p class="text-white mb-1"><strong>Versão:</strong> {{ model_info.learning_version }}</p>
+                    <p class="text-secondary mb-0"><strong>Sistemas:</strong> {{ model_info.supported_systems|length }} configurados</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card bg-dark border-secondary">
+                <div class="card-header">
+                    <h5 class="text-white mb-0">📈 Estatísticas de Aprendizado</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-secondary">Padrões de Efetividade:</span>
+                            <span class="text-white">{{ model_info.learning_statistics.solution_effectiveness_patterns }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-secondary">Combinações de Sucesso:</span>
+                            <span class="text-white">{{ model_info.learning_statistics.successful_combinations }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-secondary">Pesos de Classificação:</span>
+                            <span class="text-white">{{ model_info.learning_statistics.ranking_weights }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Insights -->
+    {% if learning_insights %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-dark border-secondary">
+                <div class="card-header">
+                    <h5 class="text-white mb-0">🎯 Soluções Mais Efetivas</h5>
+                </div>
+                <div class="card-body">
+                    {% if learning_insights.most_effective_solutions %}
+                        {% for solution in learning_insights.most_effective_solutions[:5] %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-white">{{ solution.pattern }}</span>
+                                <span class="badge bg-success">{{ solution.success_rate }}%</span>
+                            </div>
+                            <small class="text-secondary">{{ solution.total_feedback }} avaliações</small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-secondary mb-0">Aguardando mais feedbacks para identificar padrões efetivos.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card bg-dark border-secondary">
+                <div class="card-header">
+                    <h5 class="text-white mb-0">🎯 Precisão por Sistema</h5>
+                </div>
+                <div class="card-body">
+                    {% if learning_insights.best_performing_systems %}
+                        {% for system in learning_insights.best_performing_systems %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-white">{{ system.system }}</span>
+                                <span class="badge bg-info">{{ system.accuracy }}%</span>
+                            </div>
+                            <small class="text-secondary">{{ system.total_analyses }} análises</small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-secondary mb-0">Aguardando análises para calcular precisão por sistema.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- System Detection Accuracy -->
+    {% if model_info.system_detection_accuracy %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark border-secondary">
+                <div class="card-header">
+                    <h5 class="text-white mb-0">🔍 Precisão de Detecção de Sistemas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for system, stats in model_info.system_detection_accuracy.items() %}
+                        <div class="col-md-4 col-lg-3 mb-3">
+                            <div class="text-center">
+                                <div class="progress mb-2" style="height: 8px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ stats.accuracy }}%" 
+                                         aria-valuenow="{{ stats.accuracy }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <h6 class="text-white mb-1">{{ system }}</h6>
+                                <span class="badge bg-success">{{ stats.accuracy }}%</span>
+                                <small class="d-block text-secondary">{{ stats.total_analyzed }} análises</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Top Improvement Requests -->
+    {% if model_info.top_improvement_requests %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark border-secondary">
+                <div class="card-header">
+                    <h5 class="text-white mb-0">🚀 Melhorias Mais Solicitadas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for improvement, count in model_info.top_improvement_requests.items() %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-white">{{ improvement.title() }}</span>
+                                <span class="badge bg-warning text-dark">{{ count }}x</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Learning Recommendations -->
+    {% if learning_insights and learning_insights.learning_recommendations %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info bg-dark border-info">
+                <h6 class="alert-heading text-info">💡 Recomendações do Sistema de Aprendizado</h6>
+                <ul class="mb-0">
+                    {% for recommendation in learning_insights.learning_recommendations %}
+                    <li class="text-white">{{ recommendation }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Help Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-dark border-secondary">
+                <div class="card-header">
+                    <h5 class="text-white mb-0">❓ Como o Sistema Aprende</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <div class="bg-success rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i data-feather="thumbs-up" class="text-white"></i>
+                                </div>
+                                <h6 class="text-white mt-2">Feedback "Útil"</h6>
+                                <p class="text-secondary small">Aumenta o peso de soluções similares para problemas futuros</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <div class="bg-danger rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i data-feather="thumbs-down" class="text-white"></i>
+                                </div>
+                                <h6 class="text-white mt-2">Feedback "Não Útil"</h6>
+                                <p class="text-secondary small">Reduz prioridade de padrões similares na classificação</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i data-feather="brain" class="text-white"></i>
+                                </div>
+                                <h6 class="text-white mt-2">Aprendizado Contínuo</h6>
+                                <p class="text-secondary small">Retreina automaticamente a cada 5 feedbacks recebidos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize Feather icons
+    feather.replace();
+</script>
+{% endblock %}

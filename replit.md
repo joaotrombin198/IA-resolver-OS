@@ -136,10 +136,15 @@ The system is designed to be easily deployable with Docker and can be hosted on 
 - System now automatically uses SQLite when PostgreSQL unavailable
 - Ready for deployment on user's local machine with zero external dependencies
 
-**Feedback System Enhancement (August 2025):**
+**Advanced ML Learning System (August 2025):**
 - Implemented comprehensive feedback storage in PostgreSQL database
 - Created AnalysisFeedback model to store detailed feedback on AI analysis
-- All feedback types now influence ML learning: individual suggestions, overall ratings, improvements
-- Automatic ML model retraining every 10 feedback submissions
-- /admin/feedbacks route created for feedback analytics and monitoring
-- Individual suggestion ratings (helpful/not helpful) fully integrated with ML learning cycle
+- **MAJOR UPGRADE**: Advanced intelligent learning from "useful" and "not useful" feedback ratings
+- Real-time solution effectiveness scoring based on user feedback patterns
+- Smart suggestion ranking that prioritizes solutions with higher success rates
+- Automatic pattern recognition that learns from successful problem-solution combinations
+- Intelligent retraining every 5 feedback submissions (increased frequency for faster learning)
+- Enhanced system detection accuracy tracking with performance analytics
+- Solution effectiveness weights automatically adjust based on feedback history
+- New /ml-learning-info route provides comprehensive learning analytics and insights
+- Machine Learning Learning Version 2.0: Fully adaptive system that truly learns from every feedback

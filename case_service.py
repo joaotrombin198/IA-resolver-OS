@@ -37,7 +37,7 @@ class CaseService:
                     return case
             return None
     
-    def add_case(self, problem_description: str, solution: str, system_type: str = "Unknown") -> Case:
+    def add_case(self, problem_description: str, solution: str, system_type: str = "Unknown") -> Optional[Case]:
         """Add a new case to the database with robust error handling"""
         max_retries = 3
         retry_count = 0
@@ -72,19 +72,7 @@ class CaseService:
                     continue
                 else:
                     logging.error(f"Failed to add case to database after {max_retries} attempts: {str(e)}")
-                    # Fallback to in-memory storage
-                    next_id = current_app.config.get('NEXT_CASE_ID', 1)
-                    current_app.config['NEXT_CASE_ID'] = next_id + 1
-                    case = Case()
-                    case.problem_description = problem_description
-                    case.solution = solution
-                    case.system_type = system_type
-                    case.id = next_id
-                    cases = current_app.config.get('CASES_STORAGE', [])
-                    cases.append(case)
-                    current_app.config['CASES_STORAGE'] = cases
-                    logging.info(f"Added case #{case.id} to in-memory storage (fallback)")
-                    return case
+                    return None
     
     def update_case(self, case_id: int, problem_description: str, solution: str, system_type: str) -> bool:
         """Update an existing case in PostgreSQL"""

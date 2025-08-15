@@ -436,6 +436,25 @@ def train_models():
         flash(f'Erro ao treinar modelos: {str(e)}', 'error')
         return redirect(url_for('dashboard'))
 
+@app.route('/ml-learning-info')
+def ml_learning_info():
+    """Show ML learning insights and effectiveness analysis"""
+    try:
+        # Get comprehensive model information
+        model_info = ml_service.get_model_info()
+        
+        # Get learning insights
+        learning_insights = ml_service.get_learning_insights()
+        
+        return render_template('ml_learning_info.html', 
+                             model_info=model_info,
+                             learning_insights=learning_insights)
+        
+    except Exception as e:
+        logging.error(f"Error getting ML learning info: {str(e)}")
+        flash(f'Erro ao carregar informações de aprendizado: {str(e)}', 'error')
+        return redirect(url_for('dashboard'))
+
 @app.route('/populate-sample-data', methods=['POST'])
 def populate_sample_data():
     """Add sample cases for demonstration"""

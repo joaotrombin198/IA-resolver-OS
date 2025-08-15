@@ -466,42 +466,161 @@ class MLService:
         return result
 
     def _generate_solutions_with_similar_cases(self, problem_description: str, system_type: str, similar_cases: list = None) -> List[str]:
-        """Generate solutions prioritizing similar cases first, then pattern-based"""
+        """Generate solutions with INTELLIGENT RANKING based on feedback learning"""
         suggestions = []
         
-        # PRIORITY 1: Solutions from similar cases (most important)
+        # PRIORITY 1: Solutions from similar cases with SMART SCORING
         if similar_cases:
             similar_solutions = []
-            for case in similar_cases[:3]:  # Top 3 most similar
+            for case in similar_cases[:5]:  # Consider more cases for better learning
                 if hasattr(case, 'solution') and case.solution:
-                    # Clean and format solution, convert to infinitive
                     solution = case.solution.strip()
                     solution = self._convert_to_infinitive(solution)
-                    if solution and solution not in similar_solutions:
-                        similar_solutions.append(solution)
+                    
+                    if solution and solution not in [s['text'] for s in similar_solutions]:
+                        # Calculate intelligent score based on feedback learning
+                        effectiveness_score = self._calculate_solution_effectiveness_score(solution, problem_description)
+                        similar_solutions.append({
+                            'text': solution,
+                            'score': effectiveness_score,
+                            'case_id': getattr(case, 'id', None),
+                            'source': 'similar_case'
+                        })
             
-            suggestions.extend(similar_solutions[:3])  # Add top 3 similar solutions
-            logging.info(f"Added {len(similar_solutions)} solutions from similar cases")
+            # Sort by intelligent score (highest first)
+            similar_solutions.sort(key=lambda x: x['score'], reverse=True)
+            suggestions.extend([s['text'] for s in similar_solutions[:3]])  # Top 3 by score
+            logging.info(f"Added {len(similar_solutions)} intelligently ranked solutions from similar cases")
         
-        # PRIORITY 2: Pattern-based solutions (only if we need more)
+        # PRIORITY 2: Pattern-based solutions with SMART RANKING
         if len(suggestions) < 4:
             pattern_solutions = self._generate_solutions(problem_description, system_type)
-            # Add pattern solutions that aren't already in suggestions, convert to infinitive
+            
+            # Apply intelligent scoring to pattern solutions
+            scored_pattern_solutions = []
             for solution in pattern_solutions:
                 converted_solution = self._convert_to_infinitive(solution)
-                if converted_solution not in suggestions and len(suggestions) < 5:
-                    suggestions.append(converted_solution)
+                if converted_solution not in suggestions:
+                    effectiveness_score = self._calculate_solution_effectiveness_score(converted_solution, problem_description)
+                    scored_pattern_solutions.append({
+                        'text': converted_solution,
+                        'score': effectiveness_score,
+                        'source': 'pattern'
+                    })
+            
+            # Sort by score and add the best ones
+            scored_pattern_solutions.sort(key=lambda x: x['score'], reverse=True)
+            for solution in scored_pattern_solutions:
+                if len(suggestions) < 5:
+                    suggestions.append(solution['text'])
         
-        # Ensure we have at least some suggestions
+        # INTELLIGENT FINAL RANKING: Re-rank all suggestions by combined score
+        if hasattr(self, 'suggestion_ranking_weights'):
+            suggestions = self._apply_intelligent_final_ranking(suggestions, problem_description)
+        
+        # Ensure we have suggestions with fallback
         if not suggestions:
             suggestions = [
-                "Verificar logs do sistema para mais detalhes",
-                "Consultar base de conhecimento",
-                "Contactar suporte técnico se necessário"
+                "Verificar logs detalhados do sistema para identificar a causa raiz",
+                "Reproduzir o problema em ambiente de teste",
+                "Consultar base de conhecimento interna",
+                "Contatar suporte especializado se necessário",
+                "Documentar cenário completo para análise"
             ]
         
         # Apply infinitive conversion to ALL suggestions
-        return [self._convert_to_infinitive(solution) for solution in suggestions[:5]]
+        final_suggestions = [self._convert_to_infinitive(solution) for solution in suggestions[:5]]
+        
+        logging.info(f"Generated {len(final_suggestions)} intelligently ranked solutions")
+        return final_suggestions
+    
+    def _calculate_solution_effectiveness_score(self, solution_text: str, problem_description: str) -> float:
+        """Calculate effectiveness score for a solution based on learned feedback patterns"""
+        try:
+            if not hasattr(self, 'solution_effectiveness'):
+                return 1.0  # Default score
+            
+            # Extract tokens from both solution and problem
+            solution_tokens = set(self._semantic_tokenizer(self._preprocess_text(solution_text)))
+            problem_tokens = set(self._semantic_tokenizer(self._preprocess_text(problem_description)))
+            
+            # Calculate base score using solution effectiveness weights
+            total_score = 0.0
+            token_count = 0
+            
+            for token in solution_tokens.union(problem_tokens):
+                # Look for helpful patterns
+                helpful_pattern = f"{token}_helpful"
+                not_helpful_pattern = f"{token}_not_helpful"
+                
+                if helpful_pattern in self.solution_effectiveness:
+                    total_score += self.solution_effectiveness[helpful_pattern]['weight']
+                    token_count += 1
+                elif not_helpful_pattern in self.solution_effectiveness:
+                    # Penalize tokens associated with not helpful feedback
+                    total_score += (2.0 - self.solution_effectiveness[not_helpful_pattern]['weight'])
+                    token_count += 1
+                else:
+                    total_score += 1.0  # Neutral score for unknown tokens
+                    token_count += 1
+            
+            # Calculate average score
+            if token_count > 0:
+                average_score = total_score / token_count
+            else:
+                average_score = 1.0
+            
+            # Bonus for successful combination patterns
+            if hasattr(self, 'feedback_patterns'):
+                for combo in self.feedback_patterns.get('successful_combinations', []):
+                    # Check if this solution matches successful patterns
+                    matching_tokens = set(combo['problem_tokens']).intersection(solution_tokens.union(problem_tokens))
+                    if len(matching_tokens) >= 2:  # At least 2 tokens match
+                        # Apply success rate bonus
+                        average_score *= (1 + combo['success_rate'] * 0.3)
+            
+            # Ensure score is within reasonable bounds
+            return max(0.1, min(3.0, average_score))
+            
+        except Exception as e:
+            logging.error(f"Error calculating solution effectiveness score: {str(e)}")
+            return 1.0
+    
+    def _apply_intelligent_final_ranking(self, suggestions: List[str], problem_description: str) -> List[str]:
+        """Apply final intelligent ranking to suggestions based on learned patterns"""
+        try:
+            # Score each suggestion
+            scored_suggestions = []
+            problem_tokens = set(self._semantic_tokenizer(self._preprocess_text(problem_description)))
+            
+            for suggestion in suggestions:
+                # Calculate comprehensive score
+                effectiveness_score = self._calculate_solution_effectiveness_score(suggestion, problem_description)
+                
+                # Apply ranking weights
+                ranking_bonus = 0.0
+                suggestion_tokens = set(self._semantic_tokenizer(self._preprocess_text(suggestion)))
+                
+                for token in suggestion_tokens.intersection(problem_tokens):
+                    if hasattr(self, 'suggestion_ranking_weights') and token in self.suggestion_ranking_weights:
+                        ranking_bonus += self.suggestion_ranking_weights[token]
+                
+                final_score = effectiveness_score + (ranking_bonus * 0.2)  # 20% bonus from ranking weights
+                
+                scored_suggestions.append({
+                    'text': suggestion,
+                    'score': final_score
+                })
+            
+            # Sort by final score
+            scored_suggestions.sort(key=lambda x: x['score'], reverse=True)
+            
+            # Return ranked suggestions
+            return [s['text'] for s in scored_suggestions]
+            
+        except Exception as e:
+            logging.error(f"Error applying intelligent final ranking: {str(e)}")
+            return suggestions
     
     def _get_diversified_system_solutions(self, system_type: str, problem_tokens: set) -> List[str]:
         """Get diversified system-specific solutions based on context"""
@@ -672,9 +791,11 @@ class MLService:
             return False
     
     def process_analysis_feedback(self, feedback):
-        """Process feedback from analysis to improve future suggestions"""
+        """Process feedback from analysis to improve future suggestions using advanced ML learning"""
         try:
             import json
+            from app import db
+            from models import AnalysisFeedback
             
             # Parse feedback data
             suggestion_ratings = json.loads(feedback.suggestion_ratings or "{}")
@@ -688,31 +809,161 @@ class MLService:
             if total_suggestions > 0:
                 success_rate = helpful_suggestions / total_suggestions
                 
-                # Log feedback analysis for model improvement
-                logging.info(f"Feedback Analysis: {success_rate:.1%} suggestions helpful, "
-                           f"Score: {feedback.overall_score}/5, "
-                           f"Good: {good_aspects}, Improve: {improvements}")
+                # ADVANCED LEARNING: Update solution effectiveness weights
+                self._update_solution_effectiveness_weights(feedback.problem_description, suggestion_ratings)
                 
-                # Future: Use this data to adjust suggestion ordering, 
-                # improve system detection, and refine solution matching
+                # SMART PATTERN DETECTION: Learn from feedback patterns
+                self._learn_from_feedback_patterns(feedback.problem_description, suggestion_ratings, 
+                                                 feedback.detected_system, good_aspects, improvements)
                 
-                # For now, trigger retraining if we have enough feedback data
-                from app import db
-                from models import AnalysisFeedback
+                # Log comprehensive feedback analysis
+                logging.info(f"Advanced ML Feedback: {success_rate:.1%} helpful, Score: {feedback.overall_score}/5, "
+                           f"System: {feedback.detected_system}, Learning from patterns")
+                
+                # INTELLIGENT RETRAINING: Based on feedback quality and frequency
                 feedback_count = db.session.query(AnalysisFeedback).count()
                 
-                if feedback_count % 10 == 0:  # Retrain every 10 feedback entries
-                    logging.info(f"Triggering ML retrain after {feedback_count} feedback entries")
-                    from case_service import case_service
+                # More frequent retraining for better learning
+                if feedback_count % 5 == 0:  # Retrain every 5 feedback entries for faster learning
+                    logging.info(f"Triggering intelligent ML retrain after {feedback_count} feedback entries")
+                    case_service = self._get_case_service()
                     all_cases = case_service.get_all_cases()
-                    if len(all_cases) >= 5:
+                    if len(all_cases) >= 3:  # Lower threshold for more dynamic learning
                         self.train_models(all_cases)
+                        self._update_suggestion_ranking_model()
                 
         except Exception as e:
             logging.error(f"Error processing analysis feedback: {str(e)}")
     
+    def _update_solution_effectiveness_weights(self, problem_description, suggestion_ratings):
+        """Update effectiveness weights for solution patterns based on feedback"""
+        try:
+            # Initialize solution effectiveness tracking if not exists
+            if not hasattr(self, 'solution_effectiveness'):
+                self.solution_effectiveness = {}
+            
+            # Extract key terms from problem for pattern matching
+            problem_tokens = set(self._semantic_tokenizer(self._preprocess_text(problem_description)))
+            
+            # Update weights for each rated suggestion
+            for suggestion_index, rating in suggestion_ratings.items():
+                # Create pattern key from problem tokens and rating
+                for token in problem_tokens:
+                    pattern_key = f"{token}_{rating}"
+                    
+                    if pattern_key not in self.solution_effectiveness:
+                        self.solution_effectiveness[pattern_key] = {'helpful': 0, 'not_helpful': 0, 'weight': 1.0}
+                    
+                    # Update counters
+                    self.solution_effectiveness[pattern_key][rating] += 1
+                    
+                    # Calculate new effectiveness weight (helpful vs not_helpful ratio)
+                    helpful_count = self.solution_effectiveness[pattern_key]['helpful']
+                    not_helpful_count = self.solution_effectiveness[pattern_key]['not_helpful']
+                    
+                    if helpful_count + not_helpful_count > 0:
+                        # Weight between 0.1 and 2.0 based on success rate
+                        success_rate = helpful_count / (helpful_count + not_helpful_count)
+                        self.solution_effectiveness[pattern_key]['weight'] = 0.1 + (success_rate * 1.9)
+            
+            logging.info(f"Updated solution effectiveness weights for {len(problem_tokens)} tokens")
+            
+        except Exception as e:
+            logging.error(f"Error updating solution effectiveness weights: {str(e)}")
+    
+    def _learn_from_feedback_patterns(self, problem_description, suggestion_ratings, detected_system, good_aspects, improvements):
+        """Advanced pattern learning from comprehensive feedback data"""
+        try:
+            # Initialize pattern learning storage
+            if not hasattr(self, 'feedback_patterns'):
+                self.feedback_patterns = {
+                    'system_accuracy': {},  # Track system detection accuracy
+                    'solution_patterns': {},  # Track which solution patterns work best
+                    'improvement_requests': {},  # Track what users want improved
+                    'successful_combinations': []  # Track successful problem-solution combinations
+                }
+            
+            # Learn system detection accuracy
+            system_key = detected_system or 'Unknown'
+            if system_key not in self.feedback_patterns['system_accuracy']:
+                self.feedback_patterns['system_accuracy'][system_key] = {'correct': 0, 'total': 0}
+            
+            # Assume system detection is correct if overall feedback is positive
+            helpful_count = sum(1 for rating in suggestion_ratings.values() if rating == "helpful")
+            if helpful_count >= len(suggestion_ratings) / 2:  # If majority helpful, system detection likely correct
+                self.feedback_patterns['system_accuracy'][system_key]['correct'] += 1
+            self.feedback_patterns['system_accuracy'][system_key]['total'] += 1
+            
+            # Learn from improvement requests
+            for improvement in improvements:
+                if improvement not in self.feedback_patterns['improvement_requests']:
+                    self.feedback_patterns['improvement_requests'][improvement] = 0
+                self.feedback_patterns['improvement_requests'][improvement] += 1
+            
+            # Record successful combinations for future reference
+            if helpful_count >= len(suggestion_ratings) / 2:
+                self.feedback_patterns['successful_combinations'].append({
+                    'problem_tokens': self._semantic_tokenizer(self._preprocess_text(problem_description)),
+                    'system': detected_system,
+                    'success_rate': helpful_count / len(suggestion_ratings),
+                    'good_aspects': good_aspects
+                })
+                
+                # Keep only the best 100 combinations to avoid memory issues
+                if len(self.feedback_patterns['successful_combinations']) > 100:
+                    # Sort by success rate and keep top 100
+                    self.feedback_patterns['successful_combinations'].sort(
+                        key=lambda x: x['success_rate'], reverse=True
+                    )
+                    self.feedback_patterns['successful_combinations'] = self.feedback_patterns['successful_combinations'][:100]
+            
+            logging.info(f"Advanced pattern learning: Updated patterns for {detected_system}, "
+                        f"Success combinations: {len(self.feedback_patterns['successful_combinations'])}")
+            
+        except Exception as e:
+            logging.error(f"Error in feedback pattern learning: {str(e)}")
+    
+    def _update_suggestion_ranking_model(self):
+        """Update internal ranking model based on learned feedback patterns"""
+        try:
+            if not hasattr(self, 'feedback_patterns') or not hasattr(self, 'solution_effectiveness'):
+                return
+            
+            # Create intelligent suggestion ranking weights
+            self.suggestion_ranking_weights = {}
+            
+            # Weight based on solution effectiveness
+            for pattern_key, effectiveness_data in self.solution_effectiveness.items():
+                if '_helpful' in pattern_key:
+                    token = pattern_key.replace('_helpful', '')
+                    self.suggestion_ranking_weights[token] = effectiveness_data.get('weight', 1.0)
+            
+            # Weight successful combinations higher
+            for combo in self.feedback_patterns.get('successful_combinations', []):
+                for token in combo['problem_tokens']:
+                    if token in self.suggestion_ranking_weights:
+                        # Boost weight for tokens in successful combinations
+                        self.suggestion_ranking_weights[token] *= (1 + combo['success_rate'] * 0.5)
+                    else:
+                        self.suggestion_ranking_weights[token] = 1 + combo['success_rate'] * 0.5
+            
+            logging.info(f"Updated suggestion ranking model with {len(self.suggestion_ranking_weights)} intelligent weights")
+            
+        except Exception as e:
+            logging.error(f"Error updating suggestion ranking model: {str(e)}")
+    
+    def _get_case_service(self):
+        """Get case service instance with import handling"""
+        try:
+            from case_service import CaseService
+            return CaseService()
+        except ImportError:
+            # Fallback for circular import issues
+            from app import current_app
+            return current_app.config.get('case_service_instance')
+    
     def _save_models(self):
-        """Save trained models to disk"""
+        """Save trained models AND intelligent learning data to disk"""
         try:
             models_dir = "ml_models"
             os.makedirs(models_dir, exist_ok=True)
@@ -725,19 +976,37 @@ class MLService:
                 with open(f"{models_dir}/label_encoder.pkl", "wb") as f:
                     pickle.dump(self.label_encoder, f)
             
-            # Save training metadata
+            # ADVANCED: Save intelligent learning data
+            learning_data = {
+                'solution_effectiveness': getattr(self, 'solution_effectiveness', {}),
+                'feedback_patterns': getattr(self, 'feedback_patterns', {}),
+                'suggestion_ranking_weights': getattr(self, 'suggestion_ranking_weights', {}),
+                'learning_version': '2.0'  # Version for future compatibility
+            }
+            with open(f"{models_dir}/intelligent_learning.pkl", "wb") as f:
+                pickle.dump(learning_data, f)
+            
+            # Save enhanced metadata
             metadata = {
                 'trained_at': datetime.now().isoformat(),
-                'is_trained': self.is_trained
+                'is_trained': self.is_trained,
+                'learning_data_saved': True,
+                'solution_patterns_count': len(getattr(self, 'solution_effectiveness', {})),
+                'successful_combinations_count': len(getattr(self, 'feedback_patterns', {}).get('successful_combinations', [])),
+                'ranking_weights_count': len(getattr(self, 'suggestion_ranking_weights', {}))
             }
             with open(f"{models_dir}/metadata.pkl", "wb") as f:
                 pickle.dump(metadata, f)
+            
+            logging.info(f"Saved ML models with intelligent learning data: "
+                        f"{metadata['solution_patterns_count']} patterns, "
+                        f"{metadata['successful_combinations_count']} successful combinations")
                 
         except Exception as e:
             logging.error(f"Error saving ML models: {str(e)}")
     
     def _load_models(self):
-        """Load trained models from disk"""
+        """Load trained models AND intelligent learning data from disk"""
         try:
             models_dir = "ml_models"
             
@@ -753,6 +1022,22 @@ class MLService:
                 with open(encoder_path, "rb") as f:
                     self.label_encoder = pickle.load(f)
             
+            # ADVANCED: Load intelligent learning data
+            learning_path = f"{models_dir}/intelligent_learning.pkl"
+            if os.path.exists(learning_path):
+                with open(learning_path, "rb") as f:
+                    learning_data = pickle.load(f)
+                    
+                    # Restore intelligent learning attributes
+                    self.solution_effectiveness = learning_data.get('solution_effectiveness', {})
+                    self.feedback_patterns = learning_data.get('feedback_patterns', {})
+                    self.suggestion_ranking_weights = learning_data.get('suggestion_ranking_weights', {})
+                    
+                    logging.info(f"Loaded intelligent learning data: "
+                               f"{len(self.solution_effectiveness)} solution patterns, "
+                               f"{len(self.feedback_patterns.get('successful_combinations', []))} successful combinations, "
+                               f"{len(self.suggestion_ranking_weights)} ranking weights")
+            
             # Load metadata
             metadata_path = f"{models_dir}/metadata.pkl"
             if os.path.exists(metadata_path):
@@ -761,17 +1046,113 @@ class MLService:
                     self.is_trained = metadata.get('is_trained', False)
             
             if self.system_classifier and self.is_trained:
-                logging.info("Loaded trained ML models")
+                learning_info = ""
+                if hasattr(self, 'solution_effectiveness'):
+                    learning_info = f" with {len(self.solution_effectiveness)} learned patterns"
+                logging.info(f"Loaded trained ML models{learning_info}")
             
         except Exception as e:
             logging.error(f"Error loading ML models: {str(e)}")
             self.is_trained = False
     
     def get_model_info(self) -> Dict:
-        """Get information about trained models"""
+        """Get comprehensive information about trained models and learning progress"""
+        # Calculate learning statistics
+        solution_effectiveness_count = len(getattr(self, 'solution_effectiveness', {}))
+        successful_combinations_count = len(getattr(self, 'feedback_patterns', {}).get('successful_combinations', []))
+        ranking_weights_count = len(getattr(self, 'suggestion_ranking_weights', {}))
+        
+        # Calculate system detection accuracy if available
+        system_accuracy = {}
+        if hasattr(self, 'feedback_patterns') and 'system_accuracy' in self.feedback_patterns:
+            for system, stats in self.feedback_patterns['system_accuracy'].items():
+                if stats['total'] > 0:
+                    accuracy = stats['correct'] / stats['total']
+                    system_accuracy[system] = {
+                        'accuracy': round(accuracy * 100, 1),
+                        'total_analyzed': stats['total']
+                    }
+        
+        # Get top improvement requests
+        top_improvements = {}
+        if hasattr(self, 'feedback_patterns') and 'improvement_requests' in self.feedback_patterns:
+            improvements = self.feedback_patterns['improvement_requests']
+            # Get top 5 most requested improvements
+            sorted_improvements = sorted(improvements.items(), key=lambda x: x[1], reverse=True)
+            top_improvements = dict(sorted_improvements[:5])
+        
         return {
             'is_trained': self.is_trained,
             'has_system_classifier': self.system_classifier is not None,
             'supported_systems': list(self.system_keywords.keys()),
-            'solution_patterns': len(self.solution_patterns)
+            'learning_statistics': {
+                'solution_effectiveness_patterns': solution_effectiveness_count,
+                'successful_combinations': successful_combinations_count,
+                'ranking_weights': ranking_weights_count,
+                'learning_active': solution_effectiveness_count > 0
+            },
+            'system_detection_accuracy': system_accuracy,
+            'top_improvement_requests': top_improvements,
+            'learning_version': '2.0 - Advanced Intelligent Learning'
         }
+    
+    def get_learning_insights(self) -> Dict:
+        """Get insights about what the system has learned from feedback"""
+        insights = {
+            'most_effective_solutions': [],
+            'least_effective_patterns': [],
+            'best_performing_systems': [],
+            'learning_recommendations': []
+        }
+        
+        try:
+            # Most effective solution patterns
+            if hasattr(self, 'solution_effectiveness'):
+                effective_patterns = []
+                for pattern_key, data in self.solution_effectiveness.items():
+                    if '_helpful' in pattern_key and data['helpful'] > 2:  # At least 3 helpful votes
+                        token = pattern_key.replace('_helpful', '')
+                        success_rate = data['helpful'] / (data['helpful'] + data.get('not_helpful', 0))
+                        effective_patterns.append({
+                            'pattern': token,
+                            'success_rate': round(success_rate * 100, 1),
+                            'total_feedback': data['helpful'] + data.get('not_helpful', 0)
+                        })
+                
+                # Sort by success rate and take top 10
+                effective_patterns.sort(key=lambda x: x['success_rate'], reverse=True)
+                insights['most_effective_solutions'] = effective_patterns[:10]
+            
+            # Best performing systems
+            if hasattr(self, 'feedback_patterns') and 'system_accuracy' in self.feedback_patterns:
+                system_performance = []
+                for system, stats in self.feedback_patterns['system_accuracy'].items():
+                    if stats['total'] >= 3:  # At least 3 analyses
+                        accuracy = stats['correct'] / stats['total']
+                        system_performance.append({
+                            'system': system,
+                            'accuracy': round(accuracy * 100, 1),
+                            'total_analyses': stats['total']
+                        })
+                
+                system_performance.sort(key=lambda x: x['accuracy'], reverse=True)
+                insights['best_performing_systems'] = system_performance
+            
+            # Learning recommendations
+            recommendations = []
+            if len(insights['most_effective_solutions']) > 0:
+                recommendations.append("Sistema aprendendo com sucesso - padrões efetivos identificados")
+            if len(insights['best_performing_systems']) > 0:
+                best_system = insights['best_performing_systems'][0]
+                recommendations.append(f"Detecção mais precisa para sistema {best_system['system']} ({best_system['accuracy']}%)")
+            
+            if hasattr(self, 'feedback_patterns') and len(self.feedback_patterns.get('improvement_requests', {})) > 0:
+                top_request = max(self.feedback_patterns['improvement_requests'].items(), key=lambda x: x[1])
+                recommendations.append(f"Principal melhoria solicitada: {top_request[0]}")
+            
+            insights['learning_recommendations'] = recommendations
+            
+        except Exception as e:
+            logging.error(f"Error generating learning insights: {str(e)}")
+        
+        return insights
