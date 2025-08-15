@@ -1,19 +1,24 @@
 /* Custom styles for OS Assistant */
 
-/* Override some Bootstrap defaults for better technical interface */
+/* Override some Bootstrap defaults for Unimed theme */
 :root {
     --custom-code-bg: #1a1a1a;
     --custom-border-radius: 8px;
-    --glow-color: #0dcaf0;
-    --glow-secondary: rgba(13, 202, 240, 0.3);
+    --unimed-green: #00A859;
+    --unimed-green-light: #4CBB78;
+    --unimed-green-dark: #008044;
+    --unimed-green-glow: rgba(0, 168, 89, 0.3);
+    --unimed-green-hover: rgba(0, 168, 89, 0.1);
+    --unimed-accent: #00D166;
 }
 
-/* Navigation glow effects */
+/* Navigation Unimed theme */
 .navbar-brand-glow {
-    text-shadow: 0 0 10px var(--glow-secondary);
+    text-shadow: 0 0 10px var(--unimed-green-glow);
     transition: text-shadow 0.3s ease;
     cursor: default !important;
     pointer-events: none !important;
+    color: var(--unimed-green-light) !important;
 }
 
 .navbar-brand {
@@ -23,8 +28,8 @@
 }
 
 .nav-link.active {
-    color: var(--glow-color) !important;
-    text-shadow: 0 0 8px var(--glow-secondary);
+    color: var(--unimed-green) !important;
+    text-shadow: 0 0 8px var(--unimed-green-glow);
     font-weight: 500;
     position: relative;
 }
@@ -37,9 +42,9 @@
     transform: translateX(-50%);
     width: 80%;
     height: 2px;
-    background: linear-gradient(90deg, transparent, var(--glow-color), transparent);
+    background: linear-gradient(90deg, transparent, var(--unimed-green), transparent);
     border-radius: 2px;
-    box-shadow: 0 0 5px var(--glow-secondary);
+    box-shadow: 0 0 5px var(--unimed-green-glow);
 }
 
 .nav-link {
@@ -49,8 +54,8 @@
 }
 
 .nav-link:hover {
-    background-color: rgba(13, 202, 240, 0.1);
-    color: var(--glow-color) !important;
+    background-color: var(--unimed-green-hover);
+    color: var(--unimed-green) !important;
 }
 
 /* Code and pre styling */
@@ -93,8 +98,8 @@ pre {
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: #63b3ed !important;
-    box-shadow: 0 0 0 0.2rem rgba(99, 179, 237, 0.25) !important;
+    border-color: var(--unimed-green) !important;
+    box-shadow: 0 0 0 0.2rem var(--unimed-green-glow) !important;
     background-color: #2d3748 !important;
     color: #e2e8f0 !important;
     outline: none !important;
@@ -271,6 +276,101 @@ textarea.form-control {
 .form-check-label[for="not_resolved"] {
     color: #fca5a5 !important;
     font-weight: 600;
+}
+
+/* ========== UNIMED THEME OVERRIDES ========== */
+
+/* Primary buttons - Unimed green */
+.btn-primary {
+    background-color: var(--unimed-green) !important;
+    border-color: var(--unimed-green) !important;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--unimed-green-dark) !important;
+    border-color: var(--unimed-green-dark) !important;
+    box-shadow: 0 0 15px var(--unimed-green-glow) !important;
+}
+
+.btn-outline-primary {
+    color: var(--unimed-green) !important;
+    border-color: var(--unimed-green) !important;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:focus {
+    background-color: var(--unimed-green) !important;
+    border-color: var(--unimed-green) !important;
+    color: white !important;
+}
+
+/* Success buttons */
+.btn-success {
+    background-color: var(--unimed-green-light) !important;
+    border-color: var(--unimed-green-light) !important;
+}
+
+.btn-success:hover, .btn-success:focus {
+    background-color: var(--unimed-green) !important;
+    border-color: var(--unimed-green) !important;
+}
+
+/* Info buttons */
+.btn-info {
+    background-color: var(--unimed-green-dark) !important;
+    border-color: var(--unimed-green-dark) !important;
+}
+
+.btn-info:hover, .btn-info:focus {
+    background-color: var(--unimed-green) !important;
+    border-color: var(--unimed-green) !important;
+}
+
+/* Progress bars */
+.progress-bar {
+    background-color: var(--unimed-green) !important;
+}
+
+.progress-bar.bg-success {
+    background-color: var(--unimed-green-light) !important;
+}
+
+/* Badges */
+.badge.bg-success {
+    background-color: var(--unimed-green) !important;
+}
+
+.badge.bg-info {
+    background-color: var(--unimed-green-dark) !important;
+}
+
+.badge.bg-primary {
+    background-color: var(--unimed-green) !important;
+}
+
+/* Text colors */
+.text-primary {
+    color: var(--unimed-green) !important;
+}
+
+.text-success {
+    color: var(--unimed-green-light) !important;
+}
+
+/* Links */
+a {
+    color: var(--unimed-green-light) !important;
+}
+
+a:hover {
+    color: var(--unimed-green) !important;
+}
+
+/* Card headers with Unimed accent */
+.card-header {
+    background-color: var(--bs-dark) !important;
+    border-bottom: 2px solid var(--unimed-green-dark) !important;
 }
 
 /* Score labels with color coding */
