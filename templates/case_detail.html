@@ -54,7 +54,7 @@
         <div class="card mb-4">
             <div class="card-header d-flex align-items-center">
                 <i data-feather="message-circle" class="me-2"></i>
-                <h5 class="mb-0">Efetividade da Solução</h5>
+                <h5 class="mb-0">Avaliação</h5>
             </div>
             <div class="card-body">
                 {% if case.effectiveness_score %}
@@ -70,7 +70,7 @@
                                 <span class="ms-2 fw-bold">{{ "%.1f"|format(case.effectiveness_score) }}/5</span>
                             </div>
                         </div>
-                        <p class="text-muted">Baseado em {{ case.feedback_count }} avaliação{{ 'ões' if case.feedback_count != 1 else '' }}</p>
+                        <p class="text-muted">{{ case.feedback_count }} avaliações</p>
                     </div>
                     <div class="col-md-6">
                         <div class="progress mb-2" style="height: 20px;">
@@ -79,18 +79,18 @@
                                 {{ "%.0f"|format(case.effectiveness_score / 5 * 100) }}%
                             </div>
                         </div>
-                        <small class="text-muted">Pontuação de efetividade da solução</small>
+                        <small class="text-muted">Efetividade</small>
                     </div>
                 </div>
                 {% endif %}
                 
                 <div class="border-top pt-3 mt-3">
-                    <h6 class="mb-3">Como foi resolvido este caso?</h6>
+                    <h6 class="mb-3">Avalie este caso:</h6>
                     <div class="d-grid">
                         <a href="{{ url_for('case_feedback_form', case_id=case.id) }}" 
                            class="btn btn-primary btn-lg">
                             <i data-feather="message-square" class="me-2"></i>
-                            Dar Feedback Detalhado
+                            Dar Feedback
                         </a>
                     </div>
 
