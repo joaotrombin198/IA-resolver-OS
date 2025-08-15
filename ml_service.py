@@ -670,6 +670,46 @@ class MLService:
             logging.error(f"Error training ML models: {str(e)}")
             return False
     
+    def process_analysis_feedback(self, feedback):
+        """Process feedback from analysis to improve future suggestions"""
+        try:
+            import json
+            
+            # Parse feedback data
+            suggestion_ratings = json.loads(feedback.suggestion_ratings or "{}")
+            good_aspects = json.loads(feedback.good_aspects or "[]")
+            improvements = json.loads(feedback.improvements or "[]")
+            
+            # Analyze feedback patterns
+            helpful_suggestions = sum(1 for rating in suggestion_ratings.values() if rating == "helpful")
+            total_suggestions = len(suggestion_ratings)
+            
+            if total_suggestions > 0:
+                success_rate = helpful_suggestions / total_suggestions
+                
+                # Log feedback analysis for model improvement
+                logging.info(f"Feedback Analysis: {success_rate:.1%} suggestions helpful, "
+                           f"Score: {feedback.overall_score}/5, "
+                           f"Good: {good_aspects}, Improve: {improvements}")
+                
+                # Future: Use this data to adjust suggestion ordering, 
+                # improve system detection, and refine solution matching
+                
+                # For now, trigger retraining if we have enough feedback data
+                from app import db
+                from models import AnalysisFeedback
+                feedback_count = db.session.query(AnalysisFeedback).count()
+                
+                if feedback_count % 10 == 0:  # Retrain every 10 feedback entries
+                    logging.info(f"Triggering ML retrain after {feedback_count} feedback entries")
+                    from case_service import case_service
+                    all_cases = case_service.get_all_cases()
+                    if len(all_cases) >= 5:
+                        self.train_models(all_cases)
+                
+        except Exception as e:
+            logging.error(f"Error processing analysis feedback: {str(e)}")
+    
     def _save_models(self):
         """Save trained models to disk"""
         try:

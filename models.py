@@ -75,8 +75,37 @@ class CaseFeedback(db.Model):
     resolution_method = db.Column(db.String(50), default="")  # "first_suggestion", "custom", "not_resolved"
     custom_solution = db.Column(db.Text, default="")  # What actually worked
     created_at = db.Column(db.DateTime, default=datetime.now)
+
+
+class AnalysisFeedback(db.Model):
+    """Model for storing feedback on AI analysis and suggestions"""
+    
+    __tablename__ = 'analysis_feedbacks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    problem_description = db.Column(db.Text, nullable=False)  # The analyzed problem
+    overall_score = db.Column(db.Integer, nullable=False)  # 1-5 scale
+    suggestion_ratings = db.Column(db.Text, default="{}")  # JSON: {"0": "helpful", "1": "not_helpful"}
+    good_aspects = db.Column(db.Text, default="[]")  # JSON: ["relevant", "clear"]
+    improvements = db.Column(db.Text, default="[]")  # JSON: ["speed", "detail"]
+    comments = db.Column(db.Text, default="")
+    detected_system = db.Column(db.String(100), default="")  # What system was detected
+    created_at = db.Column(db.DateTime, default=datetime.now)
     
     def to_dict(self) -> Dict:
+        """Convert analysis feedback to dictionary"""
+        import json
+        return {
+            'id': self.id,
+            'problem_description': self.problem_description,
+            'overall_score': self.overall_score,
+            'suggestion_ratings': json.loads(self.suggestion_ratings or "{}"),
+            'good_aspects': json.loads(self.good_aspects or "[]"),
+            'improvements': json.loads(self.improvements or "[]"),
+            'comments': self.comments,
+            'detected_system': self.detected_system,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
         """Convert feedback to dictionary"""
         return {
             'id': self.id,

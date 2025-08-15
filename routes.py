@@ -845,14 +845,32 @@ def feedback():
             'user_agent': request.headers.get('User-Agent', '')
         }
         
-        # Log the feedback (in production, save to database)
-        logging.info(f"User Feedback Received: {feedback_data}")
+        # Save feedback to database for ML learning
+        try:
+            from models import AnalysisFeedback
+            import json
+            
+            analysis_feedback = AnalysisFeedback()
+            analysis_feedback.problem_description = problem_description
+            analysis_feedback.overall_score = score
+            analysis_feedback.suggestion_ratings = json.dumps(suggestion_ratings_dict)
+            analysis_feedback.good_aspects = json.dumps(good_aspects_list)
+            analysis_feedback.improvements = json.dumps(improvements_list)
+            analysis_feedback.comments = comments
+            
+            db.session.add(analysis_feedback)
+            db.session.commit()
+            
+            logging.info(f"Saved analysis feedback to database: score={score}")
+            
+            # Trigger ML model improvement based on feedback
+            ml_service.process_analysis_feedback(analysis_feedback)
+            
+        except Exception as e:
+            logging.error(f"Error saving analysis feedback: {str(e)}")
         
-        # In a future version, this feedback could be used to:
-        # 1. Improve ML model training
-        # 2. Adjust suggestion algorithms
-        # 3. Update similar case matching
-        # 4. Enhance system detection accuracy
+        # Log the feedback for immediate debugging
+        logging.info(f"User Feedback Received: {feedback_data}")
         
         return jsonify({
             'success': True,
@@ -865,5 +883,41 @@ def feedback():
             'success': False,
             'message': 'Erro ao processar feedback'
         }), 500
+
+@app.route('/admin/feedbacks')
+def view_feedbacks():
+    """View all feedback data for system improvement"""
+    try:
+        from models import AnalysisFeedback, CaseFeedback
+        
+        # Get analysis feedbacks (from AI suggestions)
+        analysis_feedbacks = AnalysisFeedback.query.order_by(AnalysisFeedback.created_at.desc()).limit(50).all()
+        
+        # Get case feedbacks (from individual cases)
+        case_feedbacks = db.session.query(CaseFeedback, Case).join(Case).order_by(CaseFeedback.created_at.desc()).limit(50).all()
+        
+        # Calculate feedback statistics
+        total_analysis_feedbacks = AnalysisFeedback.query.count()
+        avg_analysis_score = db.session.query(db.func.avg(AnalysisFeedback.overall_score)).scalar() or 0
+        
+        total_case_feedbacks = CaseFeedback.query.count()
+        avg_case_score = db.session.query(db.func.avg(CaseFeedback.effectiveness_score)).scalar() or 0
+        
+        feedback_stats = {
+            'total_analysis_feedbacks': total_analysis_feedbacks,
+            'avg_analysis_score': round(avg_analysis_score, 1),
+            'total_case_feedbacks': total_case_feedbacks,
+            'avg_case_score': round(avg_case_score, 1)
+        }
+        
+        return render_template('admin_feedbacks.html', 
+                             analysis_feedbacks=analysis_feedbacks,
+                             case_feedbacks=case_feedbacks,
+                             feedback_stats=feedback_stats)
+        
+    except Exception as e:
+        logging.error(f"Error viewing feedbacks: {str(e)}")
+        flash(f'Erro ao carregar feedbacks: {str(e)}', 'error')
+        return redirect(url_for('dashboard'))
 
 
