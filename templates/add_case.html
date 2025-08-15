@@ -95,10 +95,6 @@ Inclua detalhes técnicos específicos que ajudariam outro técnico a reproduzir
                                 Limpar Formulário
                             </button>
                             <div>
-                                <button type="button" class="btn btn-outline-info me-2" onclick="previewCase()">
-                                    <i data-feather="eye" class="me-1"></i>
-                                    Visualizar
-                                </button>
                                 <button type="submit" class="btn btn-primary">
                                     <i data-feather="save" class="me-1"></i>
                                     Salvar Caso
@@ -114,32 +110,7 @@ Inclua detalhes técnicos específicos que ajudariam outro técnico a reproduzir
     </div>
 </div>
 
-<!-- Preview Modal -->
-<div class="modal fade" id="previewModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i data-feather="eye" class="me-2"></i>
-                    Visualizar Caso
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="previewContent">
-                    <!-- Preview content will be inserted here -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="document.querySelector('form').submit()">
-                    <i data-feather="save" class="me-1"></i>
-                    Salvar Caso
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
         <!-- Import File Form -->
         <div class="card" id="importForm" style="display: none;">
