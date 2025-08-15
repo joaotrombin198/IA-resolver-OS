@@ -53,10 +53,30 @@
     color: var(--glow-color) !important;
 }
 
-/* Adjust navbar alignment to match page content */
+/* Navbar perfect centering */
+.navbar-nav {
+    align-items: center;
+}
+
+.navbar-collapse {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.navbar-nav.mx-auto {
+    margin: 0 auto !important;
+}
+
+/* Ensure proper spacing and alignment */
 @media (min-width: 992px) {
-    .navbar-collapse {
-        padding-left: 80px; /* Adjust to align with page content */
+    .navbar-nav {
+        gap: 1rem;
+    }
+    
+    .container-fluid {
+        padding-left: 2rem;
+        padding-right: 2rem;
     }
 }
 

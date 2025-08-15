@@ -17,7 +17,7 @@
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-bottom">
-        <div class="container">
+        <div class="container-fluid">
             <div class="navbar-brand d-flex align-items-center">
                 <i data-feather="cpu" class="me-2"></i>
                 <span class="fw-bold navbar-brand-glow">Assistente OS</span>
@@ -27,8 +27,8 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             
-            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                <ul class="navbar-nav">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
                         <a class="nav-link{% if request.endpoint == 'index' %} active{% endif %}" href="{{ url_for('index') }}">
                             <i data-feather="search" class="me-1"></i>
