@@ -109,19 +109,7 @@
     background-color: #dc3545 !important;
 }
 
-/* System-specific color overrides */
-.system-badge[data-system*="Aplicativo Unimed"],
-.system-badge[data-system*="aplicativo unimed"] {
-    background-color: #212529 !important;
-    color: #ffffff !important;
-    border: 1px solid #495057;
-}
-
-.system-badge[data-system*="SGU GPL"],
-.system-badge[data-system*="sgu gpl"] {
-    background-color: #6c757d !important;
-    color: #ffffff !important;
-}
+/* Remove system-specific overrides - let dynamic assignment handle it */
 
 /* Force badge visibility and proper styling */
 .badge {
@@ -137,13 +125,13 @@
     border-radius: 0.375rem !important;
 }
 
-/* Custom color classes for extended palette */
+/* Extended bright color palette - no black/gray/silver */
 .bg-purple {
     background-color: #6f42c1 !important;
 }
 
 .bg-cyan {
-    background-color: #0dcaf0 !important;
+    background-color: #17a2b8 !important;
 }
 
 .bg-orange {
@@ -151,7 +139,7 @@
 }
 
 .bg-pink {
-    background-color: #d63384 !important;
+    background-color: #e83e8c !important;
 }
 
 .bg-indigo {
@@ -160,6 +148,18 @@
 
 .bg-teal {
     background-color: #20c997 !important;
+}
+
+.bg-lime {
+    background-color: #32cd32 !important;
+}
+
+.bg-violet {
+    background-color: #8b00ff !important;
+}
+
+.bg-emerald {
+    background-color: #50c878 !important;
 }
 
 /* Progress bar consistency */
