@@ -53,6 +53,13 @@
     color: var(--glow-color) !important;
 }
 
+/* Adjust navbar alignment to match page content */
+@media (min-width: 992px) {
+    .navbar-collapse {
+        padding-left: 80px; /* Adjust to align with page content */
+    }
+}
+
 /* Code and pre styling */
 pre {
     background-color: var(--custom-code-bg) !important;
