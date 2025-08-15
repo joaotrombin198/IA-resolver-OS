@@ -19,10 +19,7 @@
                         </label>
                         <input class="form-control" type="file" id="file" name="file" 
                                accept=".xlsx,.xls,.pdf,.csv" required>
-                        <div class="form-text">
-                            <i data-feather="info" class="me-1"></i>
-                            Formatos suportados: Excel (.xlsx, .xls), PDF (.pdf), CSV (.csv)
-                        </div>
+
                     </div>
                     
                     <div class="mb-4">
@@ -72,80 +69,6 @@
                         </a>
                     </div>
                 </form>
-            </div>
-        </div>
-
-        <!-- Instructions Card -->
-        <div class="card mt-4">
-            <div class="card-header d-flex align-items-center">
-                <i data-feather="help-circle" class="me-2"></i>
-                <h6 class="mb-0">Como Preparar os Arquivos</h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i data-feather="file-text" class="me-2"></i>Excel/CSV</h6>
-                        <p class="mb-2">Estruture sua planilha com colunas:</p>
-                        <ul class="list-unstyled ps-3">
-                            <li>• <strong>Problema:</strong> Descrição do problema técnico</li>
-                            <li>• <strong>Solução:</strong> Como foi resolvido</li>
-                            <li>• <strong>Sistema:</strong> Tasy, SGU, SGU Card, etc.</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h6><i data-feather="file" class="me-2"></i>PDF</h6>
-                        <p class="mb-2">O sistema tentará extrair:</p>
-                        <ul class="list-unstyled ps-3">
-                            <li>• Descrições de problemas</li>
-                            <li>• Soluções aplicadas</li>
-                            <li>• Referências a sistemas</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="alert alert-info mt-3">
-                    <i data-feather="alert-circle" class="me-2"></i>
-                    <strong>Dica:</strong> Exporte os casos do seu sistema atual em Excel para melhor precisão na importação.
-                </div>
-            </div>
-        </div>
-
-        <!-- Sample Format Card -->
-        <div class="card mt-4">
-            <div class="card-header d-flex align-items-center">
-                <i data-feather="download" class="me-2"></i>
-                <h6 class="mb-0">Exemplo de Formato</h6>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Problema</th>
-                                <th>Solução</th>
-                                <th>Sistema</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Tasy não consegue conectar com Oracle</td>
-                                <td>Verificar tnsnames.ora e reiniciar listener</td>
-                                <td>Tasy</td>
-                            </tr>
-                            <tr>
-                                <td>SGU Card não imprime carteirinhas</td>
-                                <td>Atualizar driver da impressora</td>
-                                <td>SGU Card</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="text-center mt-3">
-                    <a href="{{ url_for('download_template') }}" class="btn btn-outline-primary btn-sm">
-                        <i data-feather="download" class="me-1"></i>
-                        Baixar Template Excel
-                    </a>
-                </div>
             </div>
         </div>
     </div>

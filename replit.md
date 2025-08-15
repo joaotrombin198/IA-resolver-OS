@@ -17,6 +17,8 @@ Upload functionality: Excel/CSV/PDF import for bulk case addition (structured fo
 Tutorial system: Complete documentation and usage guide integrated
 Security requirement: NO external AI connections - system must be 100% internal
 Search integration: Integrated search within cases panel (no separate search box)
+Color preferences: Avoid black, gray, and silver in system badge colors - use bright color palette only
+UI guidance: Remove all tooltips and hints from interface, consolidate all guidance in tutorial menu (keep input placeholders)
 
 ## System Architecture
 
