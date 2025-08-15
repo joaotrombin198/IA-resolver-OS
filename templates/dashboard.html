@@ -192,7 +192,12 @@
                                 Apagar Todos
                             </button>
                         </div>
-                        <small class="text-muted">{{ cases|length }} caso(s) encontrado(s)</small>
+                        <small class="text-muted">
+                            Mostrando {{ cases|length }} de {{ total_cases or 0 }} caso(s)
+                            {% if current_page and total_pages %}
+                            | Página {{ current_page }} de {{ total_pages }}
+                            {% endif %}
+                        </small>
                     </div>
                     <table class="table table-hover mb-0">
                         <thead class="table-dark">
@@ -256,6 +261,85 @@
                         </tbody>
                     </table>
                 </div>
+                
+                <!-- Pagination Controls -->
+                {% if total_pages and total_pages > 1 %}
+                <div class="card-footer bg-dark border-top">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            <i data-feather="info" class="me-1"></i>
+                            Mostrando {{ ((current_page - 1) * per_page + 1) }} - {{ (current_page * per_page if current_page * per_page <= total_cases else total_cases) }} de {{ total_cases }} casos
+                        </div>
+                        <nav aria-label="Navegação de páginas">
+                            <ul class="pagination pagination-sm mb-0">
+                                <!-- Previous button -->
+                                <li class="page-item {{ 'disabled' if not has_prev }}">
+                                    {% if has_prev %}
+                                    <a class="page-link" href="{{ url_for('dashboard', page=prev_page, search=search_query, system=system_filter) }}">
+                                        <i data-feather="chevron-left" style="width: 14px; height: 14px;"></i>
+                                        Anterior
+                                    </a>
+                                    {% else %}
+                                    <span class="page-link">
+                                        <i data-feather="chevron-left" style="width: 14px; height: 14px;"></i>
+                                        Anterior
+                                    </span>
+                                    {% endif %}
+                                </li>
+                                
+                                <!-- Page numbers -->
+                                {% set start_page = [1, current_page - 2]|max %}
+                                {% set end_page = [total_pages, current_page + 2]|min %}
+                                
+                                {% if start_page > 1 %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('dashboard', page=1, search=search_query, system=system_filter) }}">1</a>
+                                </li>
+                                {% if start_page > 2 %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                                {% endif %}
+                                {% endif %}
+                                
+                                {% for page_num in range(start_page, end_page + 1) %}
+                                <li class="page-item {{ 'active' if page_num == current_page }}">
+                                    <a class="page-link" href="{{ url_for('dashboard', page=page_num, search=search_query, system=system_filter) }}">
+                                        {{ page_num }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                                
+                                {% if end_page < total_pages %}
+                                {% if end_page < total_pages - 1 %}
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                                {% endif %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('dashboard', page=total_pages, search=search_query, system=system_filter) }}">{{ total_pages }}</a>
+                                </li>
+                                {% endif %}
+                                
+                                <!-- Next button -->
+                                <li class="page-item {{ 'disabled' if not has_next }}">
+                                    {% if has_next %}
+                                    <a class="page-link" href="{{ url_for('dashboard', page=next_page, search=search_query, system=system_filter) }}">
+                                        Próxima
+                                        <i data-feather="chevron-right" style="width: 14px; height: 14px;"></i>
+                                    </a>
+                                    {% else %}
+                                    <span class="page-link">
+                                        Próxima
+                                        <i data-feather="chevron-right" style="width: 14px; height: 14px;"></i>
+                                    </span>
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+                {% endif %}
                 {% else %}
                 <div class="text-center py-5">
                     <i data-feather="search" style="width: 64px; height: 64px; color: var(--bs-secondary);"></i>

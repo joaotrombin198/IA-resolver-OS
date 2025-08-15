@@ -35,27 +35,52 @@ pre {
 /* Form improvements */
 .form-control, .form-select {
     background-color: #2d3748 !important;
-    border-color: #4a5568 !important;
+    border: 2px solid #4a5568 !important;
     color: #e2e8f0 !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 1rem;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: #63b3ed !important;
-    box-shadow: 0 0 0 0.2rem rgba(99, 179, 237, 0.25) !important;
-    background-color: #2d3748 !important;
-    color: #e2e8f0 !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    background-color: #374151 !important;
+    color: #f3f4f6 !important;
+    outline: none !important;
 }
 
 .form-control::placeholder {
-    color: #a0aec0 !important;
+    color: #9ca3af !important;
+    font-style: italic;
 }
 
 textarea.form-control {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     font-size: 1rem;
-    line-height: 1.6;
+    line-height: 1.7;
     background-color: #2d3748 !important;
     color: #e2e8f0 !important;
+    min-height: 120px;
+    resize: vertical;
+}
+
+/* Large text areas for problem descriptions */
+#problem_description, #custom_solution_text {
+    font-size: 1.1rem !important;
+    line-height: 1.8 !important;
+    background: linear-gradient(135deg, #374151 0%, #2d3748 100%) !important;
+    border: 2px solid #4b5563 !important;
+    color: #f9fafb !important;
+    padding: 1rem !important;
+    border-radius: 12px !important;
+}
+
+#problem_description:focus, #custom_solution_text:focus {
+    background: linear-gradient(135deg, #4b5563 0%, #374151 100%) !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Radio and checkbox visibility fixes */
@@ -79,20 +104,66 @@ textarea.form-control {
 .form-check-input[type="radio"] {
     background-color: #374151 !important;
     border: 2px solid #6b7280 !important;
-    width: 1.2em !important;
-    height: 1.2em !important;
+    width: 1.3em !important;
+    height: 1.3em !important;
+    margin-top: 0.15rem !important;
+    transition: all 0.2s ease !important;
 }
 
 .form-check-input[type="radio"]:checked {
     background-color: #3b82f6 !important;
     border-color: #3b82f6 !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23ffffff'/%3e%3c/svg%3e") !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2.5' fill='%23ffffff'/%3e%3c/svg%3e") !important;
+    transform: scale(1.05);
 }
 
 .form-check-input[type="radio"]:focus {
     border-color: #60a5fa !important;
     outline: 0 !important;
-    box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* Colorful radio buttons for feedback form */
+.form-check-input[type="radio"]#first_suggestion:checked {
+    background-color: #10b981 !important;
+    border-color: #10b981 !important;
+}
+
+.form-check-input[type="radio"]#custom_solution:checked {
+    background-color: #f59e0b !important;
+    border-color: #f59e0b !important;
+}
+
+.form-check-input[type="radio"]#not_resolved:checked {
+    background-color: #ef4444 !important;
+    border-color: #ef4444 !important;
+}
+
+/* Score radio buttons with gradient colors */
+.form-check-input[type="radio"]#score1:checked {
+    background: linear-gradient(45deg, #dc2626, #ef4444) !important;
+    border-color: #dc2626 !important;
+}
+
+.form-check-input[type="radio"]#score2:checked {
+    background: linear-gradient(45deg, #ea580c, #f97316) !important;
+    border-color: #ea580c !important;
+}
+
+.form-check-input[type="radio"]#score3:checked {
+    background: linear-gradient(45deg, #d97706, #f59e0b) !important;
+    border-color: #d97706 !important;
+}
+
+.form-check-input[type="radio"]#score4:checked {
+    background: linear-gradient(45deg, #059669, #10b981) !important;
+    border-color: #059669 !important;
+}
+
+.form-check-input[type="radio"]#score5:checked {
+    background: linear-gradient(45deg, #0d9488, #14b8a6) !important;
+    border-color: #0d9488 !important;
+    box-shadow: 0 0 15px rgba(20, 184, 166, 0.4) !important;
 }
 
 /* Form labels and text in dark theme */
@@ -100,12 +171,59 @@ textarea.form-control {
     color: #e5e7eb !important;
     font-weight: 500;
     cursor: pointer;
+    font-size: 1rem;
+    line-height: 1.6;
+    padding-left: 0.5rem;
+    transition: color 0.2s ease;
+}
+
+.form-check-label:hover {
+    color: #f3f4f6 !important;
 }
 
 .form-label {
-    color: #e5e7eb !important;
+    color: #f3f4f6 !important;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+/* Specific label colors for feedback options */
+.form-check-label[for="first_suggestion"] {
+    color: #6ee7b7 !important;
+    font-weight: 600;
+}
+
+.form-check-label[for="custom_solution"] {
+    color: #fcd34d !important;
+    font-weight: 600;
+}
+
+.form-check-label[for="not_resolved"] {
+    color: #fca5a5 !important;
+    font-weight: 600;
+}
+
+/* Score labels with color coding */
+.form-check-label[for="score1"] {
+    color: #fca5a5 !important;
+}
+
+.form-check-label[for="score2"] {
+    color: #fed7aa !important;
+}
+
+.form-check-label[for="score3"] {
+    color: #fde68a !important;
+}
+
+.form-check-label[for="score4"] {
+    color: #a7f3d0 !important;
+}
+
+.form-check-label[for="score5"] {
+    color: #5eead4 !important;
+    font-weight: 700;
 }
 
 /* Modal specific form styling */

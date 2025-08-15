@@ -59,16 +59,31 @@ def dashboard():
     """Dashboard showing case statistics and recent cases"""
     search_query = request.args.get('search', '').strip()
     system_filter = request.args.get('system', '')
+    page = int(request.args.get('page', 1))
+    per_page = 30  # Cases per page
     
     try:
         stats = case_service.get_statistics()
         
-        # Get cases based on search/filter or show all cases
+        # Get all cases first
         if search_query or system_filter:
-            cases = case_service.search_cases(search_query, system_filter)
+            all_cases = case_service.search_cases(search_query, system_filter)
         else:
-            cases = case_service.get_all_cases()  # Show all cases, no limit
-            
+            all_cases = case_service.get_all_cases()
+        
+        # Calculate pagination
+        total_cases = len(all_cases)
+        total_pages = (total_cases + per_page - 1) // per_page
+        start_idx = (page - 1) * per_page
+        end_idx = start_idx + per_page
+        cases = all_cases[start_idx:end_idx]
+        
+        # Pagination info
+        has_prev = page > 1
+        has_next = page < total_pages
+        prev_page = page - 1 if has_prev else None
+        next_page = page + 1 if has_next else None
+        
         systems = case_service.get_unique_systems()
         
         return render_template('dashboard.html', 
@@ -77,7 +92,16 @@ def dashboard():
                              recent_cases=cases,  # For backward compatibility
                              search_query=search_query,
                              system_filter=system_filter,
-                             systems=systems)
+                             systems=systems,
+                             # Pagination
+                             current_page=page,
+                             total_pages=total_pages,
+                             total_cases=total_cases,
+                             has_prev=has_prev,
+                             has_next=has_next,
+                             prev_page=prev_page,
+                             next_page=next_page,
+                             per_page=per_page)
         
     except Exception as e:
         logging.error(f"Error loading dashboard: {str(e)}")
