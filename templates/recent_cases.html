@@ -151,7 +151,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-secondary">{{ case.system_type }}</span>
+                                    <span class="badge system-badge" data-system="{{ case.system_type }}">{{ case.system_type }}</span>
                                 </td>
                                 <td class="text-muted small">
                                     {{ case.created_at.strftime('%d/%m/%Y') if case.created_at else 'N/A' }}
@@ -280,6 +280,29 @@ function confirmDelete(caseId) {
         });
     }
 }
+
+// Apply system colors to badges
+document.addEventListener('DOMContentLoaded', function() {
+    const systemColors = {
+        'Sistema SGU': 'bg-primary',
+        'SGU-CRM': 'bg-info', 
+        'SGU-Card': 'bg-success',
+        'SGU-Portais': 'bg-warning',
+        'SGU GPL': 'bg-secondary',
+        'Autorizador/AutSC': 'bg-danger',
+        'Aplicativo Unimed Criciúma': 'bg-dark',
+        'Tasy': 'bg-purple',
+        'Syngoo': 'bg-cyan',
+        'Pep RS': 'bg-orange',
+        'Database': 'bg-pink'
+    };
+    
+    document.querySelectorAll('.system-badge').forEach(badge => {
+        const system = badge.getAttribute('data-system');
+        const colorClass = systemColors[system] || 'bg-secondary';
+        badge.className = 'badge system-badge ' + colorClass;
+    });
+});
 </script>
 
 {% endblock %}

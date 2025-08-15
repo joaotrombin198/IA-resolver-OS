@@ -594,3 +594,22 @@ footer {
 .progress-bar.bg-cyan { background-color: #0dcaf0 !important; }
 .progress-bar.bg-orange { background-color: #fd7e14 !important; }
 .progress-bar.bg-pink { background-color: #d63384 !important; }
+
+/* Scroll to top button styling */
+.scroll-to-top-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4) !important;
+}
+
+/* System color utility classes for cases */
+.system-badge-primary { background-color: #0d6efd !important; }
+.system-badge-info { background-color: #0dcaf0 !important; }
+.system-badge-success { background-color: #198754 !important; }
+.system-badge-warning { background-color: #ffc107 !important; }
+.system-badge-secondary { background-color: #6c757d !important; }
+.system-badge-danger { background-color: #dc3545 !important; }
+.system-badge-dark { background-color: #212529 !important; }
+.system-badge-purple { background-color: #6f42c1 !important; }
+.system-badge-cyan { background-color: #0dcaf0 !important; }
+.system-badge-orange { background-color: #fd7e14 !important; }
+.system-badge-pink { background-color: #d63384 !important; }

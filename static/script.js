@@ -9,6 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeComponents();
     setupEventListeners();
     loadUserPreferences();
+    createScrollToTopButton();
+    setupScrollToTop();
 });
 
 // Initialize various components
@@ -44,6 +46,72 @@ function setupEventListeners() {
     
     // Handle back button navigation
     window.addEventListener('popstate', handleBackNavigation);
+}
+
+// System color mapping function
+function getSystemColor(systemType) {
+    const systemColors = {
+        'Sistema SGU': 'primary',
+        'SGU-CRM': 'info', 
+        'SGU-Card': 'success',
+        'SGU-Portais': 'warning',
+        'SGU GPL': 'secondary',
+        'Autorizador/AutSC': 'danger',
+        'Aplicativo Unimed Criciúma': 'dark',
+        'Tasy': 'purple',
+        'Syngoo': 'cyan',
+        'Pep RS': 'orange',
+        'Database': 'pink'
+    };
+    return systemColors[systemType] || 'secondary';
+}
+
+// Create scroll to top button
+function createScrollToTopButton() {
+    const scrollBtn = document.createElement('button');
+    scrollBtn.id = 'scrollToTop';
+    scrollBtn.innerHTML = '<i data-feather="arrow-up"></i>';
+    scrollBtn.className = 'btn btn-primary scroll-to-top-btn';
+    scrollBtn.style.cssText = `
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: none;
+        z-index: 1000;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: all 0.3s ease;
+    `;
+    
+    scrollBtn.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+    
+    document.body.appendChild(scrollBtn);
+    
+    // Initialize feather icons for the new button
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+}
+
+// Setup scroll to top functionality
+function setupScrollToTop() {
+    const scrollBtn = document.getElementById('scrollToTop');
+    
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            scrollBtn.style.display = 'block';
+        } else {
+            scrollBtn.style.display = 'none';
+        }
+    });
 }
 
 // Handle Enter key submission for textarea
