@@ -63,11 +63,11 @@ def dashboard():
     try:
         stats = case_service.get_statistics()
         
-        # Get cases based on search/filter or show recent cases
+        # Get cases based on search/filter or show all cases
         if search_query or system_filter:
             cases = case_service.search_cases(search_query, system_filter)
         else:
-            cases = case_service.get_recent_cases(limit=50)  # Show more recent cases
+            cases = case_service.get_all_cases()  # Show all cases, no limit
             
         systems = case_service.get_unique_systems()
         
@@ -163,6 +163,52 @@ def add_case():
         flash(f'Error adding case: {str(e)}', 'error')
         return render_template('add_case.html')
 
+@app.route('/cases/<int:case_id>/feedback')
+def case_feedback_form(case_id):
+    """Show detailed feedback form for a specific case"""
+    try:
+        case = case_service.get_case_by_id(case_id)
+        if not case:
+            flash('Caso não encontrado.', 'error')
+            return redirect(url_for('dashboard'))
+        
+        return render_template('case_feedback.html', case=case)
+        
+    except Exception as e:
+        logging.error(f"Error loading feedback form for case {case_id}: {str(e)}")
+        flash(f'Erro ao carregar formulário de feedback: {str(e)}', 'error')
+        return redirect(url_for('dashboard'))
+
+@app.route('/cases/<int:case_id>/feedback', methods=['POST'])
+def add_case_feedback(case_id):
+    """Add detailed feedback to a case"""
+    try:
+        effectiveness_score = request.form.get('effectiveness_score', type=int)
+        resolution_method = request.form.get('resolution_method', '').strip()
+        custom_solution = request.form.get('custom_solution', '').strip()
+        
+        if not effectiveness_score or effectiveness_score < 1 or effectiveness_score > 5:
+            flash('Avaliação deve ser entre 1 e 5 estrelas.', 'error')
+            return redirect(url_for('case_feedback_form', case_id=case_id))
+        
+        if not resolution_method:
+            flash('Selecione como o problema foi resolvido.', 'error')
+            return redirect(url_for('case_feedback_form', case_id=case_id))
+        
+        success = case_service.add_case_feedback(case_id, effectiveness_score, resolution_method, custom_solution)
+        
+        if success:
+            flash('Feedback adicionado com sucesso!', 'success')
+            return redirect(url_for('view_case', case_id=case_id))
+        else:
+            flash('Caso não encontrado.', 'error')
+            return redirect(url_for('dashboard'))
+            
+    except Exception as e:
+        logging.error(f"Error adding feedback to case {case_id}: {str(e)}")
+        flash(f'Erro ao adicionar feedback: {str(e)}', 'error')
+        return redirect(url_for('case_feedback_form', case_id=case_id))
+
 @app.route('/submit-case-feedback', methods=['POST'])
 def submit_case_feedback():
     """Submit feedback on solution effectiveness"""
@@ -196,6 +242,34 @@ def api_stats():
     except Exception as e:
         logging.error(f"Error getting stats: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/convert-to-case', methods=['POST'])
+def convert_suggestion_to_case():
+    """Convert an ML suggestion to a permanent case"""
+    try:
+        problem_description = request.form.get('problem_description', '').strip()
+        solution = request.form.get('solution', '').strip()
+        system_type = request.form.get('system_type', 'Unknown').strip()
+        
+        if not problem_description or not solution:
+            flash('Descrição do problema e solução são obrigatórias.', 'error')
+            return redirect(url_for('index'))
+        
+        # Add the case
+        case = case_service.add_case(problem_description, solution, system_type)
+        
+        # Retrain ML models with new case
+        all_cases = case_service.get_all_cases()
+        if len(all_cases) >= 5:
+            ml_service.train_models(all_cases)
+        
+        flash(f'✅ Caso #{case.id} criado com sucesso! Obrigado por contribuir para a base de conhecimento.', 'success')
+        return redirect(url_for('view_case', case_id=case.id))
+        
+    except Exception as e:
+        logging.error(f"Error converting suggestion to case: {str(e)}")
+        flash(f'Erro ao criar caso: {str(e)}', 'error')
+        return redirect(url_for('index'))
 
 @app.route('/api/ml-info')
 def api_ml_info():
@@ -646,74 +720,6 @@ def add_system():
 def tutorial():
     """Show tutorial and documentation"""
     return render_template('tutorial.html')
-
-@app.route('/cases/<int:case_id>/feedback')
-def case_feedback_form(case_id):
-    """Show feedback form for a case"""
-    try:
-        case = case_service.get_case_by_id(case_id)
-        if not case:
-            flash('Caso não encontrado.', 'error')
-            return redirect(url_for('dashboard'))
-        
-        return render_template('case_feedback.html', case=case)
-        
-    except Exception as e:
-        logging.error(f"Error loading feedback form for case {case_id}: {str(e)}")
-        flash(f'Erro ao carregar formulário de feedback: {str(e)}', 'error')
-        return redirect(url_for('dashboard'))
-
-@app.route('/cases/<int:case_id>/feedback', methods=['POST'])
-def add_case_feedback(case_id):
-    """Add feedback to a case"""
-    try:
-        effectiveness_score = int(request.form.get('effectiveness_score', 3))
-        resolution_method = request.form.get('resolution_method', '').strip()
-        custom_solution = request.form.get('custom_solution', '').strip()
-        
-        # Validate required fields
-        if not resolution_method:
-            flash('Por favor selecione como o problema foi resolvido.', 'error')
-            return redirect(url_for('case_feedback_form', case_id=case_id))
-        
-        if resolution_method == 'custom_solution' and not custom_solution:
-            flash('Por favor descreva como você resolveu o problema.', 'error')
-            return redirect(url_for('case_feedback_form', case_id=case_id))
-        
-        # Add feedback to the case
-        success = case_service.add_case_feedback(
-            case_id=case_id,
-            effectiveness_score=effectiveness_score,
-            resolution_method=resolution_method,
-            custom_solution=custom_solution
-        )
-        
-        if success:
-            # Retrain ML models to incorporate feedback learning
-            all_cases = case_service.get_all_cases()
-            if len(all_cases) >= 5:
-                ml_service.train_models(all_cases)
-            
-            if resolution_method == 'first_suggestion':
-                message = 'Ótimo! Feedback registrado. A IA vai aprender com essa solução bem-sucedida.'
-            elif resolution_method == 'custom_solution':
-                message = 'Obrigado! Sua solução personalizada foi registrada e ajudará a melhorar as sugestões futuras.'
-            else:
-                message = 'Feedback registrado. Vamos trabalhar para melhorar as sugestões.'
-            
-            flash(message, 'success')
-            return redirect(url_for('view_case', case_id=case_id))
-        else:
-            flash('Caso não encontrado.', 'error')
-            return redirect(url_for('dashboard'))
-        
-    except ValueError:
-        flash('Avaliação de efetividade inválida.', 'error')
-        return redirect(url_for('case_feedback_form', case_id=case_id))
-    except Exception as e:
-        logging.error(f"Error adding feedback to case {case_id}: {str(e)}")
-        flash(f'Erro ao adicionar feedback: {str(e)}', 'error')
-        return redirect(url_for('case_feedback_form', case_id=case_id))
 
 @app.route('/import-cases', methods=['POST'])
 def import_cases():

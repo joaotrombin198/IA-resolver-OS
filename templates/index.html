@@ -93,13 +93,30 @@ Exemplos:
                 </div>
                 
                 <!-- Feedback Section -->
+                <!-- Solution Resolution Actions -->
                 <div class="border-top pt-3 mt-3">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="text-muted mb-0">Avalie as Sugestões</h6>
+                        <h6 class="text-muted mb-0">Problema Resolvido?</h6>
                         <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#feedbackHelp">
                             <i data-feather="help-circle" class="me-1"></i>
                             Como Funciona?
                         </button>
+                    </div>
+                    
+                    <!-- Quick Resolution Actions -->
+                    <div class="row mb-3">
+                        {% for solution in suggestion.suggested_solutions %}
+                        <div class="col-12 mb-2">
+                            <button class="btn btn-sm btn-outline-success w-100" onclick="convertToCase('{{ solution }}', {{ loop.index }})">
+                                <i data-feather="check-circle" class="me-1"></i>
+                                ✅ Funcionou! Salvar Solução {{ loop.index }} como Caso
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted mb-0">Avalie as Sugestões</h6>
                     </div>
                     
                     <!-- Explicação do sistema de feedback -->
@@ -380,6 +397,37 @@ function rateSuggestion(suggestionIndex, rating) {
     // Show brief feedback
     showToast(rating === 'helpful' ? 'Sugestão marcada como útil!' : 'Sugestão marcada como não útil!', 
               rating === 'helpful' ? 'success' : 'warning');
+}
+
+function convertToCase(solution, solutionIndex) {
+    if (confirm(`Essa solução funcionou para você?\n\n"${solution}"\n\nVamos salvar isso como um caso para ajudar outros usuários!`)) {
+        // Create form to submit the conversion
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/convert-to-case';
+        
+        // Add hidden fields
+        const problemField = document.createElement('input');
+        problemField.type = 'hidden';
+        problemField.name = 'problem_description';
+        problemField.value = currentProblemDescription;
+        form.appendChild(problemField);
+        
+        const solutionField = document.createElement('input');
+        solutionField.type = 'hidden';
+        solutionField.name = 'solution';
+        solutionField.value = solution;
+        form.appendChild(solutionField);
+        
+        const systemField = document.createElement('input');
+        systemField.type = 'hidden';
+        systemField.name = 'system_type';
+        systemField.value = '{{ suggestion.system_type if suggestion else "Unknown" }}';
+        form.appendChild(systemField);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
 }
 
 function openFeedbackModal(score) {

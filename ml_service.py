@@ -500,7 +500,8 @@ class MLService:
                 "Contactar suporte técnico se necessário"
             ]
         
-        return suggestions[:5]
+        # Apply infinitive conversion to ALL suggestions
+        return [self._convert_to_infinitive(solution) for solution in suggestions[:5]]
     
     def _get_diversified_system_solutions(self, system_type: str, problem_tokens: set) -> List[str]:
         """Get diversified system-specific solutions based on context"""
