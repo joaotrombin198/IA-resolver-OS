@@ -54,6 +54,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link{% if request.endpoint in ['analyze_os_pdf_form', 'analyze_os_pdf'] %} active{% endif %}" href="{{ url_for('analyze_os_pdf_form') }}">
+                            <i data-feather="file-text" class="me-1"></i>
+                            Analisar PDF OS
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link{% if request.endpoint == 'tutorial' %} active{% endif %}" href="{{ url_for('tutorial') }}">
                             <i data-feather="help-circle" class="me-1"></i>
                             Tutorial

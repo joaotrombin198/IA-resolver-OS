@@ -5,6 +5,7 @@ from models import Case, SolutionSuggestion
 from ml_service import MLService
 from case_service import CaseService
 from file_processor import FileProcessor
+from pdf_analyzer import PDFAnalyzer
 import logging
 import os
 import tempfile
@@ -14,6 +15,7 @@ from datetime import datetime, timedelta
 ml_service = MLService()
 case_service = CaseService()
 file_processor = FileProcessor()
+pdf_analyzer = PDFAnalyzer()
 
 @app.route('/')
 def index():
@@ -323,6 +325,99 @@ def convert_suggestion_to_case():
         logging.error(f"Error converting suggestion to case: {str(e)}")
         flash(f'Erro ao criar caso: {str(e)}', 'error')
         return redirect(url_for('index'))
+
+@app.route('/analyze-os-pdf')
+def analyze_os_pdf_form():
+    """Formulário para upload e análise de PDFs de Ordem de Serviço"""
+    return render_template('analyze_os_pdf.html')
+
+@app.route('/analyze-os-pdf', methods=['POST'])
+def analyze_os_pdf():
+    """Analisa PDF de OS e extrai automaticamente problema e solução"""
+    try:
+        if 'os_pdf_file' not in request.files:
+            flash('Nenhum arquivo foi selecionado.', 'error')
+            return redirect(url_for('analyze_os_pdf_form'))
+        
+        file = request.files['os_pdf_file']
+        if file.filename == '':
+            flash('Nenhum arquivo foi selecionado.', 'error')
+            return redirect(url_for('analyze_os_pdf_form'))
+        
+        if not file.filename.lower().endswith('.pdf'):
+            flash('Apenas arquivos PDF são aceitos.', 'error')
+            return redirect(url_for('analyze_os_pdf_form'))
+        
+        # Salvar arquivo temporariamente
+        filename = secure_filename(file.filename)
+        temp_path = os.path.join(tempfile.gettempdir(), filename)
+        file.save(temp_path)
+        
+        try:
+            # Analisar PDF com o sistema de ML interno
+            analysis_result = pdf_analyzer.analyze_pdf(temp_path)
+            
+            # Verificar se deve salvar automaticamente como caso
+            auto_save = request.form.get('auto_save') == 'on'
+            
+            if auto_save:
+                # Salvar automaticamente como novo caso
+                case = case_service.add_case(
+                    analysis_result['problem_description'],
+                    analysis_result['solution'],
+                    analysis_result['system_type']
+                )
+                
+                # Retreinar ML se temos casos suficientes
+                all_cases = case_service.get_all_cases()
+                if len(all_cases) >= 5:
+                    ml_service.train_models(all_cases)
+                
+                flash(f'✅ PDF analisado e Caso #{case.id} criado automaticamente!', 'success')
+                return redirect(url_for('view_case', case_id=case.id))
+            else:
+                # Mostrar resultado para revisão antes de salvar
+                return render_template('analyze_os_pdf.html', 
+                                     analysis_result=analysis_result,
+                                     pdf_filename=filename)
+        
+        finally:
+            # Limpar arquivo temporário
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+    
+    except Exception as e:
+        logging.error(f"Erro ao analisar PDF de OS: {str(e)}")
+        flash(f'Erro ao analisar PDF: {str(e)}', 'error')
+        return redirect(url_for('analyze_os_pdf_form'))
+
+@app.route('/save-os-analysis', methods=['POST'])
+def save_os_analysis():
+    """Salva resultado da análise de PDF como novo caso"""
+    try:
+        problem_description = request.form.get('problem_description', '').strip()
+        solution = request.form.get('solution', '').strip()
+        system_type = request.form.get('system_type', 'Unknown').strip()
+        
+        if not problem_description or not solution:
+            flash('Descrição do problema e solução são obrigatórias.', 'error')
+            return redirect(url_for('analyze_os_pdf_form'))
+        
+        # Criar novo caso
+        case = case_service.add_case(problem_description, solution, system_type)
+        
+        # Retreinar ML com novo caso
+        all_cases = case_service.get_all_cases()
+        if len(all_cases) >= 5:
+            ml_service.train_models(all_cases)
+        
+        flash(f'✅ Caso #{case.id} criado com sucesso a partir da análise do PDF!', 'success')
+        return redirect(url_for('view_case', case_id=case.id))
+        
+    except Exception as e:
+        logging.error(f"Erro ao salvar análise de OS: {str(e)}")
+        flash(f'Erro ao salvar caso: {str(e)}', 'error')
+        return redirect(url_for('analyze_os_pdf_form'))
 
 @app.route('/api/ml-info')
 def api_ml_info():
