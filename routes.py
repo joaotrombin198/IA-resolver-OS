@@ -926,6 +926,7 @@ def feedback():
         # Save feedback to database for ML learning
         try:
             from models import AnalysisFeedback
+            from app import db
             import json
             
             analysis_feedback = AnalysisFeedback()

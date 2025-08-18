@@ -518,6 +518,9 @@ class MLService:
         if hasattr(self, 'suggestion_ranking_weights'):
             suggestions = self._apply_intelligent_final_ranking(suggestions, problem_description)
         
+        # FEEDBACK-BASED LEARNING: Apply feedback ranking for continuous improvement
+        suggestions = self._rank_solutions_by_feedback(suggestions, problem_description)
+        
         # Ensure we have suggestions with fallback
         if not suggestions:
             suggestions = [
@@ -656,6 +659,68 @@ class MLService:
         solutions.append("Considerar abertura de chamado Nexdow se necessário")
         
         return solutions[:2]  # Limit to 2 for variety
+    
+    def _rank_solutions_by_feedback(self, solutions: List[str], problem_description: str) -> List[str]:
+        """Rank solutions based on historical feedback effectiveness"""
+        try:
+            if not hasattr(self, 'solution_effectiveness') or not self.solution_effectiveness:
+                # No feedback data yet, return original order
+                return solutions
+            
+            # Get problem tokens for pattern matching
+            problem_tokens = set(self._semantic_tokenizer(self._preprocess_text(problem_description)))
+            
+            # Score each solution based on feedback patterns
+            scored_solutions = []
+            for solution in solutions:
+                solution_tokens = set(self._semantic_tokenizer(self._preprocess_text(solution)))
+                effectiveness_score = 1.0  # Default neutral score
+                
+                # Calculate effectiveness based on feedback patterns
+                total_feedback_weight = 0
+                weighted_effectiveness = 0
+                
+                for token in problem_tokens.union(solution_tokens):
+                    helpful_key = f"{token}_helpful"
+                    not_helpful_key = f"{token}_not_helpful"
+                    
+                    if helpful_key in self.solution_effectiveness:
+                        helpful_count = self.solution_effectiveness[helpful_key]['helpful']
+                        not_helpful_count = self.solution_effectiveness[helpful_key]['not_helpful']
+                        total_feedback = helpful_count + not_helpful_count
+                        
+                        if total_feedback > 0:
+                            token_effectiveness = helpful_count / total_feedback
+                            # Weight by frequency of feedback
+                            feedback_weight = min(total_feedback, 10) / 10  # Cap at 10 for weight calculation
+                            
+                            weighted_effectiveness += token_effectiveness * feedback_weight
+                            total_feedback_weight += feedback_weight
+                
+                if total_feedback_weight > 0:
+                    effectiveness_score = weighted_effectiveness / total_feedback_weight
+                    # Scale to range 0.2 to 2.0 for meaningful ranking differences
+                    effectiveness_score = 0.2 + (effectiveness_score * 1.8)
+                
+                scored_solutions.append({
+                    'text': solution,
+                    'score': effectiveness_score
+                })
+            
+            # Sort by effectiveness score (higher is better)
+            scored_solutions.sort(key=lambda x: x['score'], reverse=True)
+            
+            # Log the reranking for debugging
+            if scored_solutions[0]['score'] != scored_solutions[-1]['score']:
+                logging.info(f"FEEDBACK LEARNING: Reranked solutions based on feedback patterns. "
+                           f"Top solution score: {scored_solutions[0]['score']:.2f}, "
+                           f"Lowest: {scored_solutions[-1]['score']:.2f}")
+            
+            return [s['text'] for s in scored_solutions]
+            
+        except Exception as e:
+            logging.error(f"Error ranking solutions by feedback: {str(e)}")
+            return solutions
     
     def _get_system_specific_solutions(self, system_type: str, problem_description: str) -> List[str]:
         """Get system-specific solution suggestions"""
