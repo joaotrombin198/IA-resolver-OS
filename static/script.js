@@ -453,3 +453,76 @@ window.addEventListener('offline', function() {
 window.addEventListener('online', function() {
     Utils.showToast('You are back online!', 'success');
 });
+
+// Rate suggestion function for ML feedback
+function rateSuggestion(suggestionIndex, rating) {
+    try {
+        // Get the problem description from the form
+        const problemDescription = document.getElementById('problem_description')?.value || 
+                                 document.querySelector('textarea[name="problem_description"]')?.value || '';
+        
+        if (!problemDescription) {
+            Utils.showToast('Erro: Descrição do problema não encontrada', 'danger');
+            return;
+        }
+        
+        // Prepare suggestion ratings object
+        const suggestionRatings = {};
+        suggestionRatings[suggestionIndex] = rating;
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('score', rating === 'helpful' ? 5 : 1); // Convert to numeric score
+        formData.append('problem_description', problemDescription);
+        formData.append('suggestion_ratings', JSON.stringify(suggestionRatings));
+        formData.append('good_aspects', JSON.stringify(rating === 'helpful' ? ['relevant'] : []));
+        formData.append('improvements', JSON.stringify(rating === 'helpful' ? [] : ['accuracy']));
+        formData.append('comments', '');
+        
+        // Send feedback to server
+        fetch('/feedback', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const message = rating === 'helpful' ? 
+                    'Obrigado! Feedback "Útil" registrado.' : 
+                    'Obrigado! Feedback "Não útil" registrado.';
+                Utils.showToast(message, 'success');
+                
+                // Disable the buttons to prevent duplicate feedback
+                const buttonGroup = document.querySelectorAll(`button[onclick*="${suggestionIndex}"]`);
+                buttonGroup.forEach(btn => {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50');
+                });
+                
+                // Visual feedback on the button  
+                const allButtons = document.querySelectorAll(`button[onclick*="rateSuggestion(${suggestionIndex}"]`);
+                allButtons.forEach(btn => {
+                    if (btn.onclick.toString().includes(`'${rating}'`)) {
+                        if (rating === 'helpful') {
+                            btn.classList.remove('btn-outline-success');
+                            btn.classList.add('btn-success');
+                        } else {
+                            btn.classList.remove('btn-outline-danger');
+                            btn.classList.add('btn-danger');
+                        }
+                    }
+                });
+            } else {
+                Utils.showToast(data.message || 'Erro ao registrar feedback', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting feedback:', error);
+            Utils.showToast('Erro na comunicação com servidor', 'danger');
+        });
+        
+    } catch (error) {
+        console.error('Error in rateSuggestion:', error);
+        Utils.showToast('Erro ao processar feedback', 'danger');
+    }
+}

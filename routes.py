@@ -998,4 +998,10 @@ def view_feedbacks():
         flash(f'Erro ao carregar feedbacks: {str(e)}', 'error')
         return redirect(url_for('dashboard'))
 
+# Import additional feedback routes
+try:
+    import routes_analysis_feedback
+    logging.info("Analysis feedback routes loaded successfully")
+except ImportError as e:
+    logging.warning(f"Could not import analysis feedback routes: {e}")
 
