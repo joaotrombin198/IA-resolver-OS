@@ -30,8 +30,19 @@
                         <textarea class="form-control" 
                                 id="problem_description" 
                                 name="problem_description" 
-                                rows="6" 
-                                placeholder="Descreva o problema técnico..."
+                                rows="8" 
+                                style="min-height: 200px;"
+                                placeholder="Descreva detalhadamente o problema técnico que você está enfrentando...
+
+Exemplos de informações úteis:
+• Sistema afetado (Tasy, SGU, Autorizador, etc.)
+• Mensagens de erro específicas
+• Quando o problema começou
+• Quais usuários são afetados
+• Passos que levaram ao problema
+• Se o problema é intermitente ou constante
+
+Quanto mais detalhes fornecer, mais precisas serão as sugestões de solução."
                                 onkeydown="handleEnterSubmit(event)"
                                 required>{{ problem_description or '' }}</textarea>
 
