@@ -1,0 +1,293 @@
+{% extends "base.html" %}
+
+{% block title %}Painel - Assistente OS{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1">
+                    <i data-feather="bar-chart-2" class="me-2"></i>
+                    Painel de Controle
+                </h2>
+                <p class="text-muted mb-0">Visão geral do sistema e estatísticas avançadas</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('recent_cases') }}" class="btn btn-outline-primary">
+                    <i data-feather="clock" class="me-1"></i>
+                    Ver Casos
+                </a>
+                <a href="{{ url_for('add_case_form') }}" class="btn btn-primary">
+                    <i data-feather="plus" class="me-1"></i>
+                    Novo Caso
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Statistics Cards -->
+    {% if stats %}
+    <div class="col-12 mb-4">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <i data-feather="database" class="mb-3" style="width: 56px; height: 56px; color: var(--bs-primary); margin: 0 auto;"></i>
+                        <h2 class="mb-2 text-primary">{{ stats.total_cases }}</h2>
+                        <p class="text-muted mb-0">Total de Casos</p>
+                        <small class="text-success mt-1">
+                            <i data-feather="trending-up" style="width: 14px; height: 14px;"></i>
+                            +{{ stats.recent_activity }} esta semana
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <i data-feather="star" class="mb-3" style="width: 56px; height: 56px; color: var(--bs-warning); margin: 0 auto;"></i>
+                        <h2 class="mb-2 text-warning">{{ "%.1f"|format(stats.avg_effectiveness) if stats.avg_effectiveness else "0.0" }}</h2>
+                        <p class="text-muted mb-0">Avaliação Média</p>
+                        <small class="text-info mt-1">
+                            <i data-feather="award" style="width: 14px; height: 14px;"></i>
+                            Escala de 1-5
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <i data-feather="message-circle" class="mb-3" style="width: 56px; height: 56px; color: var(--bs-success); margin: 0 auto;"></i>
+                        <h2 class="mb-2 text-success">{{ stats.total_feedback if stats.total_feedback else "0" }}</h2>
+                        <p class="text-muted mb-0">Feedbacks Recebidos</p>
+                        <small class="text-success mt-1">
+                            <i data-feather="percent" style="width: 14px; height: 14px;"></i>
+                            {{ "%.0f"|format((stats.total_feedback / stats.total_cases * 100) if stats.total_cases > 0 else 0) }}% dos casos
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <i data-feather="cpu" class="mb-3" style="width: 56px; height: 56px; color: var(--bs-info); margin: 0 auto;"></i>
+                        <h2 class="mb-2 text-info">{{ stats.systems|length if stats.systems else 0 }}</h2>
+                        <p class="text-muted mb-0">Sistemas Ativos</p>
+                        <small class="text-primary mt-1">
+                            <i data-feather="layers" style="width: 14px; height: 14px;"></i>
+                            ML Treinado
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Second Row: Analytics Cards -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="cpu" class="me-2"></i>
+                <h5 class="mb-0">Status ML</h5>
+            </div>
+            <div class="card-body">
+                <div id="mlInfo">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Status do Modelo</span>
+                        <span class="badge bg-success">Ativo</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Sistemas Suportados</span>
+                        <span class="badge bg-info">{{ stats.systems|length if stats and stats.systems else 0 }}</span>
+                    </div>
+                    <div class="mt-3 d-grid gap-2">
+                        <form action="{{ url_for('train_models') }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-primary w-100" id="trainBtn">
+                                <i data-feather="zap" class="me-1"></i>
+                                Treinar Modelos ML
+                            </button>
+                        </form>
+                        <form action="{{ url_for('populate_sample_data') }}" method="POST" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-info w-100" id="sampleBtn">
+                                <i data-feather="database" class="me-1"></i>
+                                Dados de Exemplo
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Timeline Chart -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="activity" class="me-2"></i>
+                <h5 class="mb-0">Gráfico de Atividade</h5>
+            </div>
+            <div class="card-body">
+                <div id="activityChart" style="height: 180px; display: flex; align-items: center; justify-content: center;">
+                    <canvas id="activityCanvas" width="600" height="180"></canvas>
+                </div>
+                <div class="mt-3">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <small class="text-muted">Hoje</small>
+                            <div class="fw-bold text-primary">{{ stats.today_cases or 0 }}</div>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted">Esta Semana</small>
+                            <div class="fw-bold text-success">{{ stats.recent_activity or 0 }}</div>
+                        </div>
+                        <div class="col-4">
+                            <small class="text-muted">Este Mês</small>
+                            <div class="fw-bold text-warning">{{ stats.month_cases or 0 }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Third Row: System Distribution and Categories -->
+    {% if stats and stats.systems %}
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="pie-chart" class="me-2"></i>
+                <h5 class="mb-0">Distribuição por Sistemas</h5>
+            </div>
+            <div class="card-body">
+                {% set bright_colors = ['primary', 'info', 'success', 'warning', 'danger', 'purple', 'cyan', 'orange', 'pink', 'indigo', 'teal', 'lime', 'violet', 'emerald'] %}
+                {% set systems_list = stats.systems.keys() | list %}
+                {% for system, count in stats.systems.items() %}
+                {% set color = bright_colors[loop.index0 % bright_colors|length] %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>{{ system }}</span>
+                    <span class="badge bg-{{ color }}" data-system="{{ system }}">{{ count }}</span>
+                </div>
+                <div class="progress mb-3" style="height: 6px;">
+                    <div class="progress-bar bg-{{ color }}" data-system="{{ system }}" style="width: {{ (count / stats.total_cases * 100)|round|int }}%"></div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- System Management -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center">
+                <i data-feather="settings" class="me-2"></i>
+                <h5 class="mb-0">Gerenciar Sistemas</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('recent_cases') }}" class="btn btn-outline-primary">
+                        <i data-feather="list" class="me-2"></i>
+                        Ver Todos os Casos
+                    </a>
+                    <a href="{{ url_for('add_case_form') }}" class="btn btn-outline-success">
+                        <i data-feather="plus-circle" class="me-2"></i>
+                        Adicionar Novo Caso
+                    </a>
+                    <a href="{{ url_for('upload_cases') }}" class="btn btn-outline-info">
+                        <i data-feather="upload" class="me-2"></i>
+                        Importar Casos Excel
+                    </a>
+                    <a href="{{ url_for('ml_learning_info') }}" class="btn btn-outline-warning">
+                        <i data-feather="cpu" class="me-2"></i>
+                        Info ML & Aprendizado
+                    </a>
+                </div>
+                
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="text-muted mb-3">Estatísticas Rápidas:</h6>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <small class="text-muted">Total Casos</small>
+                            <div class="fw-bold text-primary">{{ stats.total_cases or 0 }}</div>
+                        </div>
+                        <div class="col-6">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Simple activity chart using Canvas API
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('activityCanvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        // Sample data for activity visualization
+        // Enhanced data for better visualization
+        const data = [
+            {{ stats.recent_activity or 0 }}, 
+            {{ stats.today_cases or 0 }}, 
+            {{ (stats.total_cases / 7)|round|int if stats.total_cases else 0 }},
+            {{ (stats.total_cases / 5)|round|int if stats.total_cases else 0 }},
+            {{ (stats.total_cases / 3)|round|int if stats.total_cases else 0 }},
+            {{ stats.total_cases or 0 }}
+        ];
+        
+        const maxValue = Math.max(...data, 1);
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, width, height);
+        
+        // Draw enhanced bars with gradients
+        const barWidth = (width - 80) / data.length;
+        const colors = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6f42c1', '#fd7e14', '#20c997'];
+        
+        data.forEach((value, index) => {
+            const barHeight = (value / maxValue) * (height - 60);
+            const x = 40 + index * barWidth + 5;
+            const y = height - barHeight - 40;
+            
+            // Create gradient
+            const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
+            gradient.addColorStop(0, colors[index % colors.length]);
+            gradient.addColorStop(1, colors[index % colors.length] + '80');
+            
+            // Draw bar with rounded corners
+            ctx.fillStyle = gradient;
+            ctx.fillRect(x, y, barWidth - 10, barHeight);
+            
+            // Draw value on top
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 11px Arial';
+            ctx.textAlign = 'center';
+            if (value > 0) {
+                ctx.fillText(value.toString(), x + (barWidth - 10) / 2, y - 8);
+            }
+        });
+        
+        // Draw enhanced labels
+        ctx.fillStyle = '#b0b0b0';
+        ctx.font = '9px Arial';
+        ctx.textAlign = 'center';
+        const labels = ['Semana', 'Hoje', 'Casos', 'Total'];
+        labels.forEach((label, index) => {
+            const x = 40 + index * barWidth + 5;
+            ctx.fillText(label, x + (barWidth - 10) / 2, height - 15);
+        });
+    }
+});
+</script>
+
+{% endblock %}
