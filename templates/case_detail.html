@@ -70,7 +70,7 @@
                     <div class="col-md-6 mb-2">
                         <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary w-100">
                             <i data-feather="arrow-left" class="me-1"></i>
-                            Voltar ao Painel
+                            Voltar aos Casos Recentes
                         </a>
                     </div>
                 </div>
@@ -84,6 +84,12 @@
 
 {% block scripts %}
 <script>
+// Define case data variables
+const caseData = {
+    problem: {{ case.problem_description|tojson|safe }},
+    solution: {{ case.solution|tojson|safe }}
+};
+
 function submitFeedback(caseId, effectiveness) {
     const formData = new FormData();
     formData.append('case_id', caseId);
@@ -116,9 +122,9 @@ function copyToClipboard(type) {
     let textToCopy = '';
     
     if (type === 'problem') {
-        textToCopy = {{ case.problem_description|tojson }};
+        textToCopy = caseData.problem;
     } else if (type === 'solution') {
-        textToCopy = {{ case.solution|tojson }};
+        textToCopy = caseData.solution;
     }
     
     copyArea.value = textToCopy;
@@ -134,14 +140,13 @@ function copyToClipboard(type) {
 }
 
 function findSimilarCases() {
-    const problemText = {{ case.problem_description|tojson }};
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '{{ url_for("analyze_problem") }}';
     
     const textarea = document.createElement('textarea');
     textarea.name = 'problem_description';
-    textarea.value = problemText;
+    textarea.value = caseData.problem;
     form.appendChild(textarea);
     
     document.body.appendChild(form);
