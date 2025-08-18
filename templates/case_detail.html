@@ -116,9 +116,9 @@ function copyToClipboard(type) {
     let textToCopy = '';
     
     if (type === 'problem') {
-        textToCopy = `{{ case.problem_description|safe }}`;
+        textToCopy = {{ case.problem_description|tojson }};
     } else if (type === 'solution') {
-        textToCopy = `{{ case.solution|safe }}`;
+        textToCopy = {{ case.solution|tojson }};
     }
     
     copyArea.value = textToCopy;
@@ -134,7 +134,7 @@ function copyToClipboard(type) {
 }
 
 function findSimilarCases() {
-    const problemText = `{{ case.problem_description|safe }}`;
+    const problemText = {{ case.problem_description|tojson }};
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = '{{ url_for("analyze_problem") }}';
