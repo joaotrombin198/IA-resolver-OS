@@ -386,9 +386,11 @@ class CaseService:
             if not cases:
                 return {
                     'total_cases': 0,
-                    'systems': {},
+                    'systems': [],
+                    'systems_dict': {},
                     'avg_effectiveness': 0,
                     'cases_with_feedback': 0,
+                    'total_feedback': 0,
                     'recent_activity': 0
                 }
             
@@ -415,11 +417,16 @@ class CaseService:
             
             avg_effectiveness = (total_effectiveness / cases_with_feedback) if cases_with_feedback > 0 else 0
             
+            # Convert systems dict to sorted list for template
+            systems_list = sorted(systems.items(), key=lambda x: x[1], reverse=True)
+            
             return {
                 'total_cases': len(cases),
-                'systems': systems,
+                'systems': systems_list,
+                'systems_dict': systems,
                 'avg_effectiveness': round(avg_effectiveness, 2),
                 'cases_with_feedback': cases_with_feedback,
+                'total_feedback': cases_with_feedback,
                 'recent_activity': recent_cases
             }
             
@@ -427,9 +434,11 @@ class CaseService:
             logging.error(f"Error getting statistics: {str(e)}")
             return {
                 'total_cases': 0,
-                'systems': {},
+                'systems': [],
+                'systems_dict': {},
                 'avg_effectiveness': 0,
                 'cases_with_feedback': 0,
+                'total_feedback': 0,
                 'recent_activity': 0
             }
     
