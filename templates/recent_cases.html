@@ -96,10 +96,10 @@
                         <thead class="table-dark">
                             <tr>
                                 <th scope="col" style="width: 60px;">#</th>
-                                <th scope="col" style="width: 40%;">Problema</th>
-                                <th scope="col" style="width: 25%;">Sistema</th>
-                                <th scope="col" style="width: 15%;">Data</th>
-                                <th scope="col" style="width: 10%;">Ações</th>
+                                <th scope="col" style="width: 45%;">Problema</th>
+                                <th scope="col" style="width: 20%;">Sistema</th>
+                                <th scope="col" style="width: 20%;">Data</th>
+                                <th scope="col" style="width: 15%;" class="text-center">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -116,10 +116,8 @@
                                 </td>
                                 <td class="text-muted small">
                                     {{ case.created_at.strftime('%d/%m/%Y') if case.created_at else '-' }}
-                                </td>
-                                <td class="text-center">
                                     {% if case.effectiveness_score %}
-                                        <span class="badge bg-success" title="Avaliação: {{ case.effectiveness_score }}">
+                                        <br><span class="badge bg-success mt-1" title="Avaliação: {{ case.effectiveness_score }}">
                                             {{ "%.1f"|format(case.effectiveness_score) }}
                                         </span>
                                     {% endif %}
