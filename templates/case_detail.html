@@ -79,16 +79,17 @@
     </div>
 </div>
 
+<!-- Hidden textarea for clipboard functionality -->
+<textarea id="hiddenCopyArea" style="position: absolute; left: -9999px; opacity: 0;" 
+          data-problem="{{ case.problem_description }}" 
+          data-solution="{{ case.solution }}"></textarea>
 
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Define case data variables
-const caseData = {
-    problem: {{ case.problem_description|tojson|safe }},
-    solution: {{ case.solution|tojson|safe }}
-};
+// Define case data variables using data attributes
+const caseData = {};
 
 function submitFeedback(caseId, effectiveness) {
     const formData = new FormData();
@@ -121,10 +122,11 @@ function copyToClipboard(type) {
     const copyArea = document.getElementById('hiddenCopyArea');
     let textToCopy = '';
     
+    const dataContainer = document.getElementById('hiddenCopyArea');
     if (type === 'problem') {
-        textToCopy = caseData.problem;
+        textToCopy = dataContainer.dataset.problem || '';
     } else if (type === 'solution') {
-        textToCopy = caseData.solution;
+        textToCopy = dataContainer.dataset.solution || '';
     }
     
     copyArea.value = textToCopy;
@@ -146,7 +148,8 @@ function findSimilarCases() {
     
     const textarea = document.createElement('textarea');
     textarea.name = 'problem_description';
-    textarea.value = caseData.problem;
+    const dataContainer = document.getElementById('hiddenCopyArea');
+    textarea.value = dataContainer.dataset.problem || '';
     form.appendChild(textarea);
     
     document.body.appendChild(form);
