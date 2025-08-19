@@ -61,3 +61,11 @@ with app.app_context():
 
 # Import routes after app creation to avoid circular imports
 from routes import *
+
+# Import solution formatter and register template filter
+from solution_formatter import solution_formatter
+
+@app.template_filter('format_solution_steps')
+def format_solution_steps_filter(solution):
+    """Jinja2 template filter para formatar soluções em etapas"""
+    return solution_formatter.format_solution_html(solution)

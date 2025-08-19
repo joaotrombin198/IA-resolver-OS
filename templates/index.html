@@ -83,8 +83,8 @@ Quanto mais detalhes fornecer, mais precisas serão as sugestões de solução."
                                 <div class="d-flex align-items-start justify-content-between">
                                     <div class="d-flex align-items-start flex-grow-1">
                                         <span class="badge bg-primary me-3 mt-1">{{ loop.index }}</span>
-                                        <div class="flex-grow-1">
-                                            <p class="mb-0">{{ solution }}</p>
+                                        <div class="flex-grow-1 solution-content">
+                                            {{ solution|format_solution_steps|safe }}
                                         </div>
                                     </div>
                                     <div class="d-flex gap-1 ms-3">

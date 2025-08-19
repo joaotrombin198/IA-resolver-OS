@@ -727,3 +727,138 @@ footer {
 .system-badge-cyan { background-color: #0dcaf0 !important; }
 .system-badge-orange { background-color: #fd7e14 !important; }
 .system-badge-pink { background-color: #d63384 !important; }
+
+/* Solution Steps Styling */
+:root {
+    --step-line-color: #495057;
+    --step-bg-color: #28a745;
+}
+
+.solution-steps {
+    padding: 0.5rem 0;
+}
+
+.step-item {
+    position: relative;
+}
+
+.step-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    background: var(--step-bg-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.step-icon {
+    width: 16px !important;
+    height: 16px !important;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.step-num {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background: var(--bs-primary);
+    color: white;
+    font-size: 0.7rem;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #1e1e2e;
+}
+
+.step-line {
+    width: 2px;
+    height: 30px;
+    background: var(--step-line-color);
+    margin-top: 4px;
+}
+
+.step-item.last-step .step-line {
+    display: none;
+}
+
+.step-content {
+    padding-top: 0.25rem;
+    padding-left: 0.5rem;
+}
+
+.step-content p {
+    line-height: 1.4;
+    color: #e0e6ed;
+}
+
+/* Hover effects for steps */
+.step-item:hover .step-number {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+
+.step-item:hover .step-content p {
+    color: #ffffff;
+    transition: color 0.2s ease;
+}
+
+/* Alternative step colors */
+.step-item:nth-child(2n) .step-number {
+    background: var(--bs-info);
+    box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+}
+
+.step-item:nth-child(3n) .step-number {
+    background: var(--bs-warning);
+    color: #212529;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+.step-item:nth-child(4n) .step-number {
+    background: var(--bs-danger);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+/* Responsive adjustments for solution steps */
+@media (max-width: 768px) {
+    .step-number {
+        width: 35px;
+        height: 35px;
+        font-size: 0.8rem;
+    }
+    
+    .step-icon {
+        width: 14px !important;
+        height: 14px !important;
+    }
+    
+    .step-num {
+        width: 14px;
+        height: 14px;
+        font-size: 0.6rem;
+    }
+    
+    .step-content {
+        padding-left: 0.3rem;
+    }
+}
