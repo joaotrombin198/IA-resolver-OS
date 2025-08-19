@@ -445,6 +445,8 @@ def edit_case_form(case_id):
         flash(f'Erro ao carregar formulário de edição: {str(e)}', 'error')
         return redirect(url_for('dashboard'))
 
+
+
 @app.route('/cases/<int:case_id>/edit', methods=['POST'])
 def edit_case(case_id):
     """Update an existing case"""
@@ -499,23 +501,17 @@ def delete_case(case_id):
         flash(f'Erro ao excluir caso: {str(e)}', 'error')
         return redirect(url_for('dashboard'))
 
-@app.route('/cases/delete-all', methods=['POST'])
+@app.route('/delete_all_cases', methods=['POST'])
 def delete_all_cases():
-    """Delete ALL cases with double confirmation"""
+    """Delete all cases from the system"""
     try:
-        # Check for confirmation parameter
-        confirm = request.form.get('confirm_delete_all')
-        if confirm != 'yes':
-            flash('Operação cancelada: confirmação não recebida.', 'error')
-            return redirect(url_for('dashboard'))
-        
         # Get current case count for logging
         current_cases = case_service.get_all_cases()
         case_count = len(current_cases)
         
         if case_count == 0:
             flash('Nenhum caso encontrado para remover.', 'info')
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('recent_cases'))
         
         # Delete all cases
         success_count = case_service.delete_all_cases()
@@ -537,7 +533,7 @@ def delete_all_cases():
         logging.error(f"Error in bulk delete operation: {str(e)}")
         flash('Erro crítico durante remoção em massa. Contate o administrador.', 'error')
     
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('recent_cases'))
 
 @app.route('/train-models', methods=['POST'])
 def train_models():

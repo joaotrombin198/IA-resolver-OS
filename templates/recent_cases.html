@@ -14,7 +14,16 @@
                 </h2>
                 <p class="text-muted mb-0">Visualize e gerencie todos os casos cadastrados no sistema</p>
             </div>
-
+            
+            <div class="d-flex gap-2">
+                <button type="button" 
+                        class="btn btn-outline-danger" 
+                        onclick="confirmDeleteAll()"
+                        title="Excluir todos os casos">
+                    <i data-feather="trash-2" class="me-2"></i>
+                    Excluir Todas
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -227,6 +236,28 @@ function confirmDelete(caseId) {
             console.error('Error:', error);
             alert('Erro ao excluir o caso. Tente novamente.');
         });
+    }
+}
+
+function confirmDeleteAll() {
+    if (confirm('⚠️ ATENÇÃO: Esta ação irá excluir TODOS os casos do sistema!\n\nTem certeza que deseja continuar? Esta ação não pode ser desfeita.')) {
+        // Criar form temporário e submeter
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/delete_all_cases';
+        
+        // Adicionar token CSRF se necessário
+        const csrfToken = document.querySelector('meta[name="csrf-token"]');
+        if (csrfToken) {
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrf_token';
+            csrfInput.value = csrfToken.getAttribute('content');
+            form.appendChild(csrfInput);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 
