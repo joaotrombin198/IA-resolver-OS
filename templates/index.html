@@ -75,27 +75,38 @@ Quanto mais detalhes fornecer, mais precisas serão as sugestões de solução."
             </div>
             <div class="card-body">
                 <h6 class="text-muted mb-3">Soluções Sugeridas:</h6>
-                <div class="row">
+                <div class="ml-solutions-container">
                     {% for solution in suggestion.suggested_solutions %}
-                    <div class="col-12 mb-3">
-                        <div class="card bg-dark border-secondary">
-                            <div class="card-body">
-                                <div class="d-flex align-items-start justify-content-between">
-                                    <div class="d-flex align-items-start flex-grow-1">
-                                        <span class="badge bg-primary me-3 mt-1">{{ loop.index }}</span>
-                                        <div class="flex-grow-1 solution-content">
-                                            {{ solution|format_solution_steps|safe }}
-                                        </div>
-                                    </div>
-                                    <div class="d-flex gap-1 ms-3">
-                                        <button class="btn btn-sm btn-outline-success" onclick="rateSuggestion({{ loop.index0 }}, 'helpful')" title="Útil">
-                                            <i data-feather="thumbs-up" style="width: 14px; height: 14px;"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="rateSuggestion({{ loop.index0 }}, 'not_helpful')" title="Não útil">
-                                            <i data-feather="thumbs-down" style="width: 14px; height: 14px;"></i>
-                                        </button>
-                                    </div>
+                    <div class="ml-solution-item mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="solution-number me-3">{{ loop.index }}</div>
+                            <div class="solution-content flex-grow-1">
+                                <div class="solution-description">
+                                    {{ solution|format_ml_solution_compact|safe }}
                                 </div>
+                                {% if solution|count_solution_steps > 1 %}
+                                <div class="solution-steps-preview mt-2" style="display: none;" id="steps-{{ loop.index0 }}">
+                                    {{ solution|format_solution_steps|safe }}
+                                </div>
+                                <button class="btn btn-link btn-sm p-0 mt-1 text-info" 
+                                        onclick="toggleMLSteps({{ loop.index0 }})"
+                                        id="toggle-btn-{{ loop.index0 }}">
+                                    <i data-feather="chevron-down" style="width: 14px; height: 14px;"></i>
+                                    <span class="toggle-text">Ver todas as etapas</span>
+                                </button>
+                                {% endif %}
+                            </div>
+                            <div class="solution-actions ms-2">
+                                <button class="btn btn-sm btn-outline-success me-1" 
+                                        onclick="rateSuggestion({{ loop.index0 }}, 'helpful')" 
+                                        title="Útil">
+                                    <i data-feather="thumbs-up" style="width: 16px; height: 16px;"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" 
+                                        onclick="rateSuggestion({{ loop.index0 }}, 'not_helpful')" 
+                                        title="Não útil">
+                                    <i data-feather="thumbs-down" style="width: 16px; height: 16px;"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -182,6 +193,26 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Fixed JavaScript syntax
+
+function toggleMLSteps(index) {
+    const stepsDiv = document.getElementById(`steps-${index}`);
+    const toggleBtn = document.getElementById(`toggle-btn-${index}`);
+    const toggleText = toggleBtn.querySelector('.toggle-text');
+    const chevron = toggleBtn.querySelector('i');
+    
+    if (stepsDiv.style.display === 'none') {
+        stepsDiv.style.display = 'block';
+        toggleText.textContent = 'Ocultar etapas';
+        chevron.setAttribute('data-feather', 'chevron-up');
+    } else {
+        stepsDiv.style.display = 'none';
+        toggleText.textContent = 'Ver todas as etapas';
+        chevron.setAttribute('data-feather', 'chevron-down');
+    }
+    
+    // Re-initialize feather icons
+    feather.replace();
+}
 
 function showToast(message, type) {
     const toastHtml = `

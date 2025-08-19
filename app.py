@@ -74,3 +74,8 @@ def format_solution_steps_filter(solution):
 def count_solution_steps_filter(solution):
     """Jinja2 template filter para contar número de etapas"""
     return solution_formatter.get_step_count(solution)
+
+@app.template_filter('format_ml_solution_compact')
+def format_ml_solution_compact_filter(solution):
+    """Jinja2 template filter para formatar soluções ML compactas"""
+    return solution_formatter.format_ml_solution_compact(solution)

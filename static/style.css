@@ -917,3 +917,74 @@ footer {
 }
 
 
+
+/* ML Solutions Container Styling */
+.ml-solutions-container {
+    padding: 0.5rem 0;
+}
+
+.ml-solution-item {
+    background: rgba(33, 37, 41, 0.6);
+    border: 1px solid #495057;
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
+.ml-solution-item:hover {
+    background: rgba(33, 37, 41, 0.9);
+    border-color: #6c757d;
+}
+
+.ml-solution-item .solution-number {
+    background: #28a745;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.ml-solution-item .solution-description {
+    color: #e0e6ed;
+    line-height: 1.5;
+}
+
+.ml-solution-item .solution-text {
+    color: #e0e6ed;
+    font-size: 1rem;
+}
+
+.ml-solution-item .solution-summary {
+    color: #e0e6ed;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.ml-solution-item .solution-more-steps {
+    color: #6c757d;
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.ml-solution-item .solution-steps-preview {
+    background: rgba(13, 110, 253, 0.1);
+    border: 1px solid rgba(13, 110, 253, 0.2);
+    border-radius: 6px;
+    padding: 0.75rem;
+}
+
+.ml-solution-item .toggle-text {
+    font-size: 0.85rem;
+}
+
+.ml-solution-item .solution-actions {
+    display: flex;
+    gap: 0.25rem;
+    align-items: flex-start;
+}

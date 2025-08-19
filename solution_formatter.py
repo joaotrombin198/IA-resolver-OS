@@ -133,6 +133,27 @@ class SolutionFormatter:
         html += '</div>'
         return html
     
+    def format_ml_solution_compact(self, solution: str) -> str:
+        """Gera HTML compacto para soluções na análise ML"""
+        steps = self.format_solution_to_steps(solution)
+        
+        if not steps:
+            return f'<span class="solution-text">{solution}</span>'
+        
+        # Se é só um passo, exibir como texto simples
+        if len(steps) == 1:
+            return f'<span class="solution-text">{steps[0]["description"]}</span>'
+        
+        # Para múltiplos passos, criar versão compacta
+        html = '<div class="solution-compact">'
+        html += f'<div class="solution-summary">{steps[0]["description"]}</div>'
+        
+        if len(steps) > 1:
+            html += f'<div class="solution-more-steps">+{len(steps)-1} etapas adicionais</div>'
+        
+        html += '</div>'
+        return html
+    
     def get_step_count(self, solution: str) -> int:
         """Retorna número de etapas na solução"""
         steps = self.format_solution_to_steps(solution)
