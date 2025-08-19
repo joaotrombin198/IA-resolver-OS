@@ -202,3 +202,7 @@ The system is designed to be easily deployable with Docker and can be hosted on 
 - ✅ **PRIORITY-BASED MATCHING**: More specific patterns matched first to prevent generic classification
 - ✅ **STREAMLINED INTERFACE**: Removed "Add Case" menu option - all cases now added via PDF analysis
 - ✅ **AUTO-SAVE ENABLED**: All PDF uploads are automatically saved as cases without user intervention
+- ✅ **MULTIPLE PDF UPLOAD**: System now supports batch processing of multiple PDFs simultaneously
+- ✅ **BATCH ANALYSIS**: Enhanced interface for processing multiple OS PDFs in a single operation
+- ✅ **BATCH RESULTS PAGE**: Dedicated results page showing all processed PDFs with success/error status
+- ✅ **IMPROVED TECHNICAL ANALYSIS**: Enhanced pattern recognition for complex technical issues (events, configurations, system bugs)

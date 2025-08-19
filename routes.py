@@ -333,53 +333,96 @@ def analyze_os_pdf_form():
 
 @app.route('/analyze-os-pdf', methods=['POST'])
 def analyze_os_pdf():
-    """Analisa PDF de OS e extrai automaticamente problema e solução"""
+    """Analisa múltiplos PDFs de OS e extrai automaticamente problema e solução"""
     try:
-        if 'os_pdf_file' not in request.files:
+        if 'os_pdf_files' not in request.files:
             flash('Nenhum arquivo foi selecionado.', 'error')
             return redirect(url_for('analyze_os_pdf_form'))
         
-        file = request.files['os_pdf_file']
-        if file.filename == '':
+        files = request.files.getlist('os_pdf_files')
+        if not files or all(file.filename == '' for file in files):
             flash('Nenhum arquivo foi selecionado.', 'error')
             return redirect(url_for('analyze_os_pdf_form'))
         
-        if not file.filename.lower().endswith('.pdf'):
-            flash('Apenas arquivos PDF são aceitos.', 'error')
+        # Filtrar apenas arquivos PDF válidos
+        valid_files = []
+        for file in files:
+            if file.filename and file.filename.lower().endswith('.pdf'):
+                valid_files.append(file)
+        
+        if not valid_files:
+            flash('Nenhum arquivo PDF válido foi encontrado.', 'error')
             return redirect(url_for('analyze_os_pdf_form'))
         
-        # Salvar arquivo temporariamente
-        filename = secure_filename(file.filename)
-        temp_path = os.path.join(tempfile.gettempdir(), filename)
-        file.save(temp_path)
+        processed_cases = []
+        errors = []
         
-        try:
-            # Analisar PDF com o sistema de ML interno
-            analysis_result = pdf_analyzer.analyze_pdf(temp_path)
-            
-            # Salvar automaticamente como novo caso (sempre)
-            case = case_service.add_case(
-                analysis_result['problem_description'],
-                analysis_result['solution'],
-                analysis_result['system_type']
-            )
-            
-            # Retreinar ML se temos casos suficientes
+        # Processar cada PDF
+        for file in valid_files:
+            try:
+                # Salvar arquivo temporariamente
+                filename = secure_filename(file.filename)
+                temp_path = os.path.join(tempfile.gettempdir(), filename)
+                file.save(temp_path)
+                
+                try:
+                    # Analisar PDF com o sistema de ML interno
+                    analysis_result = pdf_analyzer.analyze_pdf(temp_path)
+                    
+                    # Salvar automaticamente como novo caso (sempre)
+                    case = case_service.add_case(
+                        analysis_result['problem_description'],
+                        analysis_result['solution'],
+                        analysis_result['system_type']
+                    )
+                    
+                    processed_cases.append({
+                        'filename': filename,
+                        'case_id': case.id,
+                        'system_type': analysis_result['system_type']
+                    })
+                    
+                    logging.info(f"PDF {filename} processado com sucesso - Caso #{case.id}")
+                
+                finally:
+                    # Limpar arquivo temporário
+                    if os.path.exists(temp_path):
+                        os.remove(temp_path)
+                        
+            except Exception as e:
+                error_msg = f"Erro ao processar {file.filename}: {str(e)}"
+                errors.append(error_msg)
+                logging.error(error_msg)
+        
+        # Retreinar ML se temos casos suficientes
+        if processed_cases:
             all_cases = case_service.get_all_cases()
             if len(all_cases) >= 5:
                 ml_service.train_models(all_cases)
-            
-            flash(f'✅ PDF analisado e Caso #{case.id} criado automaticamente!', 'success')
-            return redirect(url_for('view_case', case_id=case.id))
         
-        finally:
-            # Limpar arquivo temporário
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
+        # Gerar mensagens de feedback
+        success_count = len(processed_cases)
+        error_count = len(errors)
+        
+        if success_count > 0:
+            if success_count == 1:
+                case = processed_cases[0]
+                flash(f'✅ PDF "{case["filename"]}" analisado e Caso #{case["case_id"]} criado automaticamente!', 'success')
+                return redirect(url_for('view_case', case_id=case['case_id']))
+            else:
+                flash(f'✅ {success_count} PDFs processados com sucesso! {error_count} erro(s) encontrado(s).', 'success')
+                return render_template('batch_analysis_result.html', 
+                                     processed_cases=processed_cases,
+                                     errors=errors)
+        else:
+            flash(f'❌ Nenhum PDF foi processado com sucesso. {error_count} erro(s) encontrado(s).', 'error')
+            for error in errors[:3]:  # Mostrar apenas os primeiros 3 erros
+                flash(error, 'error')
+            return redirect(url_for('analyze_os_pdf_form'))
     
     except Exception as e:
-        logging.error(f"Erro ao analisar PDF de OS: {str(e)}")
-        flash(f'Erro ao analisar PDF: {str(e)}', 'error')
+        logging.error(f"Erro geral ao processar PDFs: {str(e)}")
+        flash(f'Erro ao processar PDFs: {str(e)}', 'error')
         return redirect(url_for('analyze_os_pdf_form'))
 
 @app.route('/save-os-analysis', methods=['POST'])

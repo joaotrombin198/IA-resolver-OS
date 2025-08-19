@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Resultado da Análise em Lote{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i data-feather="file-text"></i> Resultado da Análise em Lote</h2>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('analyze_os_pdf_form') }}" class="btn btn-primary">
+                        <i data-feather="file-plus"></i> Analisar Mais PDFs
+                    </a>
+                    <a href="{{ url_for('recent_cases') }}" class="btn btn-outline-secondary">
+                        <i data-feather="clock"></i> Ver Casos Recentes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumo -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-success" role="alert">
+                <i data-feather="check-circle"></i>
+                <strong>Processamento Concluído!</strong> 
+                {{ processed_cases|length }} PDF(s) processado(s) com sucesso.
+                {% if errors %}{{ errors|length }} erro(s) encontrado(s).{% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if processed_cases %}
+    <!-- Casos Processados com Sucesso -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i data-feather="check-circle" class="text-success"></i>
+                        PDFs Processados com Sucesso ({{ processed_cases|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Arquivo PDF</th>
+                                    <th>Sistema</th>
+                                    <th>Caso Criado</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for case in processed_cases %}
+                                <tr>
+                                    <td>
+                                        <i data-feather="file-text" class="me-2"></i>
+                                        {{ case.filename }}
+                                    </td>
+                                    <td>
+                                        {% if case.system_type == 'SGU' %}
+                                            <span class="badge bg-primary">{{ case.system_type }}</span>
+                                        {% elif case.system_type == 'Tasy' %}
+                                            <span class="badge bg-info">{{ case.system_type }}</span>
+                                        {% elif case.system_type == 'SGU Card' %}
+                                            <span class="badge bg-warning">{{ case.system_type }}</span>
+                                        {% elif case.system_type == 'Autorizador' %}
+                                            <span class="badge bg-danger">{{ case.system_type }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ case.system_type }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>Caso #{{ case.case_id }}</strong>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('view_case', case_id=case.case_id) }}" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i data-feather="eye"></i> Ver Caso
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if errors %}
+    <!-- Erros Encontrados -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning">
+                    <h5 class="card-title mb-0 text-dark">
+                        <i data-feather="alert-triangle" class="text-dark"></i>
+                        Erros Encontrados ({{ errors|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for error in errors %}
+                        <div class="list-group-item list-group-item-warning">
+                            <i data-feather="alert-circle" class="me-2"></i>
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    feather.replace();
+});
+</script>
+{% endblock %}
