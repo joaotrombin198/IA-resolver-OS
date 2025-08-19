@@ -115,7 +115,7 @@
                                 <td class="fw-bold text-primary">#{{ case.id }}</td>
                                 <td>
                                     {% if case.os_number %}
-                                        <span class="text-primary fw-bold">{{ case.os_number }}</span>
+                                        {{ case.os_number }}
                                     {% else %}
                                         <span class="text-muted">-</span>
                                     {% endif %}
