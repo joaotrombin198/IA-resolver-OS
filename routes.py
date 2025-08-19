@@ -357,29 +357,20 @@ def analyze_os_pdf():
             # Analisar PDF com o sistema de ML interno
             analysis_result = pdf_analyzer.analyze_pdf(temp_path)
             
-            # Verificar se deve salvar automaticamente como caso
-            auto_save = request.form.get('auto_save') == 'on'
+            # Salvar automaticamente como novo caso (sempre)
+            case = case_service.add_case(
+                analysis_result['problem_description'],
+                analysis_result['solution'],
+                analysis_result['system_type']
+            )
             
-            if auto_save:
-                # Salvar automaticamente como novo caso
-                case = case_service.add_case(
-                    analysis_result['problem_description'],
-                    analysis_result['solution'],
-                    analysis_result['system_type']
-                )
-                
-                # Retreinar ML se temos casos suficientes
-                all_cases = case_service.get_all_cases()
-                if len(all_cases) >= 5:
-                    ml_service.train_models(all_cases)
-                
-                flash(f'✅ PDF analisado e Caso #{case.id} criado automaticamente!', 'success')
-                return redirect(url_for('view_case', case_id=case.id))
-            else:
-                # Mostrar resultado para revisão antes de salvar
-                return render_template('analyze_os_pdf.html', 
-                                     analysis_result=analysis_result,
-                                     pdf_filename=filename)
+            # Retreinar ML se temos casos suficientes
+            all_cases = case_service.get_all_cases()
+            if len(all_cases) >= 5:
+                ml_service.train_models(all_cases)
+            
+            flash(f'✅ PDF analisado e Caso #{case.id} criado automaticamente!', 'success')
+            return redirect(url_for('view_case', case_id=case.id))
         
         finally:
             # Limpar arquivo temporário
