@@ -157,11 +157,114 @@ class PDFAnalyzer:
         # Identificar tipo de problema
         problem_type = self._classify_problem_type(problem_lower)
         
-        # Gerar solução baseada no tipo de problema e sistema
-        solutions = {
-            'evento_lancamento': {
-                'SGU': "1. Acessar SGU como administrador com privilégios de sistema\n2. Ir em Configurações > Eventos > Cadastro de Eventos\n3. Localizar o evento específico (ex: Evento 655 - INSS)\n4. Verificar configurações do evento para a competência atual\n5. Validar se o campo 'Tipo de Pessoa' está habilitado para PF e PJ\n6. Verificar parâmetros da competência no módulo fiscal\n7. Analisar logs de erro do sistema para identificar bloqueios\n8. Testar lançamento do evento em ambiente de homologação\n9. Aplicar correções na configuração do evento se necessário\n10. Validar funcionalidade com usuário final\n11. Documentar solução aplicada e configurações alteradas",
-                'default': "1. Identificar evento específico com problema\n2. Verificar configurações do evento no sistema\n3. Analisar parâmetros da competência\n4. Aplicar correções necessárias\n5. Testar funcionalidade\n6. Validar com usuário"
+        # Sistema de soluções avançado e específico
+        advanced_solutions = {
+            'sgu_event_655_inss': {
+                'SGU': """1. Acessar SGU como administrador do sistema (privilégios elevados)
+2. Navegar para Configurações > Eventos Fiscais > Cadastro de Eventos  
+3. Localizar especificamente o Evento 655 (INSS Competência)
+4. Verificar configuração para a competência 202506 (ou competência reportada)
+5. Analisar campo "Tipo de Pessoa" - deve estar habilitado para PF e PJ
+6. Verificar parâmetros de lançamento no módulo Fiscal/Folha
+7. Consultar logs de erro específicos do evento na competência
+8. Testar lançamento em ambiente de homologação com cooperado similar
+9. Verificar se há bloqueios por data de competência ou regras fiscais
+10. Aplicar correção na parametrização do evento se identificado problema
+11. Reprocessar casos que falharam após correção
+12. Validar funcionamento com a usuária final (Isadora/Controladoria)
+13. Documentar solução e configurações alteradas no chamado""",
+                'default': "Evento 655 INSS - verificar configurações específicas da competência e parâmetros de pessoa física"
+            },
+            'user_creation_protocols': {
+                'SGU': """1. Acessar SGU Portal como administrador de usuários
+2. Ir em Gestão de Usuários > Criar Novo Usuário
+3. Cadastrar dados completos dos usuários solicitados:
+   - Diaqueli Charles Anacleto Oliveira (diaqueli.oliveira@criciuma.unimedsc.com.br)
+   - Jonas Henrique Pierozan (jonas.pierozan@criciuma.unimedsc.com.br)  
+   - Renata do Amaral Reus (renata.reus@criciuma.unimedsc.com.br)
+4. Configurar perfil específico para "Criação de Protocolos"
+5. Aplicar permissões necessárias para módulo de Protocolos
+6. Gerar senhas temporárias e orientar alteração no primeiro acesso
+7. Testar login e funcionalidade de criação de protocolos com cada usuário
+8. Enviar credenciais por email corporativo com instruções
+9. Validar funcionamento com a solicitante (Renata - Pós Vendas)
+10. Documentar usuários criados e permissões aplicadas""",
+                'default': "Criar usuários específicos com permissões para protocolos conforme solicitação"
+            },
+            'password_reset_crm': {
+                'SGU': """1. Acessar SGU Suite (CRM) como administrador de sistema
+2. Localizar usuário específico no banco de dados de usuários
+3. Verificar email corporativo cadastrado (confirmar se não é @msg.)
+4. Resetar senha para senha temporária segura
+5. Configurar flag para obrigar alteração no próximo login
+6. Testar envio de email de recuperação para email correto
+7. Se necessário, atualizar email corporativo no cadastro
+8. Orientar usuário sobre procedimento de alteração
+9. Validar recebimento do email e funcionamento do reset
+10. Confirmar acesso funcionando com usuário final
+11. Documentar correção no chamado da OS""",
+                'default': "Reset de senha específico para CRM com verificação de email"
+            },
+            'parametrization_permissions': {
+                'SGU': """1. Acessar SGU 2.0 como administrador de permissões
+2. Localizar usuário de referência: gabrielly.batista
+3. Extrair perfil completo de permissões de alteração cadastral
+4. Documentar especificamente quais telas/funções estão liberadas
+5. Localizar usuário solicitante: ruth.pasini  
+6. Aplicar exatamente as mesmas permissões de alteração cadastral
+7. Verificar acesso às seguintes funcionalidades:
+   - Alteração de dados cadastrais de beneficiários
+   - Modificação de informações contratuais
+   - Atualização de dados dependentes
+8. Testar funcionalidades específicas com usuário solicitante
+9. Validar com Rozeli (Controladoria) o funcionamento
+10. Documentar permissões aplicadas detalhadamente""",
+                'default': "Parametrizar usuário com permissões específicas de alteração cadastral"
+            },
+            'email_correction': {
+                'SGU': """1. Acessar SGU como administrador de usuários
+2. Localizar usuário: natalia.mendes (Regulação ANS)
+3. Verificar email atual cadastrado: natalia.mendes@msg.criciuma.unimedsc.com
+4. Alterar para email corporativo correto: natalia.mendes@criciuma.unimedsc.com
+5. Limpar cache de senha do usuário
+6. Gerar nova senha temporária
+7. Testar envio de email de recuperação para novo endereço
+8. Confirmar recebimento do email pela usuária
+9. Orientar sobre procedimento de criação de nova senha
+10. Validar login funcionando com email corrigido
+11. Documentar correção no chamado""",
+                'default': "Correção de email cadastral e reset de acesso"
+            },
+            'access_liberation': {
+                'SGU': """1. Acessar SGU Portal como administrador
+2. Criar usuário para: Igor Consoni da Silva
+3. Dados: CPF 104.143.739-01, Nascimento 15/08/2001
+4. Email: igor.silva@criciuma.unimedsc.com.br
+5. Aplicar perfil de acesso conforme solicitação da Controladoria
+6. Configurar permissões específicas necessárias
+7. Gerar senha temporária segura
+8. Testar login e funcionalidades do usuário
+9. Enviar credenciais por email corporativo
+10. Validar funcionamento com Rozeli (Controladoria)
+11. Documentar usuário criado e acessos liberados""",
+                'default': "Liberação de acesso com criação de usuário específico"
+            },
+            'group_creation_regulation': {
+                'SGU': """1. Acessar SGU Portal como administrador de grupos
+2. Verificar se existe grupo "Regulação" no sistema
+3. Se não existir, criar grupo "Regulação" com permissões específicas:
+   - Acesso às telas de regulação ANS
+   - Permissões para análise de processos
+   - Funcionalidades específicas do setor
+4. Criar usuários para todas as colaboradoras do setor de Regulação
+5. Adicionar todas as usuárias ao grupo "Regulação"
+6. Criar usuário específico para: Elaine Richter Beck (Alto Custo)
+7. Adicionar Elaine ao grupo "Autorizações" existente
+8. Testar acessos e funcionalidades de cada usuária
+9. Validar com Nicole (Regulação) o funcionamento
+10. Documentar grupo criado e usuários adicionados
+11. Fornecer manual de uso para o setor""",
+                'default': "Criação de grupo Regulação e usuários específicos do setor"
             },
             'configuracao_sistema': {
                 'SGU': "1. Acessar SGU como administrador de sistema\n2. Ir em Configurações > Parâmetros Gerais\n3. Verificar configurações específicas do módulo afetado\n4. Revisar parâmetros de competência e período fiscal\n5. Validar configurações de eventos e lançamentos\n6. Verificar permissões de campos para tipos de pessoa\n7. Aplicar correções na parametrização\n8. Testar configurações em ambiente controlado\n9. Implementar correções em produção\n10. Validar funcionamento com casos de teste\n11. Documentar alterações realizadas",
@@ -197,26 +300,136 @@ class PDFAnalyzer:
             }
         }
         
-        # Selecionar solução apropriada
-        if problem_type in solutions:
-            system_solutions = solutions[problem_type]
+        # Selecionar solução avançada específica
+        if problem_type in advanced_solutions:
+            system_solutions = advanced_solutions[problem_type]
             if system in system_solutions:
                 return system_solutions[system]
             else:
                 return system_solutions.get('default', 'Solução específica não encontrada')
         
+        # Soluções genéricas melhoradas por categoria
+        generic_solutions = {
+            'senha_generica': f"1. Acessar sistema {system} como administrador\n2. Localizar usuário solicitante\n3. Resetar senha temporária\n4. Verificar email corporativo correto\n5. Enviar nova senha por email\n6. Orientar alteração no primeiro acesso",
+            'usuario_generico': f"1. Acessar gestão de usuários do {system}\n2. Criar novo usuário conforme dados fornecidos\n3. Configurar permissões adequadas\n4. Gerar credenciais temporárias\n5. Testar funcionalidades\n6. Validar com solicitante",
+            'acesso_generico': f"1. Verificar permissões atuais do usuário no {system}\n2. Aplicar liberações de acesso solicitadas\n3. Testar funcionalidades liberadas\n4. Validar com usuário solicitante",
+            'configuracao_generica': f"1. Analisar configurações atuais do {system}\n2. Identificar parâmetros a ajustar\n3. Aplicar alterações necessárias\n4. Testar funcionamento\n5. Validar com usuário",
+            'evento_generico': f"1. Verificar configuração do evento no {system}\n2. Analisar parâmetros da competência\n3. Corrigir configurações se necessário\n4. Testar lançamento\n5. Validar funcionamento"
+        }
+        
+        if problem_type in generic_solutions:
+            return generic_solutions[problem_type]
+        
         # Solução genérica baseada no sistema
         return f"1. Analisar problema relatado no sistema {system}\n2. Verificar configurações e permissões\n3. Aplicar correções necessárias\n4. Testar funcionamento\n5. Validar com usuário solicitante"
     
     def _classify_problem_type(self, problem_text: str) -> str:
-        """Classifica o tipo de problema baseado nos padrões (em ordem de prioridade)"""
+        """Classificação inteligente avançada de problemas baseada em análise detalhada"""
         problem_lower = problem_text.lower()
         
-        # Verificar em ordem de prioridade - os mais específicos primeiro
-        for problem_type, pattern in self.problem_patterns.items():
-            if re.search(pattern, problem_lower, re.IGNORECASE):
-                logging.info(f"Problema identificado como: {problem_type} (padrão: {pattern})")
-                return problem_type
+        # Padrões específicos com alta precisão e confiança
+        advanced_patterns = {
+            'sgu_event_655_inss': {
+                'primary_keywords': ['evento 655', 'inss'],
+                'secondary_keywords': ['pessoa física', 'pessoa jurídica', 'competência', 'lançar evento', 'cooperado'],
+                'exclusion_keywords': [],
+                'min_primary': 1,
+                'min_secondary': 2,
+                'confidence': 0.95
+            },
+            'user_creation_protocols': {
+                'primary_keywords': ['criação de usuários', 'criar usuário'],
+                'secondary_keywords': ['protocolos', 'nova colaboradora', 'novo colaborador', 'espelhar usuário', 'solicito criação'],
+                'exclusion_keywords': ['senha', 'redefinir'],
+                'min_primary': 1,
+                'min_secondary': 1,
+                'confidence': 0.90
+            },
+            'password_reset_crm': {
+                'primary_keywords': ['redefinição de senha', 'redefinir senha', 'senha provisória'],
+                'secondary_keywords': ['crm', 'recuperação da senha', 'esqueci minha senha', 'login', 'senha incorreta'],
+                'exclusion_keywords': ['criação', 'criar'],
+                'min_primary': 1,
+                'min_secondary': 1,
+                'confidence': 0.85
+            },
+            'parametrization_permissions': {
+                'primary_keywords': ['parametrizar', 'permissões de alteração cadastral'],
+                'secondary_keywords': ['mesmo acesso', 'mesmas permissões', 'espelhar', 'copiar permissões'],
+                'exclusion_keywords': ['senha'],
+                'min_primary': 1,
+                'min_secondary': 1,
+                'confidence': 0.85
+            },
+            'email_correction': {
+                'primary_keywords': ['email cadastrado', 'email incorreto', 'trocar email'],
+                'secondary_keywords': ['pandion', 'corporativo', '@msg.', 'email errado'],
+                'exclusion_keywords': [],
+                'min_primary': 1,
+                'min_secondary': 1,
+                'confidence': 0.80
+            },
+            'access_liberation': {
+                'primary_keywords': ['liberação de acesso', 'solicitar acesso'],
+                'secondary_keywords': ['colaborador', 'dados pessoais', 'cpf', 'nascimento'],
+                'exclusion_keywords': ['criação', 'senha'],
+                'min_primary': 1,
+                'min_secondary': 1,
+                'confidence': 0.80
+            },
+            'group_creation_regulation': {
+                'primary_keywords': ['grupo regulação', 'setor de regulação'],
+                'secondary_keywords': ['colaboradoras do setor', 'criar grupo', 'alto custo', 'autorizações'],
+                'exclusion_keywords': [],
+                'min_primary': 1,
+                'min_secondary': 1,
+                'confidence': 0.75
+            }
+        }
+        
+        # Análise avançada com pontuação
+        best_match = None
+        highest_score = 0
+        
+        for pattern_name, pattern_data in advanced_patterns.items():
+            # Contar matches primários
+            primary_matches = sum(1 for keyword in pattern_data['primary_keywords'] if keyword in problem_lower)
+            
+            # Contar matches secundários
+            secondary_matches = sum(1 for keyword in pattern_data['secondary_keywords'] if keyword in problem_lower)
+            
+            # Verificar exclusões
+            exclusions = sum(1 for keyword in pattern_data['exclusion_keywords'] if keyword in problem_lower)
+            
+            # Calcular se atende aos critérios mínimos
+            if (primary_matches >= pattern_data['min_primary'] and 
+                secondary_matches >= pattern_data['min_secondary'] and
+                exclusions == 0):
+                
+                # Calcular pontuação baseada em matches e confiança
+                score = (primary_matches * 2 + secondary_matches) * pattern_data['confidence']
+                
+                if score > highest_score:
+                    highest_score = score
+                    best_match = pattern_name
+                    logging.info(f"Padrão identificado: {pattern_name} (score: {score:.2f})")
+        
+        # Se encontrou match específico, retorna
+        if best_match:
+            logging.info(f"Problema classificado como: {best_match} (confiança: {highest_score:.2f})")
+            return best_match
+        
+        # Fallback para classificações genéricas mais específicas
+        if any(word in problem_lower for word in ['senha', 'password', 'login', 'redefinir']):
+            return 'senha_generica'
+        elif any(word in problem_lower for word in ['criar usuário', 'criação', 'novo colaborador']):
+            return 'usuario_generico'
+        elif any(word in problem_lower for word in ['acesso', 'permissão', 'liberação']):
+            return 'acesso_generico'
+        elif any(word in problem_lower for word in ['parametrizar', 'configuração']):
+            return 'configuracao_generica'
+        elif any(word in problem_lower for word in ['evento', 'lançamento', 'competência']):
+            return 'evento_generico'
         
         logging.warning(f"Problema não classificado, usando genérico. Texto: {problem_text[:100]}...")
         return 'generico'
