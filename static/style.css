@@ -728,10 +728,12 @@ footer {
 .system-badge-orange { background-color: #fd7e14 !important; }
 .system-badge-pink { background-color: #d63384 !important; }
 
-/* Solution Steps Styling */
+/* Enhanced Solution Steps Styling */
 :root {
     --step-line-color: #495057;
     --step-bg-color: #28a745;
+    --step-hover-bg: #212529;
+    --step-border-color: #343a40;
 }
 
 .solution-steps {
@@ -861,4 +863,113 @@ footer {
     .step-content {
         padding-left: 0.3rem;
     }
+}
+
+/* Enhanced Solution Steps for Case Detail Page */
+.solution-steps-enhanced {
+    padding: 1rem 0;
+}
+
+.solution-steps-enhanced .step-item {
+    background: var(--step-hover-bg);
+    border: 1px solid var(--step-border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.solution-steps-enhanced .step-item:hover {
+    background: rgba(13, 202, 240, 0.1);
+    border-color: #0dcaf0;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(13, 202, 240, 0.15);
+}
+
+.solution-steps-enhanced .step-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #28a745, #20c997);
+    opacity: 0.8;
+}
+
+.solution-steps-enhanced .step-item:nth-child(2n)::before {
+    background: linear-gradient(180deg, #0dcaf0, #0087f7);
+}
+
+.solution-steps-enhanced .step-item:nth-child(3n)::before {
+    background: linear-gradient(180deg, #ffc107, #ffb300);
+}
+
+.solution-steps-enhanced .step-item:nth-child(4n)::before {
+    background: linear-gradient(180deg, #dc3545, #c82333);
+}
+
+.solution-steps-enhanced .step-indicator {
+    position: relative;
+    z-index: 2;
+}
+
+.solution-steps-enhanced .step-number {
+    width: 45px;
+    height: 45px;
+    font-size: 1rem;
+    background: linear-gradient(135deg, var(--step-bg-color), #20c997);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+}
+
+.solution-steps-enhanced .step-item:nth-child(2n) .step-number {
+    background: linear-gradient(135deg, var(--bs-info), #0087f7);
+    box-shadow: 0 4px 15px rgba(13, 202, 240, 0.4);
+}
+
+.solution-steps-enhanced .step-item:nth-child(3n) .step-number {
+    background: linear-gradient(135deg, var(--bs-warning), #ffb300);
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+}
+
+.solution-steps-enhanced .step-item:nth-child(4n) .step-number {
+    background: linear-gradient(135deg, var(--bs-danger), #c82333);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+}
+
+.solution-steps-enhanced .step-content {
+    padding-left: 1rem;
+    padding-top: 0.5rem;
+}
+
+.solution-steps-enhanced .step-content p {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #e0e6ed;
+    margin-bottom: 0;
+}
+
+.solution-steps-enhanced .step-line {
+    display: none; /* Remove connecting lines in enhanced view */
+}
+
+/* Progress indicator for enhanced steps */
+.solution-steps-enhanced .step-item:last-child {
+    border-bottom: 3px solid var(--bs-success);
+    border-radius: 12px 12px 8px 8px;
+}
+
+.solution-steps-enhanced .step-item:last-child::after {
+    content: '✓ Concluído';
+    position: absolute;
+    bottom: -3px;
+    right: 1rem;
+    background: var(--bs-success);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 8px 8px 0 0;
+    font-size: 0.8rem;
+    font-weight: 600;
 }

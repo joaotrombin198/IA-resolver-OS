@@ -69,3 +69,8 @@ from solution_formatter import solution_formatter
 def format_solution_steps_filter(solution):
     """Jinja2 template filter para formatar soluções em etapas"""
     return solution_formatter.format_solution_html(solution)
+
+@app.template_filter('count_solution_steps')
+def count_solution_steps_filter(solution):
+    """Jinja2 template filter para contar número de etapas"""
+    return solution_formatter.get_step_count(solution)

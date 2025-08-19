@@ -38,13 +38,35 @@
 
         <!-- Solution -->
         <div class="card mb-4">
-            <div class="card-header d-flex align-items-center">
-                <i data-feather="check-circle" class="me-2"></i>
-                <h5 class="mb-0">Solução</h5>
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i data-feather="check-circle" class="me-2 text-success"></i>
+                    <h5 class="mb-0">Solução Estruturada</h5>
+                </div>
+                <span class="badge bg-info">{{ case.solution|count_solution_steps }} etapas</span>
             </div>
             <div class="card-body">
-                <div class="bg-dark p-3 rounded border">
-                    <pre class="mb-0 text-wrap">{{ case.solution }}</pre>
+                <!-- Solution Steps with Visual Enhancement -->
+                <div class="solution-steps-enhanced">
+                    {{ case.solution|format_solution_steps|safe }}
+                </div>
+                
+                <!-- Action Buttons for Solution -->
+                <div class="mt-4 pt-3 border-top">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <button class="btn btn-outline-secondary w-100" onclick="copyToClipboard('solution')">
+                                <i data-feather="copy" class="me-2"></i>
+                                Copiar Solução
+                            </button>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <button class="btn btn-outline-info w-100" onclick="printSolution()">
+                                <i data-feather="printer" class="me-2"></i>
+                                Imprimir Etapas
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -139,6 +161,34 @@ function copyToClipboard(type) {
     } catch (err) {
         showToast('Falha ao copiar para a área de transferência', 'danger');
     }
+}
+
+function printSolution() {
+    const solutionContent = document.querySelector('.solution-steps-enhanced').innerHTML;
+    const printWindow = window.open('', '_blank');
+    
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Solução - Caso #{{ case.id }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                .step-item { margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+                .step-number { background: #28a745; color: white; padding: 5px 10px; border-radius: 50%; margin-right: 10px; }
+                .step-content { display: inline-block; }
+                @media print { body { margin: 0; } }
+            </style>
+        </head>
+        <body>
+            <h1>Solução - Caso #{{ case.id }}</h1>
+            <h2>Sistema: {{ case.system_type }}</h2>
+            <div class="solution-content">${solutionContent}</div>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.print();
 }
 
 function findSimilarCases() {
