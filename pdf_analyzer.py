@@ -19,12 +19,12 @@ class PDFAnalyzer:
             'Autorizador': r'Autorizador'
         }
         
-        # Padrões para identificar tipos de problemas comuns
+        # Padrões para identificar tipos de problemas comuns (em ordem de prioridade)
         self.problem_patterns = {
-            'senha': r'(?:senha|password|redefinir|redefinição|esqueci|alteração|incorreta|provisória)',
-            'acesso': r'(?:acesso|permissão|liberação|usuário|login|parametrizar|permissões|cadastral)',
+            'parametrizacao_permissoes': r'(?:parametrizar.*usuário.*com.*mesmas.*permissões|copiar.*permissões|mesmo.*permissões.*que|permissões.*alteração.*cadastral)',
+            'liberacao_acesso': r'(?:liberação.*acesso|liberar.*acesso|solicita.*acesso|permissão.*para)',
+            'senha': r'(?:senha|password|redefinir|redefinição|esqueci|alteração.*senha|incorreta|provisória)(?!.*permiss)',
             'email': r'(?:e-mail|email|corporativo|correio|pandion)',
-            'parametrização': r'(?:parametrizar|configurar|permissões|perfil|mesmo.*permiss)',
             'sistema_indisponivel': r'(?:indisponível|fora do ar|não funciona|erro de sistema)',
             'lentidão': r'(?:lento|lentidão|demora|performance|travando)'
         }
@@ -115,22 +115,23 @@ class PDFAnalyzer:
         
         # Gerar solução baseada no tipo de problema e sistema
         solutions = {
+            'parametrizacao_permissoes': {
+                'SGU': "1. Acessar SGU 2.0 como administrador\n2. Ir em Gestão de Usuários > Permissões\n3. Localizar usuário de referência (gabrielly.batista) para copiar permissões\n4. Visualizar e exportar perfil de permissões de alteração cadastral\n5. Localizar usuário solicitante (ruth.pasini)\n6. Aplicar as mesmas permissões de alteração cadastral\n7. Validar acessos às telas necessárias\n8. Testar funcionalidades com o usuário\n9. Documentar alterações realizadas no chamado",
+                'Tasy': "1. Acessar administração do Tasy\n2. Localizar usuário modelo\n3. Copiar perfil de permissões\n4. Aplicar no usuário solicitante\n5. Testar funcionalidades\n6. Validar com usuário",
+                'default': "1. Identificar usuário modelo para copiar permissões\n2. Exportar configurações de permissões\n3. Aplicar no usuário solicitante\n4. Validar funcionamento\n5. Documentar alterações"
+            },
+            'liberacao_acesso': {
+                'SGU': "1. Acessar SGU como administrador\n2. Ir em Gestão de Usuários > Permissões\n3. Localizar usuário solicitante\n4. Analisar permissões necessárias para as telas/funcionalidades\n5. Aplicar liberações de acesso conforme solicitado\n6. Validar acessos com o solicitante\n7. Documentar alterações realizadas",
+                'Tasy': "1. Acessar administração do Tasy\n2. Configurar permissões de usuário\n3. Liberar acessos solicitados\n4. Testar funcionalidades",
+                'default': "1. Analisar acessos necessários\n2. Configurar permissões de usuário\n3. Liberar acessos solicitados\n4. Validar funcionamento"
+            },
             'senha': {
                 'SGU': "1. Acessar o Sistema SGU como administrador\n2. Navegar até Gestão de Usuários\n3. Localizar o usuário solicitante\n4. Resetar senha temporária\n5. Orientar usuário a alterar senha no primeiro acesso\n6. Verificar se email corporativo está correto no cadastro\n7. Testar login com nova senha",
                 'Tasy': "1. Acessar módulo de administração do Tasy\n2. Ir em Usuários e Senhas\n3. Selecionar usuário e resetar senha\n4. Gerar senha temporária\n5. Enviar instruções de alteração para o usuário",
                 'default': "1. Verificar usuário no sistema de gestão\n2. Resetar senha temporária\n3. Validar email cadastrado\n4. Orientar troca de senha no primeiro acesso"
             },
-            'acesso': {
-                'SGU': "1. Acessar SGU como administrador\n2. Ir em Gestão de Usuários > Permissões\n3. Localizar usuário de referência (ex: gabrielly.batista)\n4. Copiar perfil de permissões para o usuário solicitante (ex: ruth.pasini)\n5. Aplicar permissões de alteração cadastral\n6. Validar acessos com o solicitante\n7. Documentar alterações realizadas no chamado",
-                'Tasy': "1. Acessar administração do Tasy\n2. Configurar perfil de usuário\n3. Aplicar permissões necessárias\n4. Testar acessos",
-                'default': "1. Verificar permissões necessárias\n2. Configurar perfil de usuário\n3. Aplicar acessos solicitados\n4. Validar funcionamento"
-            },
             'email': {
                 'default': "1. Verificar email cadastrado no sistema\n2. Atualizar para email corporativo correto\n3. Testar envio de email de recuperação\n4. Validar recebimento com usuário"
-            },
-            'parametrização': {
-                'SGU': "1. Acessar SGU como administrador\n2. Localizar usuário de referência\n3. Exportar configurações de permissões\n4. Aplicar no usuário solicitante\n5. Testar funcionalidades\n6. Documentar configurações aplicadas",
-                'default': "1. Analisar permissões necessárias\n2. Configurar perfil do usuário\n3. Aplicar parametrizações\n4. Validar funcionamento"
             },
             'sistema_indisponivel': {
                 'default': "1. Verificar status dos serviços do sistema\n2. Checar conectividade de rede\n3. Validar serviços de banco de dados\n4. Reiniciar serviços se necessário\n5. Monitorar estabilidade\n6. Comunicar usuários sobre resolução"
@@ -152,12 +153,17 @@ class PDFAnalyzer:
         return f"1. Analisar problema relatado no sistema {system}\n2. Verificar configurações e permissões\n3. Aplicar correções necessárias\n4. Testar funcionamento\n5. Validar com usuário solicitante"
     
     def _classify_problem_type(self, problem_text: str) -> str:
-        """Classifica o tipo de problema baseado no texto"""
+        """Classifica o tipo de problema baseado nos padrões (em ordem de prioridade)"""
+        problem_lower = problem_text.lower()
+        
+        # Verificar em ordem de prioridade - os mais específicos primeiro
         for problem_type, pattern in self.problem_patterns.items():
-            if re.search(pattern, problem_text, re.IGNORECASE):
+            if re.search(pattern, problem_lower, re.IGNORECASE):
+                logging.info(f"Problema identificado como: {problem_type} (padrão: {pattern})")
                 return problem_type
         
-        return 'geral'
+        logging.warning(f"Problema não classificado, usando genérico. Texto: {problem_text[:100]}...")
+        return 'generico'
     
     def analyze_multiple_pdfs(self, pdf_paths: List[str]) -> List[Dict[str, str]]:
         """Analisa múltiplos PDFs e retorna lista de casos"""
