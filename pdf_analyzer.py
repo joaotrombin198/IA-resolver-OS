@@ -23,6 +23,11 @@ class PDFAnalyzer:
         self.problem_patterns = {
             'parametrizacao_permissoes': r'(?:parametrizar.*usuário.*com.*mesmas.*permissões|copiar.*permissões|mesmo.*permissões.*que|permissões.*alteração.*cadastral)',
             'liberacao_acesso': r'(?:liberação.*acesso|liberar.*acesso|solicita.*acesso|permissão.*para)',
+            'evento_lancamento': r'(?:evento.*\d+.*lança|lançamento.*evento|impossibilitando.*lançar.*evento|evento.*não.*permite|problema.*evento.*\d+)',
+            'configuracao_sistema': r'(?:configuração.*sistema|parametrização.*evento|cadastro.*evento|sistema.*não.*habilitado|campo.*não.*habilitado)',
+            'competencia_fiscal': r'(?:competência.*\d{6}|competência.*fiscal|período.*fiscal|mês.*competência)',
+            'pessoa_fisica_juridica': r'(?:pessoa.*física|pessoa.*jurídica|tipo.*pessoa|PF.*PJ|física.*jurídica)',
+            'bug_sistema': r'(?:bug.*sistema|erro.*sistema|falha.*sistema|sistema.*com.*problema|não.*funciona.*corretamente)',
             'senha': r'(?:senha|password|redefinir|redefinição|esqueci|alteração.*senha|incorreta|provisória)(?!.*permiss)',
             'email': r'(?:e-mail|email|corporativo|correio|pandion)',
             'sistema_indisponivel': r'(?:indisponível|fora do ar|não funciona|erro de sistema)',
@@ -81,9 +86,9 @@ class PDFAnalyzer:
     
     def _extract_problem_description(self, text: str) -> str:
         """Extrai a descrição do problema do campo 'Dano' ou 'Descrição'"""
-        # Procurar por seção "Dano" ou "Descrição"
+        # Procurar por seção "Dano" ou "Descrição" - incluindo múltiplas linhas
         patterns = [
-            r'Dano\s+(.+?)(?=\n\s*Execução|\n\s*Situação|\n\s*Históricos|$)',
+            r'Dano\s+(.+?)(?=\n\s*Execução|\n\s*Situação|\n\s*Históricos|\n\s*Impresso|$)',
             r'Descrição\s+(.+?)(?=\n\s*Dano|\n\s*Execução|\n\s*Situação|$)'
         ]
         
@@ -91,17 +96,33 @@ class PDFAnalyzer:
             match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
             if match:
                 description = match.group(1).strip()
-                # Limpar texto e remover quebras desnecessárias
-                description = re.sub(r'\s+', ' ', description)
+                # Limpar texto preservando quebras de linha importantes
+                description = re.sub(r'\n+', ' ', description)  # Múltiplas quebras em espaço
+                description = re.sub(r'\s+', ' ', description)  # Múltiplos espaços em um
+                
+                # Incluir também a descrição curta se existir
+                desc_match = re.search(r'Descrição\s+([^\n]+)', text, re.IGNORECASE)
+                if desc_match and desc_match.group(1).strip() not in description:
+                    short_desc = desc_match.group(1).strip()
+                    description = f"{short_desc}. {description}"
+                
                 return description
         
-        # Se não encontrar, tentar extrair do início do texto
+        # Se não encontrar, tentar extrair informações relevantes
         lines = text.split('\n')
         problem_text = ""
-        for line in lines[10:]:  # Pular cabeçalho
-            if line.strip() and not re.match(r'^(Número|Solicitante|Tel|Localização|Equipamento)', line):
-                problem_text += line.strip() + " "
-                if len(problem_text) > 500:  # Limitar tamanho
+        capturing = False
+        
+        for line in lines:
+            line = line.strip()
+            if re.match(r'(Descrição|Dano)', line, re.IGNORECASE):
+                capturing = True
+                continue
+            elif capturing and re.match(r'(Execução|Situação|Históricos)', line, re.IGNORECASE):
+                break
+            elif capturing and line:
+                problem_text += line + " "
+                if len(problem_text) > 1000:  # Limite maior para problemas complexos
                     break
         
         return problem_text.strip() or "Problema não identificado no PDF"
@@ -115,8 +136,16 @@ class PDFAnalyzer:
         
         # Gerar solução baseada no tipo de problema e sistema
         solutions = {
+            'evento_lancamento': {
+                'SGU': "1. Acessar SGU como administrador com privilégios de sistema\n2. Ir em Configurações > Eventos > Cadastro de Eventos\n3. Localizar o evento específico (ex: Evento 655 - INSS)\n4. Verificar configurações do evento para a competência atual\n5. Validar se o campo 'Tipo de Pessoa' está habilitado para PF e PJ\n6. Verificar parâmetros da competência no módulo fiscal\n7. Analisar logs de erro do sistema para identificar bloqueios\n8. Testar lançamento do evento em ambiente de homologação\n9. Aplicar correções na configuração do evento se necessário\n10. Validar funcionalidade com usuário final\n11. Documentar solução aplicada e configurações alteradas",
+                'default': "1. Identificar evento específico com problema\n2. Verificar configurações do evento no sistema\n3. Analisar parâmetros da competência\n4. Aplicar correções necessárias\n5. Testar funcionalidade\n6. Validar com usuário"
+            },
+            'configuracao_sistema': {
+                'SGU': "1. Acessar SGU como administrador de sistema\n2. Ir em Configurações > Parâmetros Gerais\n3. Verificar configurações específicas do módulo afetado\n4. Revisar parâmetros de competência e período fiscal\n5. Validar configurações de eventos e lançamentos\n6. Verificar permissões de campos para tipos de pessoa\n7. Aplicar correções na parametrização\n8. Testar configurações em ambiente controlado\n9. Implementar correções em produção\n10. Validar funcionamento com casos de teste\n11. Documentar alterações realizadas",
+                'default': "1. Analisar configurações atuais do sistema\n2. Identificar parâmetros incorretos\n3. Aplicar correções necessárias\n4. Testar funcionalidade\n5. Validar com usuário"
+            },
             'parametrizacao_permissoes': {
-                'SGU': "1. Acessar SGU 2.0 como administrador\n2. Ir em Gestão de Usuários > Permissões\n3. Localizar usuário de referência (gabrielly.batista) para copiar permissões\n4. Visualizar e exportar perfil de permissões de alteração cadastral\n5. Localizar usuário solicitante (ruth.pasini)\n6. Aplicar as mesmas permissões de alteração cadastral\n7. Validar acessos às telas necessárias\n8. Testar funcionalidades com o usuário\n9. Documentar alterações realizadas no chamado",
+                'SGU': "1. Acessar SGU 2.0 como administrador\n2. Ir em Gestão de Usuários > Permissões\n3. Localizar usuário de referência para copiar permissões\n4. Visualizar e exportar perfil de permissões de alteração cadastral\n5. Localizar usuário solicitante\n6. Aplicar as mesmas permissões de alteração cadastral\n7. Validar acessos às telas necessárias\n8. Testar funcionalidades com o usuário\n9. Documentar alterações realizadas no chamado",
                 'Tasy': "1. Acessar administração do Tasy\n2. Localizar usuário modelo\n3. Copiar perfil de permissões\n4. Aplicar no usuário solicitante\n5. Testar funcionalidades\n6. Validar com usuário",
                 'default': "1. Identificar usuário modelo para copiar permissões\n2. Exportar configurações de permissões\n3. Aplicar no usuário solicitante\n4. Validar funcionamento\n5. Documentar alterações"
             },
@@ -124,6 +153,10 @@ class PDFAnalyzer:
                 'SGU': "1. Acessar SGU como administrador\n2. Ir em Gestão de Usuários > Permissões\n3. Localizar usuário solicitante\n4. Analisar permissões necessárias para as telas/funcionalidades\n5. Aplicar liberações de acesso conforme solicitado\n6. Validar acessos com o solicitante\n7. Documentar alterações realizadas",
                 'Tasy': "1. Acessar administração do Tasy\n2. Configurar permissões de usuário\n3. Liberar acessos solicitados\n4. Testar funcionalidades",
                 'default': "1. Analisar acessos necessários\n2. Configurar permissões de usuário\n3. Liberar acessos solicitados\n4. Validar funcionamento"
+            },
+            'bug_sistema': {
+                'SGU': "1. Documentar detalhadamente o bug identificado\n2. Reproduzir o problema em ambiente de teste\n3. Analisar logs de erro e sistema\n4. Verificar versão atual do SGU e patches aplicados\n5. Consultar base de conhecimento para problemas similares\n6. Aplicar hotfixes disponíveis se existirem\n7. Escalar para suporte técnico especializado se necessário\n8. Implementar workaround temporário se possível\n9. Testar solução aplicada\n10. Documentar correção para casos futuros",
+                'default': "1. Documentar bug detalhadamente\n2. Reproduzir problema\n3. Analisar logs de sistema\n4. Aplicar correções disponíveis\n5. Escalar se necessário\n6. Implementar workaround temporário"
             },
             'senha': {
                 'SGU': "1. Acessar o Sistema SGU como administrador\n2. Navegar até Gestão de Usuários\n3. Localizar o usuário solicitante\n4. Resetar senha temporária\n5. Orientar usuário a alterar senha no primeiro acesso\n6. Verificar se email corporativo está correto no cadastro\n7. Testar login com nova senha",
