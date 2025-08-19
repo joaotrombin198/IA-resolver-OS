@@ -10,6 +10,7 @@ class Case(db.Model):
     __tablename__ = 'cases'
     
     id = db.Column(db.Integer, primary_key=True)
+    os_number = db.Column(db.String(20), nullable=True)  # Número da OS extraído do PDF
     problem_description = db.Column(db.Text, nullable=False)
     solution = db.Column(db.Text, nullable=False)
     system_type = db.Column(db.String(100), default="Unknown")
@@ -33,6 +34,7 @@ class Case(db.Model):
         """Convert case to dictionary for JSON serialization"""
         return {
             'id': self.id,
+            'os_number': self.os_number,
             'problem_description': self.problem_description,
             'solution': self.solution,
             'system_type': self.system_type,

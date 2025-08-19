@@ -373,7 +373,8 @@ def analyze_os_pdf():
                     case = case_service.add_case(
                         analysis_result['problem_description'],
                         analysis_result['solution'],
-                        analysis_result['system_type']
+                        analysis_result['system_type'],
+                        analysis_result.get('os_number')
                     )
                     
                     processed_cases.append({

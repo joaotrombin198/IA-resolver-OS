@@ -37,7 +37,7 @@ class CaseService:
                     return case
             return None
     
-    def add_case(self, problem_description: str, solution: str, system_type: str = "Unknown") -> Optional[Case]:
+    def add_case(self, problem_description: str, solution: str, system_type: str = "Unknown", os_number: str = None) -> Optional[Case]:
         """Add a new case to the database with robust error handling"""
         max_retries = 3
         retry_count = 0
@@ -46,6 +46,7 @@ class CaseService:
             try:
                 # Create new case
                 case = Case()
+                case.os_number = os_number
                 case.problem_description = problem_description
                 case.solution = solution
                 case.system_type = system_type
@@ -57,7 +58,10 @@ class CaseService:
                 # Refit vectorizer when new cases are added
                 self._fitted = False
                 
-                logging.info(f"Added new case #{case.id} to database")
+                if os_number:
+                    logging.info(f"Added new case #{case.id} (OS {os_number}) to database")
+                else:
+                    logging.info(f"Added new case #{case.id} to database")
                 return case
                 
             except Exception as e:

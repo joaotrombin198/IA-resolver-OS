@@ -45,6 +45,9 @@ class PDFAnalyzer:
             # Extrair texto do PDF
             pdf_text = self._extract_pdf_text(pdf_path)
             
+            # Extrair número da OS
+            os_number = self._extract_os_number(pdf_text)
+            
             # Identificar sistema
             system_type = self._identify_system(pdf_text)
             
@@ -55,6 +58,7 @@ class PDFAnalyzer:
             solution = self._generate_solution(problem_description, system_type, pdf_text)
             
             return {
+                'os_number': os_number,
                 'problem_description': problem_description,
                 'system_type': system_type,
                 'solution': solution
@@ -73,6 +77,25 @@ class PDFAnalyzer:
                 if page_text:
                     text += page_text + "\n"
         return text
+    
+    def _extract_os_number(self, text: str) -> str:
+        """Extrai o número da OS do cabeçalho do PDF"""
+        # Procurar por padrão "Número" seguido do número da OS
+        patterns = [
+            r'Número\s+(\d+)',  # Padrão principal: "Número 693803"
+            r'OS[\s#]*(\d+)',   # Alternativo: "OS 693803" ou "OS#693803"
+            r'Ordem[\s\w]*\s+(\d+)'  # Alternativo: "Ordem de Serviço 693803"
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, text, re.IGNORECASE)
+            if match:
+                os_number = match.group(1).strip()
+                logging.info(f"Número da OS extraído: {os_number}")
+                return os_number
+        
+        logging.warning("Número da OS não encontrado no PDF")
+        return None
     
     def _identify_system(self, text: str) -> str:
         """Identifica o sistema baseado no conteúdo do PDF"""
