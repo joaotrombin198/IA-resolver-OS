@@ -102,7 +102,7 @@
                         <thead class="table-dark">
                             <tr>
                                 <th scope="col" style="width: 50px;">#</th>
-                                <th scope="col" style="width: 80px;">OS</th>
+                                <th scope="col" style="width: 80px;">Número da OS</th>
                                 <th scope="col" style="width: 40%;">Problema</th>
                                 <th scope="col" style="width: 15%;">Sistema</th>
                                 <th scope="col" style="width: 15%;">Data</th>
@@ -115,7 +115,7 @@
                                 <td class="fw-bold text-primary">#{{ case.id }}</td>
                                 <td>
                                     {% if case.os_number %}
-                                        <span class="badge bg-info">{{ case.os_number }}</span>
+                                        <span class="text-primary fw-bold">{{ case.os_number }}</span>
                                     {% else %}
                                         <span class="text-muted">-</span>
                                     {% endif %}

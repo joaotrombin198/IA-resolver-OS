@@ -11,7 +11,7 @@
                 <h2 class="mb-1">Caso #{{ case.id }}</h2>
                 <div class="d-flex align-items-center gap-2">
                     {% if case.os_number %}
-                        <span class="badge bg-info">OS {{ case.os_number }}</span>
+                        <span class="text-primary fw-bold">OS {{ case.os_number }}</span>
                     {% endif %}
                     <span class="badge system-badge" data-system="{{ case.system_type }}">{{ case.system_type }}</span>
                     {% if case.effectiveness_score %}
