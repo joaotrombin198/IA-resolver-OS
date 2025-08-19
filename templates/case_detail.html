@@ -51,23 +51,7 @@
                     {{ case.solution|format_solution_steps|safe }}
                 </div>
                 
-                <!-- Action Buttons for Solution -->
-                <div class="mt-4 pt-3 border-top">
-                    <div class="row">
-                        <div class="col-md-6 mb-2">
-                            <button class="btn btn-outline-secondary w-100" onclick="copyToClipboard('solution')">
-                                <i data-feather="copy" class="me-2"></i>
-                                Copiar Solução
-                            </button>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <button class="btn btn-outline-info w-100" onclick="printSolution()">
-                                <i data-feather="printer" class="me-2"></i>
-                                Imprimir Etapas
-                            </button>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
 
@@ -163,33 +147,6 @@ function copyToClipboard(type) {
     }
 }
 
-function printSolution() {
-    const solutionContent = document.querySelector('.solution-steps-enhanced').innerHTML;
-    const printWindow = window.open('', '_blank');
-    
-    printWindow.document.write(`
-        <html>
-        <head>
-            <title>Solução - Caso #{{ case.id }}</title>
-            <style>
-                body { font-family: Arial, sans-serif; padding: 20px; }
-                .step-item { margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-                .step-number { background: #28a745; color: white; padding: 5px 10px; border-radius: 50%; margin-right: 10px; }
-                .step-content { display: inline-block; }
-                @media print { body { margin: 0; } }
-            </style>
-        </head>
-        <body>
-            <h1>Solução - Caso #{{ case.id }}</h1>
-            <h2>Sistema: {{ case.system_type }}</h2>
-            <div class="solution-content">${solutionContent}</div>
-        </body>
-        </html>
-    `);
-    
-    printWindow.document.close();
-    printWindow.print();
-}
 
 function findSimilarCases() {
     const form = document.createElement('form');
